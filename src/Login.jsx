@@ -1,28 +1,40 @@
 import { useState } from "react";
-import { loginUser } from "./auth";
+import { authClient } from "./auth-client";
 
 export default function Login({ onLogin, onSwitch }) {
-  const [username, setUsername] = useState("");
+  // Username nem kell emailel jelentkezünk be
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [email, setEmail] = useState("");
 
-const handleSubmit = (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!email.trim() || !username.trim() || !password.trim()) {
-    setError("Hiányzik az e-mail, felhasználónév vagy jelszó!");
-    return;
-  }
+    //
+    if (!email.trim() || !password.trim()) {
+      setError("Hiányzik az e-mail vagy a jelszó!");
+      return;
+    }
 
-  const user = loginUser(username, password);
+    try {
+      // BetterAuth jelentkezési függvény
+      const { data, error } = await authClient.signIn.email({
+        email: email,
+        password: password,
+      });
 
-  if (!user) {
-    setError("Rossz E-mail, felhasználónév vagy jelszó!");
-  } else {
-    onLogin();
-  }
-};
+      if (error) {
+        // BetterAuth hibakezelés
+        setError(error.message || "Hiba történt a bejelentkezés során.");
+      } else {
+        console.log("Sikeres bejentkezés", data);
+        onLogin();
+      }
+    } catch (err) {
+      setError("Váratlan hiba történt.");
+      console.error(err);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -43,12 +55,6 @@ const handleSubmit = (e) => {
             placeholder="E-mail"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            className="w-full px-3 py-2 border rounded bg-gray-50"
-            placeholder="Felhasználónév"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
           />
 
           <input

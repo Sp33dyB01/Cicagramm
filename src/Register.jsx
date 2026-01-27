@@ -1,20 +1,48 @@
 import { useState } from "react";
-import { registerUser } from "./auth";
+import { authClient } from "./auth-client";
 
 export default function Register({ onSuccess, onSwitch }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false); //ez arra van hogy ne legyen spammelve
+  const [formData, setFormData] = useState({
+    email: '',
+    nev: '',
+    jelszo: '',
+    rBemutat: 'bemutat',
+    irsz: '',
+    utca: '',
+    pKep: 'default.jpg'
+  });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+    if (!formData.email || !formData.jelszo || !formData.nev || !formData.irsz || !formData.utca) {
+      setError("Kérlek tölts ki minden mezőt!"); //itt ezt jobban kéne megoldani de lusta vagyok szoval majd te
+      setLoading(false);
+      return;
+    }
+    try {
+      const { data, error } = await authClient.signUp.email({
+        email: formData.email,
+        password: formData.jelszo,
+        name: formData.nev,
+        image: "default.jpeg", // Default as per your requirement
+        irsz: Number(formData.irsz), // Ensure this is a number
+        utca: formData.utca,
+      });
 
-    const success = registerUser(username, password);
-    if (!success) {
-      setError("Username already exists");
-    } else {
-      onSuccess();
+      if (error) {
+        setError(error.message);
+      } else {
+        console.log("Registered user:", data);
+        onSuccess(); // Move to login or dashboard
+      }
+    } catch (err) {
+      setError("Hiba történt a regisztráció során.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,28 +63,40 @@ export default function Register({ onSuccess, onSwitch }) {
           <input
             className="w-full px-3 py-2 border rounded bg-gray-50"
             placeholder="E-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setFormData({... formData, email: e.target.value})}
           />
 
           <input
             className="w-full px-3 py-2 border rounded bg-gray-50"
             placeholder="Felhasználónév"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => setFormData({... formData, nev: e.target.value})}
           />
 
           <input
             type="password"
             className="w-full px-3 py-2 border rounded bg-gray-50"
             placeholder="Jelszó"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => setFormData({... formData, jelszo: e.target.value})}
+          />
+
+          <input
+            className="w-full px-3 py-2 border rounded bg-gray-50"
+            placeholder="Irányítószám"
+            onChange={(e) => setFormData({... formData, irsz: e.target.value})}
+          />
+          <input
+            className="w-full px-3 py-2 border rounded bg-gray-50"
+            placeholder="Utca"
+            onChange={(e) => setFormData({... formData, utca: e.target.value})}
           />
           <br/>
           <br/>
-          <button className="w-full py-2 bg-blue-500 text-white rounded font-semibold">
-            Regisztráció
+          <button 
+            disabled={loading}
+            className={`w-full py-2 text-white rounded font-semibold ${loading ? 'bg-blue-300' : 'bg-blue-500 hover:bg-blue-600'}`}
+            
+          >
+            {loading ? "Folyamatban..." : "Regisztráció"}
           </button>
         </form>
 
