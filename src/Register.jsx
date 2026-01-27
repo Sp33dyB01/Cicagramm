@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { authClient } from "./auth-client";
-
 export default function Register({ onSuccess, onSwitch }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false); //ez arra van hogy ne legyen spammelve
@@ -35,6 +34,7 @@ export default function Register({ onSuccess, onSwitch }) {
 
       if (error) {
         setError(error.message);
+        console.log(error.code)
       } else {
         console.log("Registered user:", data);
         onSuccess(); // Move to login or dashboard
