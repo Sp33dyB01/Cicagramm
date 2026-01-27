@@ -25,7 +25,8 @@ export default function Login({ onLogin, onSwitch }) {
 
       if (error) {
         // BetterAuth hibakezelés
-        setError(error.message || "Hiba történt a bejelentkezés során.");
+        setError(error.message);
+        console.log(error.code)
       } else {
         console.log("Sikeres bejentkezés", data);
         onLogin();

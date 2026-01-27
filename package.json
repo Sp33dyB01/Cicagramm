@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.21.2",
+    "@cloudflare/workers-types": "^4.20260127.0",
     "better-auth": "^1.4.17",
+    "better-auth-localization": "^2.2.3",
     "cloudflare": "^5.2.0",
     "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.1",

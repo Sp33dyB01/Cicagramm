@@ -2,22 +2,12 @@ import { drizzle } from 'drizzle-orm/d1';
 import * as schema from './schema';
 import { betterAuth } from "better-auth";
 import { Hono } from "hono";
-import { hashPassword } from 'better-auth/crypto';
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { localization } from 'better-auth-localization';
 const app = new Hono<{ Bindings: { DB: D1Database; BETTER_AUTH_SECRET: string } }>();
 export interface Env {
   DB: D1Database;
   ASSETS: Fetcher;
-}
-interface RegisterBody {
-  email: string;
-  nev: string;
-  jelszo: string;
-  irsz: string | number;
-  utca?: string;
-  hazszam?: string | number;
-  pKep?: string;
-  rBemutat: string;
 }
 app.on(["POST", "GET"], "/api/auth/*", async (c) => {
   try{
@@ -29,7 +19,25 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
     logger: {
     level: "debug",
     enabled: true,
-  },
+    },
+    plugins: [
+      localization({
+        defaultLocale: "hu",
+        fallbackLocale: "default",
+        translations: {
+          hu: {
+            USER_ALREADY_EXISTS: "Ez az e-mail cím már regisztrálva van.",
+            INVALID_EMAIL: "Érvénytelen e-mail cím formátum.",
+            PASSWORD_TOO_SHORT: "A jelszó túl rövid (minimum 8 karakter).",
+            INVALID_EMAIL_OR_PASSWORD: "Helytelen e-mail vagy jelszó.",
+            INVALID_PASSWORD: "Helytelen jelszó",
+            USER_NOT_FOUND: "Nem található felhasználó ezzel az e-mail címmel.",
+            INTERNAL_SERVER_ERROR: "Szerver hiba történt, próbáld újra később!",
+            TOO_MANY_REQUESTS: "Túl sok próbálkozás. Kérlek várj egy kicsit.",
+          }
+        }
+      })
+    ],
     trustedOrigins: ["http://localhost:5173"],
     database: drizzleAdapter(db, {
       provider: "sqlite",
