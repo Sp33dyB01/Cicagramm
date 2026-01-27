@@ -1,0 +1,76 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1769098929711,
+      "tag": "0000_living_adam_warlock",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1769157563549,
+      "tag": "0001_milky_machine_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1769157668633,
+      "tag": "0002_windy_sauron",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1769157929655,
+      "tag": "0003_mighty_martin_li",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1769184456231,
+      "tag": "0004_crazy_karma",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1769189494108,
+      "tag": "0005_smart_scourge",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1769191567809,
+      "tag": "0006_bizarre_piledriver",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1769191672367,
+      "tag": "0007_real_rick_jones",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1769194371963,
+      "tag": "0008_low_screwball",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1769417966894,
+      "tag": "0009_dark_toro",
+      "breakpoints": true
+    }
+  ]
+}

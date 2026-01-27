@@ -1,0 +1,1 @@
+ALTER TABLE `felhasznalo` DROP COLUMN `jelszo`;

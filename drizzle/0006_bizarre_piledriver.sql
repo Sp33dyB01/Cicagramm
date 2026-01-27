@@ -1,0 +1,1 @@
+ALTER TABLE `felhasznalo` ADD `emailVerified` integer NOT NULL;
