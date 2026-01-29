@@ -1,0 +1,1 @@
+ALTER TABLE `macskakepek` ADD `feltoltDatum` integer NOT NULL;
