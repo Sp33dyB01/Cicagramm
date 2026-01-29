@@ -6,7 +6,18 @@ export default function Login({ onLogin, onSwitch }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  /*const handleSubmit2 = async (e) => { fájl feltöltés
+  e.preventDefault();
+  const formData = new FormData(e.currentTarget);
+  
+  const response = await fetch("/api/cica/123test/upload", { itt a 123test helyett majd automatikusan a c_id (ami a posztnak az idje) lesz a test helyett de most ez van csak fent a databaseben
+    method: "POST",
+    body: formData,
+    credentials: "include",
+  })
+  const result = await response.json();
+  console.log(result);
+ }*/
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -80,7 +91,15 @@ export default function Login({ onLogin, onSwitch }) {
           >
             Regisztrálj!
           </span>
+          
+        
         </p>
+        {/* fájl feltöltéshez kell ez
+        <form onSubmit={handleSubmit2}>
+          <input type="file" name="file" id="" />
+          <button>kuld</button>
+          </form>*/
+          }
       </div>
     </div>
   );

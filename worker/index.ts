@@ -16,7 +16,7 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
   return auth.handler(c.req.raw);
 });
 
-app.get('/fajta', async (c) => {
+app.get('/api/fajta', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   try {
     const result = await db.query.fajta.findMany();
@@ -26,7 +26,7 @@ app.get('/fajta', async (c) => {
   }
 });
 
-app.get('/cica/:cId', async (c) => {
+app.get('/api/cica/:cId', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   const cId = c.req.param("cId")
   try {
@@ -46,13 +46,22 @@ app.get('/cica/:cId', async (c) => {
     return c.json({ error: "Szerver oldali hiba" }, 500);
   }
 });
+app.get('/api/images/:mkepId', async (c) => {
+  const mkepId = c.req.param('mkepId');
+  const object = await c.env.BUCKET.get(mkepId);
+  if (!object) return c.json({ error: "Kép nem található" }, 404);
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set('etag', object.httpEtag);
+  return new Response(object.body, { headers });
+});
 app.route("/api/cica", uploadApp);
 
-export default {
+export default app; /*{
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const url = new URL(request.url);
     if (url.pathname.startsWith('/api/auth')){
       return app.fetch(request, env, ctx)
     }
   }
-};
+};*/
