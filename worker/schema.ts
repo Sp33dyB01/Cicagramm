@@ -37,7 +37,8 @@ export const cica = sqliteTable('cica', {
 export const macskakepek = sqliteTable('macskakepek',{
   mkepId: text('mkep_id').primaryKey().notNull(),
   cId: text('c_id').references(() => cica.cId),
-  leiras: text('leiras')
+  leiras: text('leiras'),
+  feltoltDatum: integer("feltoltDatum", { mode: "timestamp"}).notNull()
 });
 export const session = sqliteTable("session", {
   id: text("id").primaryKey(),

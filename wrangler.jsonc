@@ -20,6 +20,11 @@
             "database_id": "cc2526c5-32ab-4528-9413-02d0acfb522c",
             "migrations_dir": "./drizzle"
         }
-    ]
+    ],
+    "r2_buckets": {
+        "binding": "BUCKET",
+        "bucket_name": "images",
+        "preview_bucket_name": "images-dev"
+    }
 
 }

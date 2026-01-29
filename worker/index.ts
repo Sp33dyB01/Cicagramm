@@ -4,18 +4,22 @@ import { betterAuth } from "better-auth";
 import { Hono } from "hono";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { localization } from 'better-auth-localization';
-const app = new Hono<{ Bindings: { DB: D1Database; BETTER_AUTH_SECRET: string } }>();
+import uploadApp from "./upload_route";
+const app = new Hono<{ Bindings: Env }>();
 export interface Env {
   DB: D1Database;
   ASSETS: Fetcher;
+  BETTER_AUTH_SECRET: string;
+  BETTER_AUTH_URL?: string;
+  BUCKET: R2Bucket;
 }
 app.on(["POST", "GET"], "/api/auth/*", async (c) => {
-  try{
   const db = drizzle(c.env.DB, { schema }); // Initialize Drizzle with D1
   
   const auth = betterAuth({
     basePath: "/api/auth",
-    baseURL: "http://localhost:8787",
+    baseURL: c.env.BETTER_AUTH_URL || "https://localhost:8787",
+    secret: c.env.BETTER_AUTH_SECRET,
     logger: {
     level: "debug",
     enabled: true,
@@ -49,48 +53,60 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
     }),
         user: {
           additionalFields: {
-      irsz: { type: "number" },
-      utca: { type: "string" },
-      hazszam: { type: "number" },
-      jelszo: { type: "string" }, // Maps to your User table password column
-      pKep: { type: "string" },
-    },
+            irsz: { type: "number" },
+            utca: { type: "string" },
+            hazszam: { type: "number" },
+            pKep: { type: "string" },
+          },
           fields: {
-            password: "jelszo",
             name: "nev",
             image: "pKep",
             email: "email",
             irsz: "irsz",
-    utca: "utca",
-    hazszam: "hazszam"
+            utca: "utca",
+            hazszam: "hazszam"
         },
         defaultValue: {
-    pKep: "default.jpg", // This fixes the NOT NULL constraint!
-    admin: 0,
-    irsz: 0,
-    rBemutat: "",
-    emailVerified: false,
-  }
+          pKep: "default.jpg", 
+          admin: 0,
+          irsz: 0,
+          rBemutat: "",
+          emailVerified: false,
+        }
       },
-    emailAndPassword: { 
-      enabled: true,
-      autoSignIn: true
-     },
-     secret: c.env.BETTER_AUTH_SECRET
-  });
-  if (c.req.path === "/api/auth/me") {
-    const session = await auth.api.getSession({
-        headers: c.req.raw.headers,
+      emailAndPassword: { 
+        enabled: true,
+        autoSignIn: true
+      },
     });
-    return c.json(session);
-}
   return auth.handler(c.req.raw);
-}
-catch (e: any) {
-    console.error("AUTH_ERROR:", e.message); // This shows up in your terminal/Wrangler logs
-    return c.json({ error: e.message, stack: e.stack }, 500);
+});
+
+app.get('/fajta', async (c) => {
+  const db = drizzle(c.env.DB, { schema });
+  try {
+    const result = await db.query.fajta.findMany();
+    return c.json(result);
+  } catch (e) {
+    return c.json({ error: "Failed to fetch species" }, 500);
   }
 });
+
+app.get('/cica', async (c) => {
+  const db = drizzle(c.env.DB, { schema });
+  try {
+    const result = await db.query.cica.findMany({
+      with: {
+        species: true,
+        images: true
+      },
+    });
+    return c.json(result);
+  } catch (e) {
+    return c.json({ error: "Failed to fetch cats" }, 500);
+  }
+});
+app.route("/api/cica", uploadApp);
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
@@ -98,30 +114,5 @@ export default {
     if (url.pathname.startsWith('/api/auth')){
       return app.fetch(request, env, ctx)
     }
-    if (url.pathname.startsWith('/fajta')){
-      const db = drizzle(env.DB, { schema });
-      try{
-      const result = await db.query.fajta.findMany();
-      return Response.json(result);
-      }
-      catch(e){
-        return Response.json({ error: "Failed to fetch species"}, {status: 500})
-      }
-    }
-    if (url.pathname.startsWith('/cica')) {
-  // Pass the schema object to the drizzle constructor
-  const db = drizzle(env.DB, { schema });
-
-  const result = await db.query.cica.findMany({
-    with: {
-      species: true, // This "includes" the fajta data automatically
-    },
-  });
-
-  return Response.json(result);
-}
-
-    return env.ASSETS.fetch(request);
-  },
-  
+  }
 };
