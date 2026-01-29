@@ -2,8 +2,7 @@ import { drizzle } from 'drizzle-orm/d1';
 import * as schema from './schema';
 import { Hono } from "hono";
 import type { Env } from "./index";
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { getAuth } from './auth';
 const uploadApp = new Hono<{ Bindings: Env }>();
 
 uploadApp.post('/:cId/upload', async (c) =>{
@@ -11,20 +10,10 @@ uploadApp.post('/:cId/upload', async (c) =>{
   const db = drizzle(c.env.DB, { schema });
   const body = await c.req.parseBody();
   const file = body['file'];
-  const auth = betterAuth({
-    database: drizzleAdapter(db, {
-      provider: "sqlite",
-      schema: {
-        user: schema.felhasznalo,
-        session: schema.session,
-        account: schema.account
-      },
-    }),
-    secret: c.env.BETTER_AUTH_SECRET,
-  });
+  const auth = getAuth(c.env)
   const session = await auth.api.getSession({
-    headers: c.req.raw.headers,
-  });
+     headers: c.req.raw.headers
+    });
   if (!session){
     return c.json({ error: "Bejelentkezés szükséges"}, 401)
   }
