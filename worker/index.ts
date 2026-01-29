@@ -12,7 +12,6 @@ export interface Env {
   BUCKET: R2Bucket;
 }
 app.on(["POST", "GET"], "/api/auth/*", async (c) => {
-  const db = drizzle(c.env.DB, { schema }); // Initialize Drizzle with D1
   const auth = getAuth(c.env);
   return auth.handler(c.req.raw);
 });
@@ -27,18 +26,24 @@ app.get('/fajta', async (c) => {
   }
 });
 
-app.get('/cica', async (c) => {
+app.get('/cica/:cId', async (c) => {
   const db = drizzle(c.env.DB, { schema });
+  const cId = c.req.param("cId")
   try {
-    const result = await db.query.cica.findMany({
+    const result = await db.query.cica.findFirst({
+      where: (table, {eq}) => eq(table.cId, cId),
       with: {
         species: true,
-        images: true
+        images: true,
+        owner:  true
       },
     });
+    if (!result)
+      return c.json({error: "Nincs ilyen macska!"}, 404);
     return c.json(result);
   } catch (e) {
-    return c.json({ error: "Failed to fetch cats" }, 500);
+    console.error(e);
+    return c.json({ error: "Szerver oldali hiba" }, 500);
   }
 });
 app.route("/api/cica", uploadApp);
