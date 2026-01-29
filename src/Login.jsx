@@ -40,7 +40,7 @@ export default function Login({ onLogin, onSwitch }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm bg-white border rounded-lg p-6">
-        <h1 className="text-4xl text-center mb-6 font-[cursive]">
+        <h1 className="text-4xl text-center mb-6 font-[cursive]" style={{ textAlign: 'center' }}>
           Cicagramm
         </h1>
 
