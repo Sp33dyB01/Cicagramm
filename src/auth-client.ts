@@ -11,6 +11,11 @@ export const authClient = createAuthClient({
             utca: {
                 type: "string",
                 required: false,
+            },
+            admin: {
+                type: "number",
+                required: true,
+                default: 0
             }
         }
     }

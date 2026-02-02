@@ -1,11 +1,11 @@
-//import { useState, useEffect } from "react";
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
+import React from "react";
 import "./MainApp.css";
 import avatarImg from "./avatar.png";
 
 export default function MainApp() {
   const [open, setOpen] = useState(false);
-   /*const [cat, setCat] = useState(null); egy poszt adatainek lekérése
+   const [cat, setCat] = useState(null); //egy poszt adatainek lekérése
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function MainApp() {
       });
   }, []);
   if (loading) return <div>Betöltés...</div>;
-  if (!cat) return <div>A cica nem található.</div>;*/
+  if (!cat) return <div>A cica nem található.</div>;
   return (
     <div className="app">
       {/* TOP BAR */}
@@ -59,6 +59,15 @@ export default function MainApp() {
           <div className="card small"></div>
         </aside>
       </div>
+    {cat.images.map(img => (
+        <img 
+          key={img.mkepId} 
+          src={`/api/images/${img.mkepId}`} 
+          alt="Cica kép" 
+          className="w-full rounded-lg"
+        />
+))}
     </div>
+    
   );
 }
