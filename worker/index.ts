@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/d1';
 import * as schema from './schema';
 import { Hono } from "hono";
-import uploadApp from "./upload_route";
+import cicaRouter from "./cicaRouter";
 import { getAuth } from "./auth";
 const app = new Hono<{ Bindings: Env }>();
 export interface Env {
@@ -25,27 +25,6 @@ app.get('/api/fajta', async (c) => {
     return c.json({ error: "Failed to fetch species" }, 500);
   }
 });
-
-app.get('/api/cica/:cId', async (c) => {
-  const db = drizzle(c.env.DB, { schema });
-  const cId = c.req.param("cId")
-  try {
-    const result = await db.query.cica.findFirst({
-      where: (table, {eq}) => eq(table.cId, cId),
-      with: {
-        species: true,
-        images: true,
-        owner:  true
-      },
-    });
-    if (!result)
-      return c.json({error: "Nincs ilyen macska!"}, 404);
-    return c.json(result);
-  } catch (e) {
-    console.error(e);
-    return c.json({ error: "Szerver oldali hiba" }, 500);
-  }
-});
 app.get('/api/images/:mkepId', async (c) => {
   const mkepId = c.req.param('mkepId');
   const object = await c.env.BUCKET.get(mkepId);
@@ -55,7 +34,7 @@ app.get('/api/images/:mkepId', async (c) => {
   headers.set('etag', object.httpEtag);
   return new Response(object.body, { headers });
 });
-app.route("/api/cica", uploadApp);
+app.route("/api/cica", cicaRouter);
 
 export default app; /*{
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {

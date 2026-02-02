@@ -48,6 +48,7 @@ export const getAuth = (env: Env) => {
             utca: { type: "string" },
             hazszam: { type: "number" },
             pKep: { type: "string" },
+            admin: { type: "number"}
           },
           fields: {
             name: "nev",
