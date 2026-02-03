@@ -80,7 +80,7 @@ cicaRouter.delete('/:cId', async (c) => {
         return c.json({error: "Nem sikerült a törlés"}, 500);
     }
 });
-cicaRouter.get('/api/cica/:cId', async (c) => {
+cicaRouter.get('/:cId', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   const cId = c.req.param("cId")
   try {
