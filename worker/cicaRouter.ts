@@ -6,7 +6,7 @@ import { getAuth } from './auth';
 import { eq } from 'drizzle-orm';
 const cicaRouter = new Hono<{ Bindings: Env }>();
 
-cicaRouter.post('/:cId/upload', async (c) =>{
+/*cicaRouter.post('/:cId/upload', async (c) =>{
   const cId = c.req.param('cId');
   const db = drizzle(c.env.DB, { schema });
   const body = await c.req.parseBody();
@@ -38,12 +38,71 @@ cicaRouter.post('/:cId/upload', async (c) =>{
     console.error(e)
     return c.json({error: "Nem sikerült a feltöltés"}, 500);
   }
-});
+});*/
+
+cicaRouter.post('/', async (c) => {
+  const db = drizzle(c.env.DB, { schema } );
+  const auth = getAuth(c.env);
+  
+  const session = await auth.api.getSession({
+    headers: c.req.raw.headers
+  });
+  if (!session)
+    return c.json({ error: "Bejelentkezés szükséges"}, 401);
+  try{
+    const formData = await c.req.parseBody();
+    const nev = formData['nev'] as string;
+    const kor = Number(formData['kor']);
+    const tomeg = Number(formData['tomeg']);
+    const fajId = Number(formData['fajId']);
+    const ivartalanitott = Number(formData['ivartalanitott']);
+    const rBemutat = formData['rBemutat'] as string || null;
+    const pKepFile = formData['pKep'] as File;
+    const mKepek = formData['mKepek[]'];
+    if (!nev || !kor || !tomeg || !ivartalanitott || !fajId || !pKepFile)
+      return c.json({ error: "Hiáynzó adatok!"}, 400);
+    const pkepKey = `pfp-${crypto.randomUUID()}-${pKepFile.name}`
+    await c.env.BUCKET.put(pkepKey,pKepFile);
+    const newcId = crypto.randomUUID();
+    await db.insert(schema.cica).values({
+      cId: newcId,
+      felId: session.user.id,
+      nev: nev,
+      kor: kor,
+      tomeg: tomeg,
+      fajId: fajId,
+      ivartalanitott: ivartalanitott,
+      rBemutat: rBemutat,
+      pKep: pkepKey,
+    });
+    let filesUpload: File[] = [];
+    if (Array.isArray(mKepek))
+      filesUpload = mKepek as File[];
+    else if (mKepek instanceof File)
+      filesUpload = [mKepek];
+    if (filesUpload.length > 0){
+      const mKepekPromise = filesUpload.map(async (file) => {
+        const kepKey = crypto.randomUUID();
+        await c.env.BUCKET.put(kepKey, file);
+        await db.insert(schema.macskakepek).values({
+          mkepId: kepKey,
+          cId: newcId,
+          feltoltDatum: new Date()
+        });
+      });
+      await Promise.all(mKepekPromise);
+    }
+  }
+  catch (e){
+    console.log(e);
+    return c.json({ error: "szerver oldali hiba"},500)
+  }
+})
 
 cicaRouter.delete('/:cId', async (c) => {
     const cId = c.req.param('cId');
     const db = drizzle(c.env.DB, { schema });
-    const auth = getAuth(c.env)
+    const auth = getAuth(c.env);
     const session = await auth.api.getSession({
         headers: c.req.raw.headers
     });
@@ -71,7 +130,6 @@ cicaRouter.delete('/:cId', async (c) => {
         )
         await Promise.all(deletePromises)
     }
-    await db.delete(schema.macskakepek).where(eq(schema.macskakepek.cId, cId));
     await db.delete(schema.cica).where(eq(schema.cica.cId, cId));
     return c.json({success: true, message: "Sikeres törlés"})
     }
