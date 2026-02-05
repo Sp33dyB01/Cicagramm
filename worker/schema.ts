@@ -28,7 +28,7 @@ export const cica = sqliteTable('cica', {
   kor: integer('kor').notNull(),
   pKep: text('p_kep').notNull(),
   rBemutat: text('r_bemutat'),
-  felId: text('fel_id').references(() => felhasznalo.id),
+  felId: text('fel_id').references(() => felhasznalo.id, {onDelete: "cascade"}),
   tomeg: real('tomeg').notNull(),
   nev: text('nev', { length: 50 }).notNull(),
   fajId: integer('faj_id').references(() => fajta.id),
@@ -36,8 +36,7 @@ export const cica = sqliteTable('cica', {
 });
 export const macskakepek = sqliteTable('macskakepek',{
   mkepId: text('mkep_id').primaryKey().notNull(),
-  cId: text('c_id').references(() => cica.cId),
-  leiras: text('leiras'),
+  cId: text('c_id').references(() => cica.cId, {onDelete: "cascade"}),
   feltoltDatum: integer("feltoltDatum", { mode: "timestamp"}).notNull()
 });
 export const session = sqliteTable("session", {
@@ -48,11 +47,11 @@ export const session = sqliteTable("session", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
   ipAddress: text("ipAddress"),
   userAgent: text("userAgent"),
-  userId: text("userId").notNull().references(() => felhasznalo.id),  
+  userId: text("userId").notNull().references(() => felhasznalo.id, {onDelete: "cascade"}),  
 });
 export const account = sqliteTable("account", {
   id: text("id").primaryKey(),
-  userId: text("userId").notNull().references(() => felhasznalo.id),
+  userId: text("userId").notNull().references(() => felhasznalo.id, {onDelete: "cascade"}),
   accountId: text("accountId").notNull(),
   providerId: text("providerId").notNull(), // This will be "credential"
   password: text("password"),
