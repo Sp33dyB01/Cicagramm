@@ -6,40 +6,6 @@ import { getAuth } from './auth';
 import { eq } from 'drizzle-orm';
 const cicaRouter = new Hono<{ Bindings: Env }>();
 
-/*cicaRouter.post('/:cId/upload', async (c) =>{
-  const cId = c.req.param('cId');
-  const db = drizzle(c.env.DB, { schema });
-  const body = await c.req.parseBody();
-  const file = body['file'];
-  const auth = getAuth(c.env)
-  const session = await auth.api.getSession({
-     headers: c.req.raw.headers
-    });
-  if (!session){
-    return c.json({ error: "Bejelentkezés szükséges"}, 401)
-  }
-  if (!(file instanceof File))
-    return c.json({ error: "Érvénytelen Fájl!"}, 400)
-  const mkepId = crypto.randomUUID();
-  try{
-    await c.env.BUCKET.put(mkepId, file.stream(), {
-      httpMetadata: {contentType: file.type}
-    });
-    await db.insert(schema.macskakepek).values({
-      mkepId: mkepId,
-      cId: cId,
-      leiras: "",
-      feltoltDatum: new Date(),
-    });
-    
-    return c.json({ success: true, mkepId: mkepId});
-  }
-  catch (e){
-    console.error(e)
-    return c.json({error: "Nem sikerült a feltöltés"}, 500);
-  }
-});*/
-
 cicaRouter.post('/', async (c) => {
   const db = drizzle(c.env.DB, { schema } );
   const auth = getAuth(c.env);
@@ -92,6 +58,7 @@ cicaRouter.post('/', async (c) => {
       });
       await Promise.all(mKepekPromise);
     }
+    return c.json({succes: true, cId: newcId, message: "Cica sikeresen létrehozva!" }, 200)
   }
   catch (e){
     console.log(e);
