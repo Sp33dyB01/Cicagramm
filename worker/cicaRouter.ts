@@ -25,8 +25,11 @@ cicaRouter.post('/', async (c) => {
     const rBemutat = formData['rBemutat'] as string || null;
     const pKepFile = formData['pKep'] as File;
     const mKepek = formData['mKepek[]'];
-    if (!nev || !kor || !tomeg || !ivartalanitott || !fajId || !pKepFile)
-      return c.json({ error: "Hiáynzó adatok!"}, 400);
+    if (!nev || !kor || !tomeg || isNaN(ivartalanitott) || !fajId || !pKepFile){
+      console.log(formData);
+      return c.json({ error: "Hiányzó adatok!"}, 400);
+    }
+      
     const pkepKey = `pfp-${crypto.randomUUID()}-${pKepFile.name}`
     await c.env.BUCKET.put(pkepKey,pKepFile);
     const newcId = crypto.randomUUID();
@@ -125,4 +128,23 @@ cicaRouter.get('/:cId', async (c) => {
     return c.json({ error: "Szerver oldali hiba" }, 500);
   }
 });
+cicaRouter.get('/', async (c) =>{
+  const db = drizzle(c.env.DB, { schema });
+  try {
+    const result = await db.query.cica.findMany({
+      with: {
+        species: true,
+        images: true,
+        owner: true
+      }
+    })
+    if (!result)
+      return c.json({ error: "Nincs ilyen cica"}, 400)
+    return c.json(result)
+  }
+  catch (e) {
+    console.error(e);
+    return c.json({ error: "Szerver oldali hiba"},500)
+  }
+})
 export default cicaRouter;

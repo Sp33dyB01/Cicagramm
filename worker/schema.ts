@@ -79,3 +79,4 @@ export const cicaRelations = relations(cica, ({ many,one }) => ({
   }),
 }));
 export type SelectFajta = typeof fajta.$inferSelect;
+export type SelectFelhasznalo = typeof felhasznalo.$inferSelect;
