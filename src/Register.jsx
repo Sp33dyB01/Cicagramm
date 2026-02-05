@@ -40,7 +40,7 @@ export default function Register({ onSuccess, onSwitch }) {
         onSuccess(); // Move to login or dashboard
       }
     } catch (err) {
-      setError("Hiba történt a regisztráció során.");
+      setError(err);
     } finally {
       setLoading(false);
     }

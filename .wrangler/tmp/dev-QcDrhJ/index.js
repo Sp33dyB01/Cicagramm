@@ -67952,8 +67952,10 @@ cicaRouter.post("/", async (c2) => {
     const rBemutat = formData["rBemutat"] || null;
     const pKepFile = formData["pKep"];
     const mKepek = formData["mKepek[]"];
-    if (!nev || !kor || !tomeg || !ivartalanitott || !fajId || !pKepFile)
-      return c2.json({ error: "Hi\xE1ynz\xF3 adatok!" }, 400);
+    if (!nev || !kor || !tomeg || isNaN(ivartalanitott) || !fajId || !pKepFile) {
+      console.log(formData);
+      return c2.json({ error: "Hi\xE1nyz\xF3 adatok!" }, 400);
+    }
     const pkepKey = `pfp-${crypto.randomUUID()}-${pKepFile.name}`;
     await c2.env.BUCKET.put(pkepKey, pKepFile);
     const newcId = crypto.randomUUID();
@@ -68043,6 +68045,24 @@ cicaRouter.get("/:cId", async (c2) => {
     });
     if (!result)
       return c2.json({ error: "Nincs ilyen macska!" }, 404);
+    return c2.json(result);
+  } catch (e) {
+    console.error(e);
+    return c2.json({ error: "Szerver oldali hiba" }, 500);
+  }
+});
+cicaRouter.get("/", async (c2) => {
+  const db = drizzle(c2.env.DB, { schema: schema_exports });
+  try {
+    const result = await db.query.cica.findMany({
+      with: {
+        species: true,
+        images: true,
+        owner: true
+      }
+    });
+    if (!result)
+      return c2.json({ error: "Nincs ilyen cica" }, 400);
     return c2.json(result);
   } catch (e) {
     console.error(e);

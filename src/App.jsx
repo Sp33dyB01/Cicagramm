@@ -3,7 +3,6 @@ import Login from './Login';
 import Register from './Register'; // Assuming you have this
 import CatManager from './test'; // The dashboard code from previous step
 import { authClient } from "./auth-client";
-
 function App() {
   const [user, setUser] = useState(null);
   const [currentView, setCurrentView] = useState('login'); // 'login' | 'register'
