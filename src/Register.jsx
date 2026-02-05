@@ -63,6 +63,7 @@ export default function Register({ onSuccess, onSwitch }) {
           <input
             className="w-full px-3 py-2 border rounded bg-gray-50"
             placeholder="E-mail"
+            type="email"
             onChange={(e) => setFormData({... formData, email: e.target.value})}
           />
 
@@ -80,6 +81,7 @@ export default function Register({ onSuccess, onSwitch }) {
           />
 
           <input
+            type="number"
             className="w-full px-3 py-2 border rounded bg-gray-50"
             placeholder="Irányítószám"
             onChange={(e) => setFormData({... formData, irsz: e.target.value})}
