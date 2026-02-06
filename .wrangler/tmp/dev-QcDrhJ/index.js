@@ -67953,7 +67953,6 @@ cicaRouter.post("/", async (c2) => {
     const pKepFile = formData["pKep"];
     const mKepek = formData["mKepek[]"];
     if (!nev || !kor || !tomeg || isNaN(ivartalanitott) || !fajId || !pKepFile) {
-      console.log(formData);
       return c2.json({ error: "Hi\xE1nyz\xF3 adatok!" }, 400);
     }
     const pkepKey = `pfp-${crypto.randomUUID()}-${pKepFile.name}`;

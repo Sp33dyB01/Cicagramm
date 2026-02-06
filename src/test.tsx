@@ -1,21 +1,29 @@
-import { useState,useEffect } from 'react';
-import type { SelectFajta } from '../worker/schema';
+import { useState, useEffect } from 'react';
+// import type { SelectFajta } from '../worker/schema'; // Uncomment if you have the type
+
 export default function CatManager() {
-  // State for the uploaded Cat ID (to easily test View/Delete after upload)
   const [currentCatId, setCurrentCatId] = useState<string>('');
-  
-  // Feedback state
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [loading, setLoading] = useState(false);
+  
+  // Data States
   const [catData, setCatData] = useState<any>(null);
-  const [fajtak, setFajtak] = useState<SelectFajta[]>([]);
+  const [fajtak, setFajtak] = useState<any[]>([]); // Using any[] to avoid import errors
+  
+  // --- EDITING STATES ---
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFormData, setEditFormData] = useState<any>({});
+  const [idsToDelete, setIdsToDelete] = useState<string[]>([]); // IDs of images to remove
+  
+  // Fetch breeds on load
   useEffect(() => {
-  fetch('/api/fajta')
-    .then(res => res.json())
-    .then(data => setFajtak(data))
-    .catch(err => console.error("Hiba a fajták lekérésekor:", err));
-}, []);
-  // --- 1. UPLOAD FUNCTION ---
+    fetch('/api/fajta')
+      .then(res => res.json())
+      .then(data => setFajtak(data))
+      .catch(err => console.error("Hiba a fajták lekérésekor:", err));
+  }, []);
+
+  // --- 1. UPLOAD FUNCTION (CREATE) ---
   const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -27,15 +35,15 @@ export default function CatManager() {
     try {
       const res = await fetch('/api/cica', {
         method: 'POST',
-        body: formData, // Browser handles boundaries automatically
+        body: formData,
       });
-
       const data = await res.json();
 
       if (res.ok) {
         setMessage({ text: `Siker! Új cica ID: ${data.cId}`, type: 'success' });
-        setCurrentCatId(data.cId); // Save ID for other tests
+        setCurrentCatId(data.cId);
         form.reset();
+        handleFetch(data.cId); // Auto-load the new cat
       } else {
         setMessage({ text: data.error || 'Hiba történt', type: 'error' });
       }
@@ -47,14 +55,17 @@ export default function CatManager() {
   };
 
   // --- 2. GET FUNCTION ---
-  const handleFetch = async () => {
-    if (!currentCatId) return;
+  const handleFetch = async (idOverride?: string) => {
+    const idToFetch = idOverride || currentCatId;
+    if (!idToFetch) return;
+    
     setLoading(true);
     setCatData(null);
+    setIsEditing(false); // Reset edit mode on new fetch
     setMessage(null);
 
     try {
-      const res = await fetch(`/api/cica/${currentCatId}`);
+      const res = await fetch(`/api/cica/${idToFetch}`);
       const data = await res.json();
 
       if (res.ok) {
@@ -75,9 +86,7 @@ export default function CatManager() {
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/cica/${currentCatId}`, {
-        method: 'DELETE',
-      });
+      const res = await fetch(`/api/cica/${currentCatId}`, { method: 'DELETE' });
       const data = await res.json();
 
       if (res.ok) {
@@ -94,16 +103,93 @@ export default function CatManager() {
     }
   };
 
+  // --- 4. PREPARE EDIT MODE ---
+  const startEditing = () => {
+    setEditFormData({
+        nev: catData.nev,
+        kor: catData.kor,
+        tomeg: catData.tomeg,
+        fajId: catData.fajId, // Note: backend sends 'fajId', ensure case matches
+        ivartalanitott: catData.ivartalanitott,
+        rBemutat: catData.rBemutat || ""
+    });
+    setIdsToDelete([]); // Clear deletion queue
+    setIsEditing(true);
+  };
+
+  // --- 5. SUBMIT UPDATES (PATCH) ---
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!catData) return;
+    setLoading(true);
+
+    const formData = new FormData();
+
+    // A. Basic Fields
+    formData.append('nev', editFormData.nev);
+    formData.append('kor', editFormData.kor);
+    formData.append('tomeg', editFormData.tomeg);
+    formData.append('fajId', editFormData.fajId);
+    formData.append('ivartalanitott', editFormData.ivartalanitott);
+    formData.append('rBemutat', editFormData.rBemutat);
+
+    // B. Profile Picture (Only if a new file is selected)
+    const pKepInput = (e.currentTarget.elements.namedItem('newPkep') as HTMLInputElement);
+    if (pKepInput.files && pKepInput.files[0]) {
+        formData.append('pKep', pKepInput.files[0]);
+    }
+
+    // C. NEW Gallery Images
+    const galleryInput = (e.currentTarget.elements.namedItem('newGallery') as HTMLInputElement);
+    if (galleryInput.files && galleryInput.files.length > 0) {
+        for (let i = 0; i < galleryInput.files.length; i++) {
+            formData.append('newImages[]', galleryInput.files[i]);
+        }
+    }
+
+    // D. Images to DELETE
+    idsToDelete.forEach(id => {
+        formData.append('deleteImages[]', id);
+    });
+
+    try {
+        const res = await fetch(`/api/cica/${catData.cId}`, {
+            method: 'PATCH',
+            body: formData
+        });
+        const result = await res.json();
+
+        if (res.ok) {
+            setMessage({ text: 'Sikeres módosítás!', type: 'success' });
+            setIsEditing(false);
+            handleFetch(catData.cId); // Refresh data to show changes
+        } else {
+            setMessage({ text: result.error || 'Hiba történt', type: 'error' });
+        }
+    } catch (err) {
+        setMessage({ text: 'Hálózati hiba', type: 'error' });
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  // Helper to toggle image deletion status in Edit Mode
+  const toggleDeleteImage = (imgId: string) => {
+    if (idsToDelete.includes(imgId)) {
+        setIdsToDelete(idsToDelete.filter(id => id !== imgId)); // Un-delete
+    } else {
+        setIdsToDelete([...idsToDelete, imgId]); // Mark for delete
+    }
+  };
+
   return (
     <div style={{ maxWidth: '600px', margin: '2rem auto', fontFamily: 'sans-serif' }}>
-      <h1>🐱 Cicagramm Admin Teszt</h1>
+      <h1>🐱 Cicagramm Admin</h1>
 
       {/* Message Banner */}
       {message && (
         <div style={{ 
-          padding: '1rem', 
-          marginBottom: '1rem', 
-          borderRadius: '4px',
+          padding: '1rem', marginBottom: '1rem', borderRadius: '4px',
           backgroundColor: message.type === 'success' ? '#d4edda' : '#f8d7da',
           color: message.type === 'success' ? '#155724' : '#721c24'
         }}>
@@ -112,59 +198,50 @@ export default function CatManager() {
       )}
 
       {/* --- SECTION 1: UPLOAD FORM --- */}
-      <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
-        <h2>1. Új Cica Feltöltése</h2>
-        <form onSubmit={handleUpload} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          
-          <input name="nev" type="text" placeholder="Név (pl. Cirmi)" required />
-          
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <input name="kor" type="number" placeholder="Kor (év)" required style={{ flex: 1 }} />
-            <input name="tomeg" type="number" step="0.1" placeholder="Tömeg (kg)" required style={{ flex: 1 }} />
-          </div>
+      {!isEditing && ( // Hide Create form while editing to reduce clutter
+        <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>
+            <h2>1. Új Cica Feltöltése</h2>
+            <form onSubmit={handleUpload} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <input name="nev" type="text" placeholder="Név (pl. Cirmi)" required />
+            <div style={{ display: 'flex', gap: '10px' }}>
+                <input name="kor" type="number" placeholder="Kor (év)" required style={{ flex: 1 }} />
+                <input name="tomeg" type="number" step="0.1" placeholder="Tömeg (kg)" required style={{ flex: 1 }} />
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+                <select name="fajId" required style={{ flex: 1 }}>
+                <option value="">-- Válassz Fajta --</option>
+                {fajtak.map((f) => (
+                    <option key={f.id} value={f.id}>{f.fajta}</option>
+                ))}
+                </select>
+                <select name="ivartalanitott" required style={{ flex: 1 }}>
+                <option value="0">Nem ivartalanított</option>
+                <option value="1">Ivartalanított</option>
+                </select>
+            </div>
+            <textarea name="rBemutat" placeholder="Rövid bemutatkozás..." />
+            <label>
+                <strong>Profilkép (Kötelező):</strong>
+                <input name="pKep" type="file" accept="image/*" required />
+            </label>
+            <label>
+                <strong>Galéria:</strong>
+                <input name="mKepek[]" type="file" accept="image/*" multiple />
+            </label>
+            <button type="submit" disabled={loading} style={{ padding: '10px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>
+                {loading ? 'Mentés...' : 'Cica Mentése'}
+            </button>
+            </form>
+        </div>
+      )}
 
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <select name="fajId" required style={{ flex: 1 }}>
-              <option value="">-- Válassz Fajta ID-t --</option>
-              {fajtak.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.fajta}
-              </option>
-  ))}
-            </select>
-            
-            <select name="ivartalanitott" required style={{ flex: 1 }}>
-              <option value="0">Nem ivartalanított</option>
-              <option value="1">Ivartalanított</option>
-            </select>
-          </div>
-
-          <textarea name="rBemutat" placeholder="Rövid bemutatkozás..." />
-
-          <label>
-            <strong>Profilkép (Kötelező):</strong>
-            <input name="pKep" type="file" accept="image/*" required />
-          </label>
-
-          <label>
-            <strong>Galéria (Több kép is lehet):</strong>
-            {/* Note the name="mKepek[]" and the 'multiple' attribute */}
-            <input name="mKepek[]" type="file" accept="image/*" multiple />
-          </label>
-
-          <button type="submit" disabled={loading} style={{ padding: '10px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>
-            {loading ? 'Mentés...' : 'Cica Mentése'}
-          </button>
-        </form>
-      </div>
-
-      {/* --- SECTION 2: TEST CONTROLS --- */}
+      {/* --- SECTION 2: OPERATIONS --- */}
       <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px', background: '#f9f9f9' }}>
         <h2>2. Műveletek</h2>
         <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
           <input 
             type="text" 
-            placeholder="Cica ID" 
+            placeholder="Cica ID keresése..." 
             value={currentCatId} 
             onChange={(e) => setCurrentCatId(e.target.value)}
             style={{ flex: 1, padding: '5px' }}
@@ -172,40 +249,142 @@ export default function CatManager() {
         </div>
         
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={handleFetch} disabled={!currentCatId || loading} style={{ flex: 1, padding: '10px' }}>
-            🔍 Adatok Lekérése
+          <button onClick={() => handleFetch()} disabled={!currentCatId || loading} style={{ flex: 1, padding: '10px' }}>
+            🔍 Keresés
           </button>
+          
+          {catData && !isEditing && (
+            <button onClick={startEditing} style={{ flex: 1, padding: '10px', background: '#ffc107', border: 'none' }}>
+                ✏️ Szerkesztés
+            </button>
+          )}
+
           <button onClick={handleDelete} disabled={!currentCatId || loading} style={{ flex: 1, padding: '10px', background: '#dc3545', color: 'white', border: 'none' }}>
             🗑️ Törlés
           </button>
         </div>
 
-        {/* --- DISPLAY DATA --- */}
+        {/* --- DISPLAY / EDIT AREA --- */}
         {catData && (
           <div style={{ marginTop: '1rem', padding: '1rem', background: 'white', border: '1px solid #ddd' }}>
-            <h3>{catData.nev} ({catData.kor} éves)</h3>
-            <p><strong>ID:</strong> {catData.cId}</p>
-            <p><strong>Bio:</strong> {catData.rBemutat}</p>
             
-            <h4>Profilkép:</h4>
-            {/* Assuming you have a route to serve images like /api/images/:key */}
-            <img 
-              src={`/api/images/${catData.pKep}`} 
-              alt="Profile" 
-              style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '50%' }} 
-            />
+            {/* A. VIEW MODE */}
+            {!isEditing ? (
+                <>
+                    <h3>{catData.nev} ({catData.kor} éves)</h3>
+                    <p><strong>ID:</strong> {catData.cId}</p>
+                    <p><strong>Bio:</strong> {catData.rBemutat}</p>
+                    <p><strong>Fajta:</strong> {catData.species ? catData.species.fajta : catData.fajId}</p>
+                    
+                    <h4>Profilkép:</h4>
+                    <img 
+                        src={`/api/images/${catData.pKep}`} 
+                        alt="Profile" 
+                        style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '50%' }} 
+                    />
 
-            <h4>Galéria ({catData.images.length}):</h4>
-            <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-              {catData.images.map((img: any) => (
-                <img 
-                  key={img.mkepId}
-                  src={`/api/images/${img.mkepId}`} 
-                  alt="Gallery" 
-                  style={{ width: '80px', height: '80px', objectFit: 'cover' }} 
-                />
-              ))}
-            </div>
+                    <h4>Galéria:</h4>
+                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                        {catData.images && catData.images.map((img: any) => (
+                        <img 
+                            key={img.mkepId}
+                            src={`/api/images/${img.mkepId}`} 
+                            alt="Gallery" 
+                            style={{ width: '80px', height: '80px', objectFit: 'cover' }} 
+                        />
+                        ))}
+                    </div>
+                </>
+            ) : (
+                /* B. EDIT MODE */
+                <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <h3 style={{color: '#d39e00'}}>Szerkesztés: {catData.nev}</h3>
+                    
+                    <label>Név:</label>
+                    <input 
+                        value={editFormData.nev} 
+                        onChange={(e) => setEditFormData({...editFormData, nev: e.target.value})} 
+                    />
+                    
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <div style={{flex: 1}}>
+                            <label>Kor:</label>
+                            <input type="number" style={{width: '100%'}}
+                                value={editFormData.kor} 
+                                onChange={(e) => setEditFormData({...editFormData, kor: e.target.value})} 
+                            />
+                        </div>
+                        <div style={{flex: 1}}>
+                            <label>Tömeg:</label>
+                            <input type="number" step="0.1" style={{width: '100%'}}
+                                value={editFormData.tomeg} 
+                                onChange={(e) => setEditFormData({...editFormData, tomeg: e.target.value})} 
+                            />
+                        </div>
+                    </div>
+
+                    <label>Fajta:</label>
+                    <select 
+                        value={editFormData.fajId || ""} 
+                        onChange={(e) => setEditFormData({...editFormData, fajId: e.target.value})}
+                    >
+                        {fajtak.map((f) => (
+                            <option key={f.id} value={f.id}>{f.fajta}</option>
+                        ))}
+                    </select>
+
+                    <label>Bio:</label>
+                    <textarea 
+                        value={editFormData.rBemutat} 
+                        onChange={(e) => setEditFormData({...editFormData, rBemutat: e.target.value})} 
+                    />
+
+                    <hr />
+
+                    {/* Image Editing Section */}
+                    <label><strong>Profilkép cseréje (opcionális):</strong></label>
+                    <input name="newPkep" type="file" accept="image/*" />
+
+                    <label><strong>Galéria képek kezelése:</strong></label>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '10px', background: '#eee' }}>
+                        {catData.images && catData.images.map((img: any) => {
+                            const isMarkedForDelete = idsToDelete.includes(img.mkepId);
+                            return (
+                                <div key={img.mkepId} style={{ position: 'relative', opacity: isMarkedForDelete ? 0.4 : 1 }}>
+                                    <img 
+                                        src={`/api/images/${img.mkepId}`} 
+                                        style={{ width: '80px', height: '80px', objectFit: 'cover' }} 
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={() => toggleDeleteImage(img.mkepId)}
+                                        style={{
+                                            position: 'absolute', top: 0, right: 0, 
+                                            background: isMarkedForDelete ? 'grey' : 'red', 
+                                            color: 'white', border: 'none', cursor: 'pointer',
+                                            width: '20px', height: '20px'
+                                        }}
+                                    >
+                                        {isMarkedForDelete ? '↩' : 'X'}
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <label>+ Új képek hozzáadása a galériához:</label>
+                    <input name="newGallery" type="file" accept="image/*" multiple />
+
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '1rem' }}>
+                        <button type="submit" style={{ flex: 2, padding: '10px', background: '#28a745', color: 'white', border: 'none' }}>
+                            Módosítások Mentése
+                        </button>
+                        <button type="button" onClick={() => setIsEditing(false)} style={{ flex: 1, padding: '10px' }}>
+                            Mégsem
+                        </button>
+                    </div>
+                </form>
+            )}
           </div>
         )}
       </div>
