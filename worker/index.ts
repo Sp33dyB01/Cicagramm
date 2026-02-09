@@ -3,6 +3,7 @@ import * as schema from './schema';
 import { Hono } from "hono";
 import cicaRouter from "./cicaRouter";
 import { getAuth } from "./auth";
+import felhasznaloRouter from './felhasznaloRouter';
 const app = new Hono<{ Bindings: Env }>();
 export interface Env {
   DB: D1Database;
@@ -35,7 +36,7 @@ app.get('/api/images/:mkepId', async (c) => {
   return new Response(object.body, { headers });
 });
 app.route("/api/cica", cicaRouter);
-
+app.route("/api/profile", felhasznaloRouter)
 export default app; /*{
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const url = new URL(request.url);

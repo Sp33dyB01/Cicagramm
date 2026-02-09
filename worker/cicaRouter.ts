@@ -9,7 +9,6 @@ const cicaRouter = new Hono<{ Bindings: Env }>();
 cicaRouter.post('/', async (c) => {
   const db = drizzle(c.env.DB, { schema } );
   const auth = getAuth(c.env);
-  
   const session = await auth.api.getSession({
     headers: c.req.raw.headers
   });
@@ -90,9 +89,9 @@ cicaRouter.delete('/:cId', async (c) => {
     }
     const isOwner = result.felId === session.user.id;
     const isAdmin = session.user.admin === 1;
-    if (!isOwner && !isAdmin){
+    if (!isOwner && !isAdmin)
         return c.json({ error: "Nincsen Jogosultsága"},403)
-    }
+      
     if (result.images && result.images.length > 0){
         const deletePromises = result.images.map(img => 
             c.env.BUCKET.delete(img.mkepId)
