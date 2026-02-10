@@ -105,9 +105,9 @@ function App() {
         {/* MAIN CONTENT AREA */}
         <main style={{ padding: '20px' }}>
           {activeTab === 'cats' ? (
-            <CatManager />
+            <CatManager currentUser={user}/>
           ) : (
-            <UserManager />
+            <UserManager currentUser={user}/>
           )}
         </main>
       </div>

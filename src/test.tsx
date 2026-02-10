@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
+import { getCoordinates, getDistance } from '../worker/tavolsag';
 // import type { SelectFajta } from '../worker/schema'; // Uncomment if you have the type
 
-export default function CatManager() {
+export default function CatManager({ currentUser }: { currentUser: any }) {
   const [currentCatId, setCurrentCatId] = useState<string>('');
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [loading, setLoading] = useState(false);
-  
+  const [distance, setDistance] = useState<number | null>(null);
+  const [calculatingDist, setCalculatingDist] = useState(false);
   // Data States
   const [catData, setCatData] = useState<any>(null);
   const [fajtak, setFajtak] = useState<any[]>([]); // Using any[] to avoid import errors
@@ -22,7 +24,60 @@ export default function CatManager() {
       .then(data => setFajtak(data))
       .catch(err => console.error("Hiba a fajták lekérésekor:", err));
   }, []);
+  useEffect(() => {
+        // If data is missing, stop but TELL US why
+    if (!currentUser) {
+        return;
+    }
+    if (!catData) {
+        return;
+    }
 
+    const calculate = async () => {
+        setCalculatingDist(true);
+        
+        try {
+        // A. Get User Location (From DB coords or fallback to Address)
+        let userLoc = { lat: currentUser.lat, lon: currentUser.lon };
+        
+        // If DB doesn't have coords yet, Geocode on the fly (Slow, but works)
+        if (!userLoc.lat && currentUser.irsz && currentUser.utca) {
+           const coords = await getCoordinates(`${currentUser.irsz} ${currentUser.city || ''} ${currentUser.utca}`);
+           if (coords) userLoc = coords;
+        }
+
+        // B. Get Cat Owner Location (Assuming catData.owner exists)
+        // You might need to update your backend to include: with: { owner: true }
+        const owner = catData.owner || catData.felhasznalo; 
+        let catLoc = null;
+
+        if (owner) {
+            if (owner.lat && owner.lon) {
+                catLoc = { lat: owner.lat, lon: owner.lon };
+            } else if (owner.irsz && owner.utca) {
+                const coords = await getCoordinates(`${owner.irsz} ${owner.utca}`);
+                if (coords) catLoc = coords;
+            }
+        }
+
+        // C. Calculate
+        if (userLoc.lat && catLoc) {
+            // Need to ensure format matches what getDistance expects (number)
+            const d = getDistance(
+                { lat: Number(userLoc.lat), lon: Number(userLoc.lon), displayName: '' },
+                { lat: Number(catLoc.lat), lon: Number(catLoc.lon), displayName: '' }
+            );
+            setDistance(d);
+        }
+      } catch (e) {
+        console.error("Distance error:", e);
+      } finally {
+        setCalculatingDist(false);
+      }
+    };
+
+    calculate();
+  }, [catData, currentUser]);
   // --- 1. UPLOAD FUNCTION (CREATE) ---
   const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -58,26 +113,17 @@ export default function CatManager() {
   const handleFetch = async (idOverride?: string) => {
     const idToFetch = idOverride || currentCatId;
     if (!idToFetch) return;
-    
     setLoading(true);
     setCatData(null);
-    setIsEditing(false); // Reset edit mode on new fetch
+    setDistance(null); // Reset distance on new fetch
     setMessage(null);
-
     try {
       const res = await fetch(`/api/cica/${idToFetch}`);
       const data = await res.json();
-
-      if (res.ok) {
-        setCatData(data);
-      } else {
-        setMessage({ text: data.error || 'Nem található', type: 'error' });
-      }
-    } catch (err) {
-      setMessage({ text: 'Hálózati hiba', type: 'error' });
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok) setCatData(data);
+      else setMessage({ text: data.error || 'Nem található', type: 'error' });
+    } catch (err) { setMessage({ text: 'Hálózati hiba', type: 'error' }); } 
+    finally { setLoading(false); }
   };
 
   // --- 3. DELETE FUNCTION ---
@@ -263,35 +309,48 @@ export default function CatManager() {
             🗑️ Törlés
           </button>
         </div>
-
-        {/* --- DISPLAY / EDIT AREA --- */}
+{/* --- DISPLAY DATA --- */}
         {catData && (
           <div style={{ marginTop: '1rem', padding: '1rem', background: 'white', border: '1px solid #ddd' }}>
             
-            {/* A. VIEW MODE */}
             {!isEditing ? (
                 <>
-                    <h3>{catData.nev} ({catData.kor} éves)</h3>
-                    <p><strong>ID:</strong> {catData.cId}</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                        <div>
+                            <h3>{catData.nev} ({catData.kor} éves)</h3>
+                            <p><strong>Fajta:</strong> {catData.species?.fajta || catData.fajId}</p>
+                        </div>
+                        
+                        {/* DISTANCE BADGE */}
+                        <div style={{ textAlign: 'right' }}>
+                            {calculatingDist ? (
+                                <span style={{ fontSize: '0.8rem', color: 'grey' }}>📍 Számítás...</span>
+                            ) : distance !== null ? (
+                                <div style={{ background: '#e8f0fe', padding: '5px 10px', borderRadius: '15px', color: '#1a73e8', fontWeight: 'bold' }}>
+                                    📍 {distance.toFixed(1)} km
+                                </div>
+                            ) : (
+                                <span style={{ fontSize: '0.8rem', color: '#999' }}>📍 Távolság ismeretlen</span>
+                            )}
+                        </div>
+                    </div>
+
                     <p><strong>Bio:</strong> {catData.rBemutat}</p>
-                    <p><strong>Fajta:</strong> {catData.species ? catData.species.fajta : catData.fajId}</p>
                     
+                    {/* Owner Info (Optional) */}
+                    {catData.owner && (
+                        <p style={{fontSize: '0.9rem', color: '#666'}}>
+                            <strong>Gazdi:</strong> {catData.owner.nev} ({catData.owner.city || catData.owner.irsz})
+                        </p>
+                    )}
+
                     <h4>Profilkép:</h4>
-                    <img 
-                        src={`/api/images/${catData.pKep}`} 
-                        alt="Profile" 
-                        style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '50%' }} 
-                    />
+                    <img src={`/api/images/${catData.pKep}`} alt="Profile" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '50%' }} />
 
                     <h4>Galéria:</h4>
                     <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                         {catData.images && catData.images.map((img: any) => (
-                        <img 
-                            key={img.mkepId}
-                            src={`/api/images/${img.mkepId}`} 
-                            alt="Gallery" 
-                            style={{ width: '80px', height: '80px', objectFit: 'cover' }} 
-                        />
+                           <img key={img.mkepId} src={`/api/images/${img.mkepId}`} style={{ width: '80px', height: '80px', objectFit: 'cover' }} />
                         ))}
                     </div>
                 </>
