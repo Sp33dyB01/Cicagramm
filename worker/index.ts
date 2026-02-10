@@ -16,7 +16,19 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
   const auth = getAuth(c.env);
   return auth.handler(c.req.raw);
 });
-
+app.get('/api/varos/:irsz', async (c) =>{
+  const db = drizzle(c.env.DB, { schema });
+  const irsz = Number(c.req.param('irsz'));
+  try{
+    const result = await db.query.telepulesek.findMany({
+      where: (table, {eq}) => (eq(table.irsz,irsz))
+    });
+    return c.json(result);
+  } catch (e){
+    console.log(e)
+    return c.json({ error: "Szerver oldali hiba"},500)
+  }
+})
 app.get('/api/fajta', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   try {
