@@ -102,6 +102,13 @@ body {
   gap: 8px;
 }
 
+/* group the controls together and align to the right */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .sort-label {
   font-size: 14px;
   font-weight: 600;
@@ -114,6 +121,14 @@ body {
   padding: 4px 8px;
   cursor: pointer;
   color:black;
+}
+
+.filter-wrapper .filter-input {
+  height: 36px;
+  border: 3px solid black;
+  padding: 4px 8px;
+  background: white;
+  color: black;
 }
 
 .card {
