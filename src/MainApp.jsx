@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import React from "react";
 import "./MainApp.css";
 import avatarImg from "./avatar.png";
@@ -8,6 +8,7 @@ export default function MainApp() {
   const [cat, setCat] = useState(null); //egy poszt adatainek lekérése
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("name"); // új: rendezési állapot
+  const profileRef = useRef(null);
 
   useEffect(() => {
     fetch("/api/cica/123test")
@@ -21,6 +22,18 @@ export default function MainApp() {
         setLoading(false);
       });
   }, []);
+
+  // close profile dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   if (loading) return <div>Betöltés...</div>;
   if (!cat) return <div>A cica nem található.</div>;
   return (
@@ -29,17 +42,18 @@ export default function MainApp() {
       <header className="header">
         <div className="logo">Cicagramm</div>
 
-        <div className="search">
-          <input placeholder="Speciális szűrés..." />
-        </div>
+        {/* removed search from header - moved to sidebar controls */}
 
-        <div className="profile-wrapper">
+        <div className="profile-wrapper" ref={profileRef}>
           <img
             src={avatarImg}
             alt="profile"
             className="profile-pic"
             onClick={() => setOpen(!open)}
-            onError={e => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/40"; }}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://via.placeholder.com/40";
+            }}
           />
 
           {open && (
@@ -58,19 +72,27 @@ export default function MainApp() {
         <aside className="sidebar">
           {/* ===== új: rendezés fejléce, jobb oldalra igazítva ===== */}
           <div className="sidebar-header">
-            <div className="sidebar-header-left">{/* üres - a select jobbra lesz */}</div>
-            <div className="sort-wrapper">
-              <label htmlFor="sort" className="sort-label">Rendezés:</label>
-              <select
-                id="sort"
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="sort-select"
-              >
-                <option value="name">Név</option>
-                <option value="age">Kor</option>
-                <option value="distance">Távolság</option>
-              </select>
+            <div className="sidebar-header-left">{/* üres - space on left */}</div>
+
+            {/* controls groups sort + filter together so they appear on the right */}
+            <div className="controls">
+              <div className="sort-wrapper">
+                <label htmlFor="sort" className="sort-label">Rendezés:</label>
+                <select
+                  id="sort"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="sort-select"
+                >
+                  <option value="name">Név</option>
+                  <option value="age">Kor</option>
+                  <option value="distance">Távolság</option>
+                </select>
+              </div>
+
+              <div className="filter-wrapper">
+                <input className="filter-input" placeholder="Speciális szűrés..." />
+              </div>
             </div>
           </div>
 
