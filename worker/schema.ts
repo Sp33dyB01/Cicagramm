@@ -18,10 +18,13 @@ export const felhasznalo = sqliteTable('felhasznalo', {
   nev: text('nev').notNull(),
   rBemutat: text('r_bemutat'),
   irsz: integer('irsz'),
+  varos: text('varos'),
   utca: text('utca', { length: 50 }),
   hazszam: integer('hazszam'),
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+  lat: integer("szk").notNull().default(1),
+  lon: integer("hk").notNull().default(1),
 });
 export const cica = sqliteTable('cica', {
   cId: text('c_id').primaryKey().notNull(),

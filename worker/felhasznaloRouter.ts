@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import type { Env } from "./index";
 import { getAuth } from './auth';
 import { eq } from 'drizzle-orm';
+import { getCoordinates } from './tavolsag';
 const felhasznaloRouter = new Hono<{ Bindings: Env }>();
 
 felhasznaloRouter.delete("/:felId", async (c) => {

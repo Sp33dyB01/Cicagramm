@@ -85,6 +85,27 @@
       "when": 1770278056313,
       "tag": "0011_sudden_kingpin",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1770807335439,
+      "tag": "0012_medical_mad_thinker",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1770807459848,
+      "tag": "0013_motionless_mephisto",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1770808489226,
+      "tag": "0014_known_mysterio",
+      "breakpoints": true
     }
   ]
 }
