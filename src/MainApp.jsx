@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./MainApp.css";
 import avatarImg from "./avatar.png";
 
@@ -9,6 +10,7 @@ export default function MainApp() {
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("name"); // új: rendezési állapot
   const profileRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("/api/cica/123test")
@@ -58,7 +60,7 @@ export default function MainApp() {
 
           {open && (
             <div className="profile-dropdown">
-              <div>Profil</div>
+              <div onClick={() => navigate("/profile")}>Profil</div>
               <div>Beállítások</div>
               <div>Kijelentkezés</div>
             </div>
