@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./MainApp.css";
 import avatarImg from "./avatar.png";
+import catIcon from "./assets/icon-of-a-cat-face--transparent--simplified--insta.png";
 
 export default function MainApp() {
   const [open, setOpen] = useState(false);
@@ -42,7 +43,12 @@ export default function MainApp() {
     <div className="app">
       {/* TOP BAR */}
       <header className="header">
-        <div className="logo">Cicagramm</div>
+        <img
+          src={catIcon}
+          alt="logo"
+          className="logo"
+          onError={(e) => { e.target.onerror = null; e.target.src = avatarImg; }}
+        />
 
         {/* removed search from header - moved to sidebar controls */}
 
@@ -98,9 +104,33 @@ export default function MainApp() {
             </div>
           </div>
 
-          <div className="card large"></div>
-          <div className="card small"></div>
+          {/* sidebar body can hold other controls or lists */}
         </aside>
+        
+        {/* cards grid: render one fixed-size tinder card per uploaded image */}
+        <section className="cards-grid">
+  {(cat.images || []).map((img) => (
+    <div className="tinder-card fixed" key={img.mkepId}>
+      
+      {/* A kép konténere lesz a referenciapont (relative) */}
+      <div className="card large">
+        <img src={`/api/images/${img.mkepId}`} alt="Cica kép" />
+        
+        {/* ÚJ: A szív gomb itt van a képen belül */}
+        <button
+          className="overlay-like-btn"
+          onClick={() => { console.log('like', img.mkepId); }}
+          title="Kedvencekhez"
+        >
+          ❤
+        </button>
+      </div>
+
+      {/* A card.small-t akár törölheted is, ha nem kell más adat, 
+          vagy megtarthatod, ha mást írnál oda (pl. név) */}
+    </div>
+  ))}
+</section>
       </div>
     
     {/*cat.images.map(img => (
