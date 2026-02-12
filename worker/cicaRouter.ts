@@ -3,18 +3,18 @@ import * as schema from './schema';
 import { Hono } from "hono";
 import type { Env } from "./index";
 import { getAuth } from './auth';
-import { eq } from 'drizzle-orm';
+import { eq, lte, gte, and } from 'drizzle-orm';
 const cicaRouter = new Hono<{ Bindings: Env }>();
 
 cicaRouter.post('/', async (c) => {
-  const db = drizzle(c.env.DB, { schema } );
+  const db = drizzle(c.env.DB, { schema });
   const auth = getAuth(c.env);
   const session = await auth.api.getSession({
     headers: c.req.raw.headers
   });
   if (!session)
-    return c.json({ error: "Bejelentkezés szükséges"}, 401);
-  try{
+    return c.json({ error: "Bejelentkezés szükséges" }, 401);
+  try {
     const formData = await c.req.parseBody();
     const nev = formData['nev'] as string;
     const kor = Number(formData['kor']);
@@ -24,12 +24,12 @@ cicaRouter.post('/', async (c) => {
     const rBemutat = formData['rBemutat'] as string || null;
     const pKepFile = formData['pKep'] as File;
     const mKepek = formData['mKepek[]'];
-    if (!nev || !kor || !tomeg || isNaN(ivartalanitott) || !fajId || !pKepFile){
-      return c.json({ error: "Hiányzó adatok!"}, 400);
+    const nem = Number(formData['nem']);
+    if (!nev || !kor || !tomeg || isNaN(ivartalanitott) || !fajId || !pKepFile || isNaN(nem)) {
+      return c.json({ error: "Hiányzó adatok!" }, 400);
     }
-      
     const pkepKey = `pfp-${crypto.randomUUID()}-${pKepFile.name}`
-    await c.env.BUCKET.put(pkepKey,pKepFile);
+    await c.env.BUCKET.put(pkepKey, pKepFile);
     const newcId = crypto.randomUUID();
     await db.insert(schema.cica).values({
       cId: newcId,
@@ -41,13 +41,14 @@ cicaRouter.post('/', async (c) => {
       ivartalanitott: ivartalanitott,
       rBemutat: rBemutat,
       pKep: pkepKey,
+      nem: nem
     });
     let filesUpload: File[] = [];
     if (Array.isArray(mKepek))
       filesUpload = mKepek as File[];
     else if (mKepek instanceof File)
       filesUpload = [mKepek];
-    if (filesUpload.length > 0){
+    if (filesUpload.length > 0) {
       const mKepekPromise = filesUpload.map(async (file) => {
         const kepKey = crypto.randomUUID();
         await c.env.BUCKET.put(kepKey, file);
@@ -59,77 +60,98 @@ cicaRouter.post('/', async (c) => {
       });
       await Promise.all(mKepekPromise);
     }
-    return c.json({succes: true, cId: newcId, message: "Cica sikeresen létrehozva!" }, 200)
+    return c.json({ succes: true, cId: newcId, message: "Cica sikeresen létrehozva!" }, 200)
   }
-  catch (e){
+  catch (e) {
     console.log(e);
-    return c.json({ error: "szerver oldali hiba"},500)
+    return c.json({ error: "szerver oldali hiba" }, 500)
   }
 })
 
+// DELETE cica
+
 cicaRouter.delete('/:cId', async (c) => {
-    const cId = c.req.param('cId');
-    const db = drizzle(c.env.DB, { schema });
-    const auth = getAuth(c.env);
-    const session = await auth.api.getSession({
-        headers: c.req.raw.headers
-    });
-    if (!session){
-        return c.json({ error: "Bejelentkezés szükséges"}, 401)
-    }
-    try{
+  const cId = c.req.param('cId');
+  const db = drizzle(c.env.DB, { schema });
+  const auth = getAuth(c.env);
+  const session = await auth.api.getSession({
+    headers: c.req.raw.headers
+  });
+  if (!session) {
+    return c.json({ error: "Bejelentkezés szükséges" }, 401)
+  }
+  try {
     const result = await db.query.cica.findFirst({
-        where: (table, {eq, and}) => and(eq(table.cId, cId)),
-        with: {
-            images: true
-        }
+      where: (table, { eq, and }) => and(eq(table.cId, cId)),
+      with: {
+        images: true
+      }
     });
-    if (!result){
-        return c.json({error: "Nincs ilyen cica"}, 404)
+    if (!result) {
+      return c.json({ error: "Nincs ilyen cica" }, 404)
     }
     const isOwner = result.felId === session.user.id;
     const isAdmin = session.user.admin === 1;
     if (!isOwner && !isAdmin)
-        return c.json({ error: "Nincsen Jogosultsága"},403)
-      
-    if (result.images && result.images.length > 0){
-        const deletePromises = result.images.map(img => 
-            c.env.BUCKET.delete(img.mkepId)
-        )
-        await Promise.all(deletePromises)
+      return c.json({ error: "Nincsen Jogosultsága" }, 403)
+
+    if (result.images && result.images.length > 0) {
+      const deletePromises = result.images.map(img =>
+        c.env.BUCKET.delete(img.mkepId)
+      )
+      await Promise.all(deletePromises)
     }
     await db.delete(schema.cica).where(eq(schema.cica.cId, cId));
-    return c.json({success: true, message: "Sikeres törlés"})
-    }
-    catch (e){
-        console.error(e)
-        return c.json({error: "Nem sikerült a törlés"}, 500);
-    }
+    return c.json({ success: true, message: "Sikeres törlés" })
+  }
+  catch (e) {
+    console.error(e)
+    return c.json({ error: "Nem sikerült a törlés" }, 500);
+  }
 });
+
+// GET cica
+
 cicaRouter.get('/:cId', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   const cId = c.req.param("cId")
   try {
     const result = await db.query.cica.findFirst({
-      where: (table, {eq}) => eq(table.cId, cId),
+      where: (table, { eq }) => eq(table.cId, cId),
       with: {
         species: true,
         images: true,
-        owner:  true
+        owner: true
       },
     });
     if (!result)
-      return c.json({error: "Nincs ilyen macska!"}, 404);
+      return c.json({ error: "Nincs ilyen macska!" }, 404);
     return c.json(result);
   } catch (e) {
     console.error(e);
     return c.json({ error: "Szerver oldali hiba" }, 500);
   }
 });
-cicaRouter.get('/', async (c) =>{
+
+// GET cicak
+
+cicaRouter.get('/', async (c) => {
   const db = drizzle(c.env.DB, { schema });
+  const { fajId, minKor, maxKor, ivartalanitott, nem, lat, lon } = c.req.query();
+  const filters = [];
+  if (fajId)
+    filters.push(eq(schema.cica.fajId, Number(fajId)));
+  if (minKor)
+    filters.push(gte(schema.cica.kor, Number(minKor)));;
+  if (maxKor)
+    filters.push(lte(schema.cica.kor, Number(maxKor)));
+  if (ivartalanitott !== undefined)
+    filters.push(eq(schema.cica.ivartalanitott, Number(ivartalanitott)));
+  if (nem !== undefined)
+    filters.push(eq(schema.cica.nem, Number(nem)));
   try {
     const result = await db.query.cica.findMany({
+      where: filters.length > 0 ? and(...filters) : undefined,
       with: {
         species: true,
         images: true,
@@ -137,14 +159,17 @@ cicaRouter.get('/', async (c) =>{
       }
     })
     if (!result)
-      return c.json({ error: "Nincs ilyen cica"}, 400)
+      return c.json({ error: "Nincs ilyen cica" }, 400)
     return c.json(result)
   }
   catch (e) {
     console.error(e);
-    return c.json({ error: "Szerver oldali hiba"},500)
+    return c.json({ error: "Szerver oldali hiba" }, 500)
   }
 });
+
+// PATCH cica
+
 cicaRouter.patch('/:cId', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   const cId = c.req.param("cId");
@@ -153,15 +178,15 @@ cicaRouter.patch('/:cId', async (c) => {
     headers: c.req.raw.headers
   });
   if (!session)
-    return c.json({ error: "Bejelentkezés szükséges"}, 401);
+    return c.json({ error: "Bejelentkezés szükséges" }, 401);
   const existingCat = await db.query.cica.findFirst({
     where: (table, { eq }) => eq(table.cId, cId)
   });
-  if (!existingCat) 
-    return c.json({ error: "Nincs ilyen macska!"},404);
+  if (!existingCat)
+    return c.json({ error: "Nincs ilyen macska!" }, 404);
   if (existingCat.felId !== session.user.id && session.user.admin !== 1)
     return c.json({ error: "Nincs jogosultságod" }, 403);
-  try{
+  try {
     const formData = await c.req.parseBody();
     const updateData: any = {};
     if (formData['nev']) updateData.nev = formData['nev'];
@@ -169,7 +194,7 @@ cicaRouter.patch('/:cId', async (c) => {
     if (formData['tomeg']) updateData.tomeg = Number(formData['tomeg']);
     if (formData['fajId']) updateData.fajId = Number(formData['fajId']);
     if (formData['ivartalanitott'] !== undefined)
-       updateData.ivartalanitott = Number(formData['ivartalanitott']);
+      updateData.ivartalanitott = Number(formData['ivartalanitott']);
     if (formData['rBemutat'] !== undefined) updateData.rBemutat = formData['rBemutat'];
     const pKepFile = formData['pKep'] as File;
     if (pKepFile && pKepFile.size > 0) {
@@ -209,9 +234,9 @@ cicaRouter.patch('/:cId', async (c) => {
     await db.update(schema.cica).set(updateData).where(eq(schema.cica.cId, cId));
     return c.json({ success: true, message: "Cica adatai frissítve!" });
   }
-  catch (e){
+  catch (e) {
     console.log(e)
-    return c.json({error:"Szerver oldali hiba"},500)
+    return c.json({ error: "Szerver oldali hiba" }, 500)
   }
 });
 export default cicaRouter;
