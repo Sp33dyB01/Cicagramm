@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { authClient } from "./auth-client";
 import { getCoordinates } from "../worker/tavolsag"; // Make sure this import matches your file structure
+import { useNavigate } from "react-router-dom";
 
 export default function Register({ onSuccess, onSwitch }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  
+  const navigate = useNavigate();
   // --- CITY FETCHING STATES ---
   const [cities, setCities] = useState([]); // Stores the list of cities from API
   const [loadingCities, setLoadingCities] = useState(false);
@@ -69,7 +70,7 @@ export default function Register({ onSuccess, onSwitch }) {
     try {
       // ⚠️ FIX: Added 'await' here because getCoordinates is async
       const coords = await getCoordinates(`${formData.irsz} ${formData.varos} ${formData.utca}`);
-      
+
       const { data, error } = await authClient.signUp.email({
         email: formData.email,
         password: formData.jelszo,
@@ -79,7 +80,7 @@ export default function Register({ onSuccess, onSwitch }) {
         varos: formData.varos,
         utca: formData.utca,
         // Handle case where geocoding fails (fallback to 0 or null)
-        lat: coords ? coords.lat : 0, 
+        lat: coords ? coords.lat : 0,
         lon: coords ? coords.lon : 0
       });
 
@@ -173,7 +174,7 @@ export default function Register({ onSuccess, onSwitch }) {
                   value={formData.varos}
                   onChange={(e) => setFormData({ ...formData, varos: e.target.value })}
                   /* ReadOnly if we auto-filled it from a single result to prevent typos */
-                  readOnly={cities.length === 1} 
+                  readOnly={cities.length === 1}
                   style={cities.length === 1 ? { backgroundColor: '#e8f0fe' } : {}}
                 />
               )}
@@ -202,7 +203,7 @@ export default function Register({ onSuccess, onSwitch }) {
           Van már fiókod?{" "}
           <span
             className="text-blue-500 cursor-pointer hover:underline"
-            onClick={onSwitch}
+            onClick={() => navigate("/login")}
           >
             Jelentkezz be!
           </span>
