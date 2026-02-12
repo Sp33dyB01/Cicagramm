@@ -175,7 +175,7 @@ cicaRouter.get('/', async (c) => {
       const uLon = parseFloat(lon);
 
       orderbyClause = sql`((${schema.felhasznalo.lat} - ${uLat})*(${schema.felhasznalo.lat} - ${uLat})+
-      (${schema.felhasznalo.lon} - ${uLon})*(${schema.felhasznalo.lon} - ${uLon}) ${direction})`
+      (${schema.felhasznalo.lon} - ${uLon})*(${schema.felhasznalo.lon} - ${uLon})) ${direction}`
       query.orderBy(orderbyClause);
     }
     else {
