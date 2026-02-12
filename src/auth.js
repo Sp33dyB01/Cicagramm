@@ -22,3 +22,7 @@ export function loginUser(email, username, password) {
     u => u.email === email && u.username === username && u.password === password
   );
 }
+
+export function logout() {
+  localStorage.removeItem("auth");
+}

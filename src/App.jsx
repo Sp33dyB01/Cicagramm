@@ -1,135 +1,76 @@
-
-import { useState, useEffect } from 'react';
-import Login from './Login';
-import Register from './Register'; 
-import CatManager from './test'; // Your Cat Manager
-import UserManager from './testuser'; // <--- Import the new User Manager here
+import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./Login";
+import Register from "./Register";
+import MainApp from "./MainApp";
+import Profile from "./profile";
 import { authClient } from "./auth-client";
+// FONTOS: Ne felejtsd el importálni az authClient-et!
+// import { authClient } from "./valahol"; 
 
-function App() {
+export default function App() {
+  const [isAuth, setIsAuth] = useState(false);
   const [user, setUser] = useState(null);
-  const [currentView, setCurrentView] = useState('login'); 
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // New State for Tabs: 'cats' or 'users'
-  const [activeTab, setActiveTab] = useState('cats'); 
 
-  // 1. Check Session
+  // 1. HIBA JAVÍTVA: Létrehozzuk a loading state-et
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     async function checkSession() {
-      const { data } = await authClient.getSession();
-      if (data?.session) {
-        setUser(data.user);
+      try {
+        // Feltételezzük, hogy ez a függvényed működik
+        const { data } = await authClient.getSession();
+
+        if (data?.session) {
+          setUser(data.user);
+          // 2. HIBA JAVÍTVA: Ha van session, beállítjuk az auth-ot is!
+          setIsAuth(true);
+        }
+      } catch (error) {
+        console.error("Hiba a session ellenőrzésekor:", error);
+      } finally {
+        // Akár sikerült, akár nem, a töltést befejezzük
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
     checkSession();
   }, []);
 
-  // 2. Login Success
+  // Login segédfüggvény (hogy a Login komponens be tudja állítani az állapotot)
   const handleLoginSuccess = (userData) => {
+    setIsAuth(true);
     setUser(userData);
   };
 
-  // 3. Logout
-  const handleLogout = async () => {
-    await authClient.signOut();
-    setUser(null);
-    setCurrentView('login');
-    setActiveTab('cats'); // Reset tab on logout
-  };
-
-  if (isLoading) return <div style={{padding: '2rem', textAlign: 'center'}}>Betöltés...</div>;
-
-  // --- LOGGED IN VIEW ---
-  if (user) {
-    return (
-      <div>
-        {/* Navbar */}
-        <nav style={{ 
-          padding: '1rem', 
-          background: '#333', 
-          color: 'white',
-          display: 'flex', 
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>Cicagramm Admin</span>
-            
-            {/* TAB BUTTONS */}
-            <div style={{ display: 'flex', gap: '5px' }}>
-              <button 
-                onClick={() => setActiveTab('cats')}
-                style={{
-                  padding: '8px 16px',
-                  background: activeTab === 'cats' ? '#007bff' : '#555',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                🐱 Cicák
-              </button>
-              
-              <button 
-                onClick={() => setActiveTab('users')}
-                style={{
-                  padding: '8px 16px',
-                  background: activeTab === 'users' ? '#007bff' : '#555',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                👤 Felhasználók
-              </button>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.9rem', color: '#ccc' }}>
-              {user.name || user.email}
-            </span>
-            <button 
-              onClick={handleLogout}
-              style={{ padding: '5px 10px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-            >
-              Kilépés
-            </button>
-          </div>
-        </nav>
-        
-        {/* MAIN CONTENT AREA */}
-        <main style={{ padding: '20px' }}>
-          {activeTab === 'cats' ? (
-            <CatManager currentUser={user}/>
-          ) : (
-            <UserManager currentUser={user}/>
-          )}
-        </main>
-      </div>
-    );
+  // 3. HIBA JAVÍTVA: Amíg töltünk, nem engedjük a Routert futni
+  if (isLoading) {
+    return <div style={{ padding: 20 }}>Alkalmazás betöltése...</div>;
   }
 
-  // --- LOGGED OUT VIEW ---
   return (
-    <div>
-      {currentView === 'login' ? (
-        <Login 
-          onLogin={handleLoginSuccess} 
-          onSwitch={() => setCurrentView('register')} 
+    <BrowserRouter>
+      <Routes>
+        {/* LOGIN: Ha már be vagy lépve, irány a főoldal, ha nem, akkor Login */}
+        <Route
+          path="/login"
+          element={!isAuth ? <Login onLogin={handleLoginSuccess} user={user} /> : <Navigate to="/" />}
         />
-      ) : (
-        <Register 
-          onSuccess={() => { alert("Sikeres regisztráció!"); setCurrentView('login'); }}
-          onSwitch={() => setCurrentView('login')} 
+
+        {/* FŐOLDAL: Védett útvonal */}
+        <Route
+          path="/"
+          element={isAuth ? <MainApp user={user} /> : <Navigate to="/login" />}
         />
-      )}
-    </div>
+
+        {/* PROFIL: Védett útvonal */}
+        <Route
+          path="/profile"
+          element={isAuth ? <Profile user={user} /> : <Navigate to="/login" />}
+        />
+
+        {/* REGISZTRÁCIÓ */}
+        <Route path="/register" element={<Register onSuccess={() => { }} />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;

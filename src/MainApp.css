@@ -31,7 +31,7 @@ body {
   --header-height: 70px;
   height: var(--header-height);
   box-sizing: border-box;
-  border-bottom: 4px solid black;
+  border-bottom: 1px solid black;
   display: flex;
   align-items: center;
   
@@ -41,11 +41,12 @@ body {
 }
 
 .logo {
-  width: 120px;
-  height: 40px;
-  border: 3px solid black;
-  /* Opcionális: megakadályozza, hogy a logó összenyomódjon */
-  flex-shrink: 0; 
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid gray;
+  flex-shrink: 0;
 }
 
 /* --- ITT VAN A VÁLTOZTATÁS --- */
@@ -59,13 +60,13 @@ body {
 .search input {
   width: 20vw; /* 300px helyett */
   height: 40px;
-  border: 3px solid black;
+  border: 2px solid black;
 }
 
 .profile button {
   width: 50px;
   height: 40px;
-  border: 3px solid black;
+  border: 2px solid black;
   background: none;
   cursor: pointer;
 }
@@ -73,18 +74,21 @@ body {
 /* BODY */
 .main-body {
   flex: 1 1 auto; /* take remaining vertical space */
+  flex-direction: column;
   display: flex;
   min-height: 0; /* important for children to be able to shrink/scroll */
+  width: 100%;
 }
 
 /* SIDEBAR */
 .sidebar {
-  width: 300px;
+  width: 100%;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   min-height: 0;
+  box-sizing: border-box;
 }
 
 /* Új: sidebar fejléc és rendezés stílusok */
@@ -102,6 +106,13 @@ body {
   gap: 8px;
 }
 
+/* group the controls together and align to the right */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .sort-label {
   font-size: 14px;
   font-weight: 600;
@@ -109,29 +120,85 @@ body {
 
 .sort-select {
   height: 36px;
-  border: 3px solid black;
+  border: 2px solid black;
   background: white;
   padding: 4px 8px;
   cursor: pointer;
   color:black;
 }
 
-.card {
-  border: 4px solid black;
+.filter-wrapper .filter-input {
+  height: 36px;
+  border: 2px solid black;
+  padding: 4px 8px;
+  background: white;
+  color: black;
 }
 
-/* .card.large uses flex properties to fill available vertical space in the sidebar */
+.card {
+  border: 4px solid black;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* tinder card layout */
+.tinder-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
 .card.large {
   flex: 1 1 auto;
   min-height: 0;
   width: 85vw;
   margin-left: 5vw;
+  padding: 0;
+  overflow: hidden;
+}
+
+.card.large img {
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+  display: block;
 }
 
 .card.small {
   height: 120px;
   width: 85vw;
   margin-left: 5vw;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* center the buttons so both are visible */
+  gap: 32px;
+  padding: 0 12px;
+}
+
+.action-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid black;
+  background: white;
+  font-size: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.action-btn.like {
+  color: crimson;
+}
+
+.action-btn.dislike {
+  color: #222; /* ensure contrast */
+  
 }
 
 .profile-wrapper {
@@ -143,7 +210,7 @@ body {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  border: 3px solid black;
+  border: 1px solid black;
   cursor: pointer;
 }
 
@@ -167,4 +234,124 @@ body {
 .profile-dropdown div:hover {
   background: #eee;
 }
-/* ...existing code... */
+
+/* grid for cards: 4 per row */
+.cards-grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 24px;
+  padding: 24px;
+  align-items: start;
+  width: 100%;
+
+  justify-content: center; /* center the grid within the container */
+  
+}
+
+/* each tinder-card gets fixed width/height */
+.tinder-card.fixed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* fixed dimensions for large and small parts inside each card */
+.tinder-card.fixed .card.large {
+  position: relative;
+  width: 100%;
+  height: 260px; /* fixed image height */
+  margin-left: 0;
+  border: 1px solid black;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.tinder-card.fixed .card.large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tinder-card.fixed .card.small {
+  width: 100%;
+  height: 72px;
+  margin-left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  border: 0; /* rely on outer card border if needed */
+  background: transparent;
+}
+
+/* make sure action buttons don't overflow */
+.tinder-card.fixed .action-btn {
+  width: 52px;
+  height: 52px;
+  font-size: 22px;
+}
+
+/* responsive: reduce to 2 columns on small screens */
+@media (max-width: 900px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Az új lebegő gomb stílusa */
+.overlay-like-btn {
+  position: absolute;
+  top: 10px;           /* Távolság a tetejétől */
+  right: 10px;         /* Távolság a jobb szélétől */
+  
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  
+  /* Discord-szerű stílus: sötét, áttetsző háttér, fehér ikon */
+  background: rgba(0, 0, 0, 0.6); 
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  
+  /* Animációk beállítása */
+  opacity: 0;          /* Alapból láthatatlan */
+  transform: scale(0.8); /* Kicsit kisebb alapból */
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Rugalmas animáció */
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- HOVER EFFEKTUSOK --- */
+
+/* Amikor a felhasználó a KÉPRE (card.large) viszi az egeret */
+.card.large:hover .overlay-like-btn {
+  opacity: 1;          /* Megjelenik */
+  transform: scale(1); /* Normál méretre ugrik */
+}
+
+/* Amikor magára a GOMBRA viszi az egeret */
+.overlay-like-btn:hover {
+  background: white;   /* Fehér háttér */
+  color: crimson;      /* Piros szív */
+  transform: scale(1.15) !important; /* Kicsit nagyobbra nő */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Ha a kártya alatti gombok már nem kellenek, a .card.small stílusát 
+   érdemes nullázni vagy törölni, hogy ne foglaljon helyet feleslegesen */
+.tinder-card.fixed .card.small {
+  display: none; /* Vagy height: 0; */
+}
