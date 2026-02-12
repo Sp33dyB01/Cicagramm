@@ -3,7 +3,7 @@ import * as schema from './schema';
 import { Hono } from "hono";
 import type { Env } from "./index";
 import { getAuth } from './auth';
-import { eq } from 'drizzle-orm';
+import { eq, getTableColumns, sql } from 'drizzle-orm';
 const cicaRouter = new Hono<{ Bindings: Env }>();
 
 cicaRouter.post('/', async (c) => {
@@ -108,7 +108,7 @@ cicaRouter.delete('/:cId', async (c) => {
 });
 cicaRouter.get('/:cId', async (c) => {
   const db = drizzle(c.env.DB, { schema });
-  const cId = c.req.param("cId")
+  const cId = c.req.param("cId");
   try {
     const result = await db.query.cica.findFirst({
       where: (table, {eq}) => eq(table.cId, cId),
@@ -128,17 +128,54 @@ cicaRouter.get('/:cId', async (c) => {
 });
 cicaRouter.get('/', async (c) =>{
   const db = drizzle(c.env.DB, { schema });
-  try {
-    const result = await db.query.cica.findMany({
-      with: {
-        species: true,
-        images: true,
-        owner: true
-      }
+  const { sort = '1N', lat, lon, page = 1, display } = c.req.query();
+  let query = db.select({
+        ...getTableColumns(schema.cica), 
+        ownerLat: schema.felhasznalo.lat,
+        ownerLon: schema.felhasznalo.lon,
+        ownerNev: schema.felhasznalo.nev,
+        ownerIrsz: schema.felhasznalo.irsz,
+        ownerCity: schema.felhasznalo.varos,
     })
+    .from(schema.cica)
+    .innerJoin(schema.felhasznalo, eq(schema.cica.felId, schema.felhasznalo.id));
+  let orderbyClause
+  const direction = sort[1] == 'I' ? sql.raw('DESC') : sql.raw('ASC');
+  // távolság szerint
+  if (sort[0] == '2'){
+    if (lat && lon){
+      const uLat = parseFloat(lat);
+      const uLon = parseFloat(lon);
+      
+      orderbyClause = sql`((${schema.felhasznalo.lat} - ${uLat})*(${schema.felhasznalo.lat} - ${uLat})+
+      (${schema.felhasznalo.lon} - ${uLon})*(${schema.felhasznalo.lon} - ${uLon}) ${direction})`
+      query.orderBy(orderbyClause);
+    }
+    else{
+      query.orderBy(sql`${schema.cica.cId} ${direction}`)
+    }
+  }
+  // név szerint
+  if (sort[0] == '1')
+    query.orderBy(sql`${schema.cica.nev} ${direction}`);
+  const pageSize = display? 40 : 10;
+  const offset = (Number(page),-1)* pageSize;
+  query.limit(pageSize).offset(offset);
+  try {
+    const result = await query.all();
     if (!result)
       return c.json({ error: "Nincs ilyen cica"}, 400)
-    return c.json(result)
+    const Formattedresult = result.map( row => ({
+      ...row,
+      owner: {
+        nev: row.ownerNev,
+            lat: row.ownerLat,
+            lon: row.ownerLon,
+            city: row.ownerCity,
+            irsz: row.ownerIrsz
+      }
+    }));
+    return c.json(Formattedresult)
   }
   catch (e) {
     console.error(e);
