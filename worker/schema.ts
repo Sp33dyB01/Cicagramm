@@ -23,8 +23,8 @@ export const felhasznalo = sqliteTable('felhasznalo', {
   hazszam: integer('hazszam'),
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
-  lat: integer("szk").notNull().default(1),
-  lon: integer("hk").notNull().default(1),
+  lat: real("szk").notNull().default(1),
+  lon: real("hk").notNull().default(1),
 });
 export const cica = sqliteTable('cica', {
   cId: text('c_id').primaryKey().notNull(),
