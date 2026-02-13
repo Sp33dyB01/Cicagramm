@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import avatarImg from "./avatar.png"; // Make sure the path matches MainApp.jsx
+import avatarImg from "./assets/avatar.png"; // Make sure the path matches MainApp.jsx
 import "./profile.css";
 
 
@@ -25,8 +25,8 @@ const Profile = ({user}) => {
             alt="User Profile" 
             className="profile-large-pic"
             onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "https://via.placeholder.com/150";
+              e.currentTarget.src = avatarImg
+              e.currentTarget.onerror = null;
             }}
           />
         </div>

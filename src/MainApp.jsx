@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./MainApp.css";
-import avatarImg from "./avatar.png";
+import avatarImg from "./assets/avatar.png";
 import catIcon from "./assets/icon-of-a-cat-face--transparent--simplified--insta.png";
 
-export default function MainApp() {
+
+export default function MainApp({user}) {
   const [open, setOpen] = useState(false);
   const [cat, setCat] = useState(null); //egy poszt adatainek lekérése
   const [loading, setLoading] = useState(true);
@@ -14,7 +15,7 @@ export default function MainApp() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("/api/cica/123test")
+    fetch("/api/cica")
       .then((res) => res.json())
       .then((data) => {
         setCat(data);
@@ -54,13 +55,14 @@ export default function MainApp() {
 
         <div className="profile-wrapper" ref={profileRef}>
           <img
-            src={avatarImg}
+            src={`/api/images/${user.pfp}`}
             alt="profile"
             className="profile-pic"
             onClick={() => setOpen(!open)}
             onError={(e) => {
+              e.currentTarget.src = avatarImg;
               e.target.onerror = null;
-              e.target.src = "https://via.placeholder.com/40";
+              
             }}
           />
 
