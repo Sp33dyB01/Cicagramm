@@ -23,15 +23,6 @@ export default function MainApp({user}) {
   }, []);
 
   // close profile dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   if (loading) return <div>Betöltés...</div>;
   if (!cat) return <div>A cica nem található.</div>;
