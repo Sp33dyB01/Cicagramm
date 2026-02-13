@@ -9,13 +9,6 @@ const Profile = ({user}) => {
 
   return (
     <div className="profile-container">
-      {/* Header with Back Button */}
-      <header className="profile-header-bar">
-        <button className="back-button" onClick={() => navigate("/")}>
-          ← Vissza
-        </button>
-      
-      </header>
 
       {/* Profile Picture Section */}
       <div className="profile-info-section">
