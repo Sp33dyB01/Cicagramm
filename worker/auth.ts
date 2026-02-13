@@ -62,7 +62,7 @@ export const getAuth = (env: Env) => {
             hazszam: "hazszam"
         },
         defaultValue: {
-          pKep: "default.jpg", 
+          pKep: "", 
           admin: 0,
           irsz: 0,
           rBemutat: "",

@@ -18,7 +18,7 @@ export default function Register({ onSuccess, onSwitch }) {
     rBemutat: 'bemutat',
     irsz: '',
     utca: '',
-    pKep: 'default.jpg',
+    pKep: '',
     varos: '', // This will be auto-filled
   });
 

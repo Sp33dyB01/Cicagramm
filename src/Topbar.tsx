@@ -2,25 +2,31 @@ import avatarImg from "./assets/avatar.png";
 import catIcon from "./assets/icon-of-a-cat-face--transparent--simplified--insta.png";
 import { authClient } from "./auth-client";
 import { useNavigate } from "react-router-dom";
-import { useRef, useState } from 'react';
+import { useRef, useState,useEffect } from 'react';
 import './MainApp.css';
 import type { SelectFelhasznalo } from '../worker/schema'
 export default function TopBar( {user, onLogout}: {user: SelectFelhasznalo, onLogout: () => void}) {
   const [open, setOpen] = useState(false);
-  const profileRef = useRef(null);
+  const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const logOut = async () => {
     try {
-    // 1. Wait for the server to log the user out
     await authClient.signOut(); 
     onLogout();
-    // 2. Redirect to the login page
-    navigate('/login') 
-    
+    window.location.reload();
   } catch (error) {
     console.error("Hiba a kijelentkezéskor:", error);
   }
   };
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   return (
     <header className="header">
       <img
