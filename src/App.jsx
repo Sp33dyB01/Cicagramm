@@ -54,7 +54,7 @@ export default function App() {
 
         {/* PROTECTED ROUTES (These WILL have the TopBar) */}
         {/* The Layout component wraps all routes inside it */}
-        <Route element={isAuth ? <Layout user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}>
+        <Route element={<Layout user={user} onLogout={handleLogout} />}>
           
           {/* '/' renders MainApp inside the Layout */}
           <Route path="/" element={<MainApp user={user} />} />

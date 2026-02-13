@@ -21,7 +21,6 @@ export default function TopBar( {user, onLogout}: {user: SelectFelhasznalo, onLo
     console.error("Hiba a kijelentkezéskor:", error);
   }
   };
-
   return (
     <header className="header">
       <img
@@ -31,7 +30,7 @@ export default function TopBar( {user, onLogout}: {user: SelectFelhasznalo, onLo
         onClick={() => navigate("/")} // Make logo clickable!
         style={{ cursor: 'pointer' }}
       />
-
+      {user ? (
       <div className="profile-wrapper" ref={profileRef}>
         <img
           src={`/api/images/${user.pKep}`}
@@ -53,6 +52,10 @@ export default function TopBar( {user, onLogout}: {user: SelectFelhasznalo, onLo
           </div>
         )}
       </div>
+      ):
+      (
+        <h4 className="profile-wrapper" onClick={() => navigate("/login")}>Bejelentkezés/Regisztráció</h4>
+      )}
     </header>
   );
 }
