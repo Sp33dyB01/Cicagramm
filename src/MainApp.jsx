@@ -1,18 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import "./MainApp.css";
-import avatarImg from "./assets/avatar.png";
-import catIcon from "./assets/icon-of-a-cat-face--transparent--simplified--insta.png";
 
 
 export default function MainApp({user}) {
-  const [open, setOpen] = useState(false);
+  const profileRef = useRef(null);
   const [cat, setCat] = useState(null); //egy poszt adatainek lekérése
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("name"); // új: rendezési állapot
-  const profileRef = useRef(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("/api/cica")
@@ -42,39 +37,6 @@ export default function MainApp({user}) {
   if (!cat) return <div>A cica nem található.</div>;
   return (
     <div className="app">
-      {/* TOP BAR */}
-      <header className="header">
-        <img
-          src={catIcon}
-          alt="logo"
-          className="logo"
-          onError={(e) => { e.target.onerror = null; e.target.src = avatarImg; }}
-        />
-
-        {/* removed search from header - moved to sidebar controls */}
-
-        <div className="profile-wrapper" ref={profileRef}>
-          <img
-            src={`/api/images/${user.pfp}`}
-            alt="profile"
-            className="profile-pic"
-            onClick={() => setOpen(!open)}
-            onError={(e) => {
-              e.currentTarget.src = avatarImg;
-              e.target.onerror = null;
-              
-            }}
-          />
-
-          {open && (
-            <div className="profile-dropdown">
-              <div onClick={() => navigate("/profile")}>Profil</div>
-              <div>Beállítások</div>
-              <div>Kijelentkezés</div>
-            </div>
-          )}
-        </div>
-      </header>
 
       {/* BODY */}
       <div className="main-body">
@@ -144,6 +106,6 @@ export default function MainApp({user}) {
         />
 ))*/}
     </div>
-    
   );
+  
 }
