@@ -5,6 +5,7 @@ import Register from "./Register";
 import MainApp from "./MainApp";
 import Profile from "./Profile";
 import Layout from "./Layout";
+import Upload from "./Upload";
 import { authClient } from "./auth-client";
 
 export default function App() {
@@ -44,24 +45,19 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* PUBLIC ROUTES (No TopBar here) */}
-        
-        <Route
-          path="/login"
-          element={!isAuth ? <Login onLogin={handleLoginSuccess} /> : <Navigate to="/" />}
-        />
-        <Route path="/register" element={<Register onSuccess={() => {}} />} />
+        <Route path="/login" element={!isAuth ?
+          <Login onLogin={handleLoginSuccess} />
+          : <Navigate to="/" />} />
 
-        {/* PROTECTED ROUTES (These WILL have the TopBar) */}
-        {/* The Layout component wraps all routes inside it */}
+        <Route path="/register" element={<Register onSuccess={() => { }} />} />
+
         <Route element={<Layout user={user} onLogout={handleLogout} />}>
-          
-          {/* '/' renders MainApp inside the Layout */}
+
           <Route path="/" element={<MainApp user={user} />} />
-          
-          {/* '/profile' renders Profile inside the Layout */}
+
           <Route path="/profile" element={<Profile user={user} />} />
-          
+
+          <Route path="/uploads" element={<Upload user={user} />} />
         </Route>
       </Routes>
     </BrowserRouter>

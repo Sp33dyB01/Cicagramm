@@ -111,13 +111,6 @@ export default function Login({ onLogin }) {
             Regisztrálj!
           </span>
         </p>
-
-        {/* Fájl feltöltés teszt */}
-        <form onSubmit={handleSubmit2} className="mt-4 border-t pt-4">
-          <p className="text-xs text-gray-400 mb-2">Dev teszt feltöltés:</p>
-          <input type="file" name="file" />
-          <button className="text-xs bg-gray-200 px-2 py-1 rounded ml-2">Küld</button>
-        </form>
       </div>
     </div>
   );
