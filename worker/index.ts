@@ -16,19 +16,19 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
   const auth = getAuth(c.env);
   return auth.handler(c.req.raw);
 });
-app.get('/api/varos/:irsz', async (c) =>{
+app.get('/api/varos/:irsz', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   const irsz = Number(c.req.param('irsz'));
-  try{
+  try {
     const result = await db.query.telepulesek.findMany({
-      where: (table, {eq}) => (eq(table.irsz,irsz))
+      where: (table, { eq }) => (eq(table.irsz, irsz))
     });
     return c.json(result);
-  } catch (e){
+  } catch (e) {
     console.log(e)
-    return c.json({ error: "Szerver oldali hiba"},500)
+    return c.json({ error: "Szerver oldali hiba" }, 500);
   }
-})
+});
 app.get('/api/fajta', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   try {
@@ -48,8 +48,9 @@ app.get('/api/images/:mkepId', async (c) => {
   return new Response(object.body, { headers });
 });
 app.route("/api/cica", cicaRouter);
-app.route("/api/profile", felhasznaloRouter)
-export default app; /*{
+app.route("/api/profile", felhasznaloRouter);
+export default app;
+/*{
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const url = new URL(request.url);
     if (url.pathname.startsWith('/api/auth')){
