@@ -6,14 +6,14 @@ import { drizzle } from 'drizzle-orm/d1';
 import type { Env } from './index';
 
 export const getAuth = (env: Env) => {
-    const db = drizzle(env.DB, { schema });
-    return betterAuth({
+  const db = drizzle(env.DB, { schema });
+  return betterAuth({
     basePath: "/api/auth",
     baseURL: env.BETTER_AUTH_URL || "https://localhost:8787",
     secret: env.BETTER_AUTH_SECRET,
     logger: {
-    level: "debug",
-    enabled: true,
+      level: "debug",
+      enabled: true,
     },
     plugins: [
       localization({
@@ -42,36 +42,37 @@ export const getAuth = (env: Env) => {
         account: schema.account
       },
     }),
-        user: {
-          additionalFields: {
-            irsz: { type: "number" },
-            utca: { type: "string" },
-            hazszam: { type: "number" },
-            pKep: { type: "string" },
-            admin: { type: "number"},
-            lat: { type: "number"},
-            lon: {type: "number"},
-            varos: { type: "string"}
-          },
-          fields: {
-            name: "nev",
-            image: "pKep",
-            email: "email",
-            irsz: "irsz",
-            utca: "utca",
-            hazszam: "hazszam"
-        },
-        defaultValue: {
-          pKep: "", 
-          admin: 0,
-          irsz: 0,
-          rBemutat: "",
-          emailVerified: false,
-        }
+    user: {
+      additionalFields: {
+        irsz: { type: "number" },
+        utca: { type: "string" },
+        hazszam: { type: "number" },
+        pKep: { type: "string" },
+        admin: { type: "number" },
+        lat: { type: "number" },
+        lon: { type: "number" },
+        varos: { type: "string" },
+        rBemutat: { type: "string" }
       },
-      emailAndPassword: { 
-        enabled: true,
-        autoSignIn: true
+      fields: {
+        name: "nev",
+        image: "pKep",
+        email: "email",
+        irsz: "irsz",
+        utca: "utca",
+        hazszam: "hazszam"
       },
-    });
+      defaultValue: {
+        pKep: "",
+        admin: 0,
+        irsz: 0,
+        rBemutat: "",
+        emailVerified: false,
+      }
+    },
+    emailAndPassword: {
+      enabled: true,
+      autoSignIn: true
+    },
+  });
 }
