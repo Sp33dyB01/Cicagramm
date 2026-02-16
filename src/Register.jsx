@@ -89,6 +89,7 @@ export default function Register({ onSuccess, onSwitch }) {
       } else {
         console.log("Registered user:", data);
         onSuccess();
+        navigate('/login');
       }
     } catch (err) {
       setError("Hiba történt a regisztráció során.");
