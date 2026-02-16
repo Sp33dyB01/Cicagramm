@@ -18,27 +18,30 @@ export const felhasznalo = sqliteTable('felhasznalo', {
   nev: text('nev').notNull(),
   rBemutat: text('r_bemutat'),
   irsz: integer('irsz'),
+  varos: text('varos'),
   utca: text('utca', { length: 50 }),
   hazszam: integer('hazszam'),
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+  lat: real("szk").notNull().default(1),
+  lon: real("hk").notNull().default(1),
 });
 export const cica = sqliteTable('cica', {
   cId: text('c_id').primaryKey().notNull(),
   kor: integer('kor').notNull(),
   pKep: text('p_kep').notNull(),
   rBemutat: text('r_bemutat'),
-  felId: text('fel_id').references(() => felhasznalo.id),
+  felId: text('fel_id').references(() => felhasznalo.id, { onDelete: "cascade" }),
   tomeg: real('tomeg').notNull(),
   nev: text('nev', { length: 50 }).notNull(),
   fajId: integer('faj_id').references(() => fajta.id),
   ivartalanitott: integer('ivartalanitott').notNull(),
+  nem: integer('nem').notNull()
 });
-export const macskakepek = sqliteTable('macskakepek',{
+export const macskakepek = sqliteTable('macskakepek', {
   mkepId: text('mkep_id').primaryKey().notNull(),
-  cId: text('c_id').references(() => cica.cId),
-  leiras: text('leiras'),
-  feltoltDatum: integer("feltoltDatum", { mode: "timestamp"}).notNull()
+  cId: text('c_id').references(() => cica.cId, { onDelete: "cascade" }),
+  feltoltDatum: integer("feltoltDatum", { mode: "timestamp" }).notNull()
 });
 export const session = sqliteTable("session", {
   id: text("id").primaryKey(),
@@ -48,11 +51,11 @@ export const session = sqliteTable("session", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
   ipAddress: text("ipAddress"),
   userAgent: text("userAgent"),
-  userId: text("userId").notNull().references(() => felhasznalo.id),  
+  userId: text("userId").notNull().references(() => felhasznalo.id, { onDelete: "cascade" }),
 });
 export const account = sqliteTable("account", {
   id: text("id").primaryKey(),
-  userId: text("userId").notNull().references(() => felhasznalo.id),
+  userId: text("userId").notNull().references(() => felhasznalo.id, { onDelete: "cascade" }),
   accountId: text("accountId").notNull(),
   providerId: text("providerId").notNull(), // This will be "credential"
   password: text("password"),
@@ -62,13 +65,13 @@ export const account = sqliteTable("account", {
 export const felhasznaloRelations = relations(felhasznalo, ({ many }) => ({
   cats: many(cica),
 }));
-export const macskakepekRelations = relations (macskakepek, ({ one }) => ({
+export const macskakepekRelations = relations(macskakepek, ({ one }) => ({
   cat: one(cica, {
     fields: [macskakepek.cId],
     references: [cica.cId]
-  })  
+  })
 }))
-export const cicaRelations = relations(cica, ({ many,one }) => ({
+export const cicaRelations = relations(cica, ({ many, one }) => ({
   images: many(macskakepek),
   owner: one(felhasznalo, {
     fields: [cica.felId],
@@ -80,3 +83,4 @@ export const cicaRelations = relations(cica, ({ many,one }) => ({
   }),
 }));
 export type SelectFajta = typeof fajta.$inferSelect;
+export type SelectFelhasznalo = typeof felhasznalo.$inferSelect;

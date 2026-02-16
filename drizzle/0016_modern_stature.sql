@@ -1,0 +1,1 @@
+ALTER TABLE `cica` ADD `nem` integer NOT NULL;
