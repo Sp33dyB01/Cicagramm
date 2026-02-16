@@ -119,7 +119,6 @@ export default function Register({ onSuccess, onSwitch }) {
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           />
-
           <input
             className="w-full px-3 py-2 border rounded bg-gray-50"
             placeholder="Felhasználónév"
