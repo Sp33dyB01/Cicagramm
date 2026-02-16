@@ -21,7 +21,7 @@ const Profile = ({user}) => {
       <div className="profile-info-section">
         <div className="profile-image-wrapper">
           <img 
-            src={`/api/images/${user.pfp}`} 
+            src={`/api/images/${user.pfp}` || defaultAvatar} 
             alt="User Profile" 
             className="profile-large-pic"
             onError={(e) => {
