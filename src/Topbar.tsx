@@ -13,7 +13,9 @@ export default function TopBar( {user, onLogout}: {user: SelectFelhasznalo, onLo
     try {
     await authClient.signOut(); 
     onLogout();
+    navigate('/');
     window.location.reload();
+
   } catch (error) {
     console.error("Hiba a kijelentkezéskor:", error);
   }
