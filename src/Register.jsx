@@ -89,6 +89,7 @@ export default function Register({ onSuccess, onSwitch }) {
       } else {
         console.log("Registered user:", data);
         onSuccess();
+        navigate('/login');
       }
     } catch (err) {
       setError("Hiba történt a regisztráció során.");
@@ -119,7 +120,6 @@ export default function Register({ onSuccess, onSwitch }) {
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           />
-
           <input
             className="w-full px-3 py-2 border rounded bg-gray-50"
             placeholder="Felhasználónév"
