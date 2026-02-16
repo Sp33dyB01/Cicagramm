@@ -9,6 +9,11 @@ export default function TopBar( {user, onLogout}: {user: SelectFelhasznalo, onLo
   const [open, setOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const handleLogoClick = () => {
+    navigate('/');
+    // ensure the page scrolls back to top when the logo is clicked
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   const logOut = async () => {
     try {
     await authClient.signOut(); 
@@ -35,7 +40,7 @@ export default function TopBar( {user, onLogout}: {user: SelectFelhasznalo, onLo
         src={catIcon}
         alt="logo"
         className="logo"
-        onClick={() => navigate("/")} // Make logo clickable!
+        onClick={handleLogoClick} // Make logo clickable and scroll to top
         style={{ cursor: 'pointer' }}
       />
       {user ? (
