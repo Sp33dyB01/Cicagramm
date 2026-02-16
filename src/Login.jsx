@@ -1,3 +1,4 @@
+// Login.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"; // 1. Importáljuk a navigációt
 import { authClient } from "./auth-client";
@@ -6,20 +7,42 @@ export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  
+
   // 2. Inicializáljuk a navigációt
   const navigate = useNavigate();
 
-  // Fájl feltöltés teszt (ezt meghagytam)
-  const handleSubmit2 = async (e) => { 
+  // Fájl feltöltés mostmár máshogyan mukszik ezért megváltoztattam hogy csak a kép elég legyen a többi random adat 
+  const handleSubmit2 = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const response = await fetch("/api/cica/123test/upload", { 
+
+    formData.append('nev', 'Teszt Cica ' + Math.floor(Math.random() * 100));
+    formData.append('kor', '3');
+    formData.append('tomeg', '5.2');
+    formData.append('fajId', '1');
+    formData.append('ivartalanitott', '1');
+    formData.append('nem', '1');
+    formData.append('rBemutat', 'Ez egy automatikusan generált teszt cica.');
+
+    // Validálás: a backend pKep-et vár
+    const file = formData.get('file');
+    if (file) {
+      formData.append('pKep', file);
+      formData.delete('file');
+    }
+
+    // A helyes végpont a /api/cica
+    const response = await fetch("/api/cica", {
       method: "POST",
       body: formData,
     });
     const result = await response.json();
     console.log(result);
+    if (response.ok) {
+      alert("Sikeres teszt feltöltés! ID: " + result.cId);
+    } else {
+      alert("Hiba: " + (result.error || "Ismeretlen hiba"));
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -33,37 +56,30 @@ export default function Login({ onLogin }) {
 
     try {
       const { data, error } = await authClient.signIn.email({
-        email: email,
-        password: password,
+        email,
+        password,
       });
 
       if (error) {
         setError(error.message);
       } else {
         console.log("Sikeres bejelentkezés", data);
-        
+
         // 3. FONTOS: Átadjuk a user adatokat az App.jsx-nek!
         // A better-auth válaszában általában data.user van
-        onLogin(data.user); 
+        onLogin(data.user);
       }
     } catch (err) {
       setError("Váratlan hiba történt.");
-      console.error(err);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm bg-white border rounded-lg p-6">
-        <h1 className="text-4xl text-center mb-6 font-[cursive]" style={{ textAlign: 'center' }}>
-          Cicagramm
-        </h1>
+        <h1 className="text-4xl text-center mb-6 font-[cursive]">Cicagramm</h1>
 
-        {error && (
-          <p className="text-sm text-red-500 text-center mb-3">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-sm text-red-500 text-center mb-3">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
@@ -72,7 +88,6 @@ export default function Login({ onLogin }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-
           <input
             type="password"
             className="w-full px-3 py-2 border rounded bg-gray-50"
@@ -80,7 +95,7 @@ export default function Login({ onLogin }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <br/><br/>
+          <br /><br />
           <button className="w-full py-2 bg-blue-500 text-white rounded font-semibold">
             Bejelentkezés
           </button>

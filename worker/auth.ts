@@ -48,7 +48,10 @@ export const getAuth = (env: Env) => {
             utca: { type: "string" },
             hazszam: { type: "number" },
             pKep: { type: "string" },
-            admin: { type: "number"}
+            admin: { type: "number"},
+            lat: { type: "number"},
+            lon: {type: "number"},
+            varos: { type: "string"}
           },
           fields: {
             name: "nev",
@@ -59,7 +62,7 @@ export const getAuth = (env: Env) => {
             hazszam: "hazszam"
         },
         defaultValue: {
-          pKep: "default.jpg", 
+          pKep: "", 
           admin: 0,
           irsz: 0,
           rBemutat: "",
