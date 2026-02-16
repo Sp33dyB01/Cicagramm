@@ -3,7 +3,7 @@
 html, body, #root {
   height: 100%;
   margin: 0;
-  width: 100vw;
+  width: 100%; /* changed from 100vw to avoid horizontal scrollbar */
 }
 
 /* reset-ish */
@@ -154,8 +154,8 @@ body {
 .card.large {
   flex: 1 1 auto;
   min-height: 0;
-  width: 85vw;
-  margin-left: 5vw;
+  max-width: 85vw; /* use max-width and center instead of forcing 85vw + left margin */
+  margin: 0 auto;
   padding: 0;
   overflow: hidden;
 }
@@ -169,8 +169,8 @@ body {
 
 .card.small {
   height: 120px;
-  width: 85vw;
-  margin-left: 5vw;
+  max-width: 85vw; /* use max-width and center */
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center; /* center the buttons so both are visible */
