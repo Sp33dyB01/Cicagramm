@@ -10,41 +10,6 @@ export default function Login({ onLogin }) {
 
   // 2. Inicializáljuk a navigációt
   const navigate = useNavigate();
-
-  // Fájl feltöltés mostmár máshogyan mukszik ezért megváltoztattam hogy csak a kép elég legyen a többi random adat 
-  const handleSubmit2 = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-
-    formData.append('nev', 'Teszt Cica ' + Math.floor(Math.random() * 100));
-    formData.append('kor', '3');
-    formData.append('tomeg', '5.2');
-    formData.append('fajId', '1');
-    formData.append('ivartalanitott', '1');
-    formData.append('nem', '1');
-    formData.append('rBemutat', 'Ez egy automatikusan generált teszt cica.');
-
-    // Validálás: a backend pKep-et vár
-    const file = formData.get('file');
-    if (file) {
-      formData.append('pKep', file);
-      formData.delete('file');
-    }
-
-    // A helyes végpont a /api/cica
-    const response = await fetch("/api/cica", {
-      method: "POST",
-      body: formData,
-    });
-    const result = await response.json();
-    console.log(result);
-    if (response.ok) {
-      alert("Sikeres teszt feltöltés! ID: " + result.cId);
-    } else {
-      alert("Hiba: " + (result.error || "Ismeretlen hiba"));
-    }
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Töröljük az előző hibákat
@@ -111,13 +76,6 @@ export default function Login({ onLogin }) {
             Regisztrálj!
           </span>
         </p>
-
-        {/* Fájl feltöltés teszt */}
-        <form onSubmit={handleSubmit2} className="mt-4 border-t pt-4">
-          <p className="text-xs text-gray-400 mb-2">Dev teszt feltöltés:</p>
-          <input type="file" name="file" />
-          <button className="text-xs bg-gray-200 px-2 py-1 rounded ml-2">Küld</button>
-        </form>
       </div>
     </div>
   );

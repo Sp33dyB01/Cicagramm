@@ -62,8 +62,13 @@ export const account = sqliteTable("account", {
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
 });
+export const kedvencek = sqliteTable("kedvencek", {
+  felId: text('fel_id').references(() => felhasznalo.id, { onDelete: "cascade" }),
+  cId: text('c_id').references(() => cica.cId, { onDelete: "cascade" }),
+})
 export const felhasznaloRelations = relations(felhasznalo, ({ many }) => ({
   cats: many(cica),
+  fav: many(kedvencek)
 }));
 export const macskakepekRelations = relations(macskakepek, ({ one }) => ({
   cat: one(cica, {
@@ -82,5 +87,6 @@ export const cicaRelations = relations(cica, ({ many, one }) => ({
     references: [fajta.id],
   }),
 }));
+
 export type SelectFajta = typeof fajta.$inferSelect;
 export type SelectFelhasznalo = typeof felhasznalo.$inferSelect;
