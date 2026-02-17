@@ -132,7 +132,6 @@ cicaRouter.get('/:cId', async (c) => {
     return c.json({ error: "Szerver oldali hiba" }, 500);
   }
 });
-
 // GET cicak
 
 cicaRouter.get('/', async (c) => {
@@ -150,7 +149,6 @@ cicaRouter.get('/', async (c) => {
     filters.push(eq(schema.cica.ivartalanitott, Number(ivartalanitott)));
   if (nem !== undefined)
     filters.push(eq(schema.cica.nem, Number(nem)));
-
   let query = db.select({
     ...getTableColumns(schema.cica),
     ownerLat: schema.felhasznalo.lat,

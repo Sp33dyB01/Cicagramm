@@ -1,9 +1,13 @@
 /* ...existing code... */
+:root {
+  --header-height: 70px;
+}
+
 /* ensure root elements fill viewport so children using 100% / 100vh actually reach edges */
 html, body, #root {
   height: 100%;
   margin: 0;
-  width: 100vw;
+  width: 100%; /* changed from 100vw to avoid horizontal scrollbar */
 }
 
 /* reset-ish */
@@ -30,6 +34,10 @@ body {
 .header {
   --header-height: 70px;
   height: var(--header-height);
+  position: sticky; /* keep header visible at top when scrolling */
+  top: 0;
+  z-index: 999; /* above other content */
+  background: white; /* ensure it covers content beneath */
   box-sizing: border-box;
   border-bottom: 1px solid black;
   display: flex;
@@ -78,6 +86,7 @@ body {
   display: flex;
   min-height: 0; /* important for children to be able to shrink/scroll */
   width: 100%;
+  padding-top: var(--header-height); /* avoid being covered when header sticks */
 }
 
 /* SIDEBAR */
@@ -154,8 +163,8 @@ body {
 .card.large {
   flex: 1 1 auto;
   min-height: 0;
-  width: 85vw;
-  margin-left: 5vw;
+  max-width: 85vw; /* use max-width and center instead of forcing 85vw + left margin */
+  margin: 0 auto;
   padding: 0;
   overflow: hidden;
 }
@@ -169,8 +178,8 @@ body {
 
 .card.small {
   height: 120px;
-  width: 85vw;
-  margin-left: 5vw;
+  max-width: 85vw; /* use max-width and center */
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center; /* center the buttons so both are visible */
