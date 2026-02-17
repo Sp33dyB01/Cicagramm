@@ -1,13 +1,10 @@
 {
-    "name": "react-test",
+    "name": "cicagramm",
     "main": "worker/index.ts",
     "compatibility_date": "2024-09-26",
     "compatibility_flags": [
         "nodejs_compat"
     ],
-    "alias": {
-    "node:module": "./src/polyfills/node-module.ts"
-    },
     "assets":
         {
             "directory": "./dist",
