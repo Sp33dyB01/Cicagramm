@@ -30,8 +30,6 @@ export default function Login({ onLogin }) {
       } else {
         console.log("Sikeres bejelentkezés", data);
 
-        // 3. FONTOS: Átadjuk a user adatokat az App.jsx-nek!
-        // A better-auth válaszában általában data.user van
         onLogin(data.user);
       }
     } catch (err) {
@@ -68,7 +66,6 @@ export default function Login({ onLogin }) {
 
         <p className="text-sm text-center mt-4">
           Nincs fiókod?{" "}
-          {/* 4. JAVÍTÁS: Nem onSwitch-et hívunk, hanem navigálunk a routerrel */}
           <span
             className="text-blue-500 cursor-pointer"
             onClick={() => navigate("/register")}
