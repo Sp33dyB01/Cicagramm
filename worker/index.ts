@@ -50,18 +50,10 @@ app.get('/api/images/:mkepId', async (c) => {
 app.route("/api/cica", cicaRouter);
 app.route("/api/profile", felhasznaloRouter);
 
-app.notFound((c) => {
+app.notFound(async (c) => {
   if (c.req.path.startsWith('/api/')) {
     return c.json({ error: "API route nem található" }, 404);
   }
-  return c.text('Not Found', 404);
+  return c.env.ASSETS.fetch(c.req.raw);
 });
 export default app;
-/*{
-  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-    const url = new URL(request.url);
-    if (url.pathname.startsWith('/api/auth')){
-      return app.fetch(request, env, ctx)
-    }
-  }
-};*/
