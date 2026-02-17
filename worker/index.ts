@@ -47,6 +47,14 @@ app.get('/api/images/:mkepId', async (c) => {
   headers.set('etag', object.httpEtag);
   return new Response(object.body, { headers });
 });
+app.get('*', async (c) => {
+  if (c.req.path.startsWith('/api/')) {
+    return c.json({ error: "API route nem található" }, 404);
+  }
+  const url = new URL(c.req.url);
+  url.pathname = '/index.html';
+  return c.env.ASSETS.fetch(new Request(url.toString(), c.req.raw));
+});
 app.route("/api/cica", cicaRouter);
 app.route("/api/profile", felhasznaloRouter);
 export default app;
