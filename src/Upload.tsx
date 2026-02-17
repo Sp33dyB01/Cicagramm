@@ -226,12 +226,6 @@ export default function Upload(user: SelectFelhasznalo) {
                         {loading ? 'Mentés...' : 'Cica Mentése'}
                     </button>
                 </form>
-
-                {distance !== null && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg text-center text-blue-800">
-                        Távolság a cica tulajdonosától: {distance.toFixed(2)} km
-                    </div>
-                )}
             </div>
         </div>
     );
