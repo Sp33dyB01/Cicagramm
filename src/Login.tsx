@@ -1,16 +1,22 @@
 // Login.tsx
 import { useState } from "react";
+import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom"; // 1. Importáljuk a navigációt
 import { authClient } from "./auth-client";
+import retryOperation from "./assets/utils/Retry";
 
-export default function Login({ onLogin }) {
+interface LoginProps {
+  onLogin: (user: any) => void;
+}
+
+export default function Login({ onLogin }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   // 2. Inicializáljuk a navigációt
   const navigate = useNavigate();
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(""); // Töröljük az előző hibákat
 
@@ -20,13 +26,14 @@ export default function Login({ onLogin }) {
     }
 
     try {
-      const { data, error } = await authClient.signIn.email({
-        email,
-        password,
-      });
+      const { data, error } = await retryOperation(() =>
+        authClient.signIn.email({
+          email,
+          password,
+        }));
 
       if (error) {
-        setError(error.message);
+        setError(error.message || "Hiba a bejelentkezés során.");
       } else {
         console.log("Sikeres bejelentkezés", data);
 

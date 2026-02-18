@@ -5,10 +5,18 @@ export const authClient = createAuthClient({
     user: {
         additionalFields: {
             irsz: {
-                type: "number", // or "string" depending on your schema
+                type: "number",
                 required: false,
             },
             utca: {
+                type: "string",
+                required: false,
+            },
+            hazszam: {
+                type: "number",
+                required: false,
+            },
+            pKep: {
                 type: "string",
                 required: false,
             },
@@ -16,6 +24,22 @@ export const authClient = createAuthClient({
                 type: "number",
                 required: true,
                 default: 0
+            },
+            lat: {
+                type: "number",
+                required: false,
+            },
+            lon: {
+                type: "number",
+                required: false,
+            },
+            varos: {
+                type: "string",
+                required: false,
+            },
+            rBemutat: {
+                type: "string",
+                required: false,
             }
         }
     }

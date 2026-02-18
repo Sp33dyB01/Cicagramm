@@ -1,17 +1,38 @@
 import { useState, useEffect } from "react";
+import type { FormEvent, ChangeEvent } from "react";
 import { authClient } from "./auth-client";
-import { getCoordinates } from "../worker/tavolsag"; // Make sure this import matches your file structure
+import { getCoordinates } from "../worker/tavolsag";
 import { useNavigate } from "react-router-dom";
+import retryOperation from "./assets/utils/Retry";
 
-export default function Register({ onSuccess, onSwitch }) {
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+interface City {
+  id: number;
+  nev: string;
+}
+
+interface FormData {
+  email: string;
+  nev: string;
+  jelszo: string;
+  rBemutat: string;
+  irsz: string;
+  utca: string;
+  pKep: string;
+  varos: string;
+}
+
+interface RegisterProps {
+  onSuccess: () => void;
+}
+
+export default function Register({ onSuccess }: RegisterProps) {
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
-  // --- CITY FETCHING STATES ---
-  const [cities, setCities] = useState([]); // Stores the list of cities from API
-  const [loadingCities, setLoadingCities] = useState(false);
+  const [cities, setCities] = useState<City[]>([]);
+  const [loadingCities, setLoadingCities] = useState<boolean>(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     nev: '',
     jelszo: '',
@@ -19,34 +40,30 @@ export default function Register({ onSuccess, onSwitch }) {
     irsz: '',
     utca: '',
     pKep: '',
-    varos: '', // This will be auto-filled
+    varos: '',
   });
 
-  // --- 1. AUTO-DETECT CITY EFFECT ---
   useEffect(() => {
-    // Only fetch if IRSZ is exactly 4 digits
     if (formData.irsz.length === 4) {
       const fetchCities = async () => {
         setLoadingCities(true);
         setCities([]);
-        setFormData(prev => ({ ...prev, varos: '' })); // Reset city while searching
+        setFormData(prev => ({ ...prev, varos: '' }));
 
         try {
           const res = await fetch(`/api/varos/${formData.irsz}`);
           if (res.ok) {
-            const data = await res.json();
+            const data: City[] = await res.json();
             setCities(data);
-
-            // AUTO-FILL logic: If there is exactly one city, select it immediately
             if (data.length === 1) {
               setFormData(prev => ({ ...prev, varos: data[0].nev }));
             }
-            // If multiple (data.length > 1), the user will choose from dropdown
-            // If zero, the user can type manually
           }
-        } catch (err) {
+        }
+        catch (err) {
           console.error("Failed to fetch cities", err);
-        } finally {
+        }
+        finally {
           setLoadingCities(false);
         }
       };
@@ -56,7 +73,7 @@ export default function Register({ onSuccess, onSwitch }) {
   }, [formData.irsz]);
 
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -68,24 +85,23 @@ export default function Register({ onSuccess, onSwitch }) {
     }
 
     try {
-      // ⚠️ FIX: Added 'await' here because getCoordinates is async
       const coords = await getCoordinates(`${formData.irsz} ${formData.varos} ${formData.utca}`);
 
-      const { data, error } = await authClient.signUp.email({
-        email: formData.email,
-        password: formData.jelszo,
-        name: formData.nev,
-        image: "default.jpeg",
-        irsz: Number(formData.irsz), // Ensure number type
-        varos: formData.varos,
-        utca: formData.utca,
-        // Handle case where geocoding fails (fallback to 0 or null)
-        lat: coords ? coords.lat : 0,
-        lon: coords ? coords.lon : 0
-      });
+      const { data, error } = await retryOperation(async () =>
+        authClient.signUp.email({
+          email: formData.email,
+          password: formData.jelszo,
+          name: formData.nev,
+          image: "default.jpeg",
+          irsz: Number(formData.irsz),
+          varos: formData.varos,
+          utca: formData.utca,
+          lat: coords ? coords.lat : 0,
+          lon: coords ? coords.lon : 0
+        }));
 
       if (error) {
-        setError(error.message);
+        setError(error.message || "Hiba történt a regisztráció során.");
       } else {
         console.log("Registered user:", data);
         onSuccess();
@@ -118,13 +134,13 @@ export default function Register({ onSuccess, onSwitch }) {
             placeholder="E-mail"
             type="email"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, email: e.target.value })}
           />
           <input
             className="w-full px-3 py-2 border rounded bg-gray-50"
             placeholder="Felhasználónév"
             value={formData.nev}
-            onChange={(e) => setFormData({ ...formData, nev: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, nev: e.target.value })}
           />
 
           <input
@@ -132,7 +148,7 @@ export default function Register({ onSuccess, onSwitch }) {
             className="w-full px-3 py-2 border rounded bg-gray-50"
             placeholder="Jelszó"
             value={formData.jelszo}
-            onChange={(e) => setFormData({ ...formData, jelszo: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, jelszo: e.target.value })}
           />
 
           {/* --- ADDRESS SECTION --- */}
@@ -143,7 +159,7 @@ export default function Register({ onSuccess, onSwitch }) {
               className="w-1/3 px-3 py-2 border rounded bg-gray-50"
               placeholder="Irsz"
               value={formData.irsz}
-              onChange={(e) => setFormData({ ...formData, irsz: e.target.value })}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, irsz: e.target.value })}
             />
 
             {/* VAROS Input - Changes based on state */}
@@ -157,7 +173,7 @@ export default function Register({ onSuccess, onSwitch }) {
                 <select
                   className="w-full px-3 py-2 border rounded bg-gray-50"
                   value={formData.varos}
-                  onChange={(e) => setFormData({ ...formData, varos: e.target.value })}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, varos: e.target.value })}
                 >
                   <option value="">-- Válassz --</option>
                   {cities.map((c) => (
@@ -172,7 +188,7 @@ export default function Register({ onSuccess, onSwitch }) {
                   className="w-full px-3 py-2 border rounded bg-gray-50"
                   placeholder="Város"
                   value={formData.varos}
-                  onChange={(e) => setFormData({ ...formData, varos: e.target.value })}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, varos: e.target.value })}
                   /* ReadOnly if we auto-filled it from a single result to prevent typos */
                   readOnly={cities.length === 1}
                   style={cities.length === 1 ? { backgroundColor: '#e8f0fe' } : {}}
@@ -185,7 +201,7 @@ export default function Register({ onSuccess, onSwitch }) {
             className="w-full px-3 py-2 border rounded bg-gray-50"
             placeholder="Utca, házszám"
             value={formData.utca}
-            onChange={(e) => setFormData({ ...formData, utca: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, utca: e.target.value })}
           />
           {/* --------------------- */}
 
