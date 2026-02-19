@@ -8,11 +8,7 @@ export default function MainApp({user}) {
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("name");
 
-// A környezeti változó beolvasása a .env fájlból
-  
-
   useEffect(() => {
-    // ITT A LÉNYEG: A JSON adatokat is a Worker URL-jéről kérjük le!
     fetch("/api/cica")
       .then((res) => res.json())
       .then((data) => {
@@ -26,6 +22,23 @@ export default function MainApp({user}) {
       });
   }, []);
 
+  const sortedCats = [...cats].sort((a, b) => {
+    if (sort === "name") {
+      return (a.nev || "").localeCompare(b.nev || "");
+    } 
+    if (sort === "age") {
+      const ageA = a.kor || a.age || 0;
+      const ageB = b.kor || b.age || 0;
+      return ageA - ageB;
+    }
+    if (sort === "distance") {
+      const distA = a.tavolsag || a.distance || 0;
+      const distB = b.tavolsag || b.distance || 0;
+      return distA - distB;
+    }
+    return 0;
+  });
+
   if (loading) return <div>Betöltés...</div>;
   if (!cats || cats.length === 0) return <div>Nincsenek macskák.</div>;
 
@@ -33,11 +46,8 @@ export default function MainApp({user}) {
     <div className="app">
       <div className="main-body">
         <aside className="sidebar">
-          {/* ===== új: rendezés fejléce, jobb oldalra igazítva ===== */}
           <div className="sidebar-header">
-            <div className="sidebar-header-left">{/* üres - space on left */}</div>
-
-            {/* controls groups sort + filter together so they appear on the right */}
+            <div className="sidebar-header-left"></div>
             <div className="controls">
               <div className="sort-wrapper">
                 <label htmlFor="sort" className="sort-label">Rendezés:</label>
@@ -58,13 +68,10 @@ export default function MainApp({user}) {
               </div>
             </div>
           </div>
-
-          {/* sidebar body can hold other controls or lists */}
-          {/* ... a sidebar kódod változatlan marad ... */}
         </aside>
         
         <section className="cards-grid">
-          {(cats || []).map((cat) => (
+          {(sortedCats || []).map((cat) => (
             <div className="tinder-card fixed-size" key={cat.cId}>
               <div className="card large">
                 <img 
@@ -80,18 +87,33 @@ export default function MainApp({user}) {
                   ❤
                 </button>
 
-                {/* --- NEW: Repurposed card small for image text overlays --- */}
                 <div className="card small">
                   <span className="cat-info cat-name">{cat.nev || "Ismeretlen"}</span>
                   <span className="cat-info cat-age">{cat.kor || cat.age || "? év"}</span>
                   <span className="cat-info cat-distance">{cat.tavolsag || cat.distance || "? km"}</span>
                 </div>
-                
               </div>
             </div>
           ))}
          </section>
        </div>
+
+       {/* --- ÚJ FOOTER SZEKCIÓ --- */}
+       <footer className="footer">
+         <div className="footer-content">
+           <h3>Cicagramm</h3>
+           <p>Találd meg a tökéletes doromboló társat!</p>
+           <div className="footer-links">
+             <a href="#rolunk">Rólunk</a>
+             <a href="#kapcsolat">Kapcsolat</a>
+             <a href="#adatvedelem">Adatvédelem</a>
+             <a href="#aszf">ÁSZF</a>
+           </div>
+           <p className="copyright">
+             &copy; {new Date().getFullYear()} Cicagramm. Minden jog fenntartva.
+           </p>
+         </div>
+       </footer>
      </div>
    );
- }
+}

@@ -5,7 +5,7 @@
 
 /* ensure root elements fill viewport so children using 100% / 100vh actually reach edges */
 html, body, #root {
-  height: 100%;
+  min-height: 100vh;
   margin: 0;
   width: 100%; /* changed from 100vw to avoid horizontal scrollbar */
 }
@@ -16,7 +16,6 @@ html, body, #root {
 }
 
 body {
-  height: 100%;
   margin: 0;
   font-family: sans-serif;
   background: #f9f9f9;
@@ -42,7 +41,6 @@ body {
   border-bottom: 1px solid black;
   display: flex;
   align-items: center;
-  
   padding: 0 20px;
   gap: 20px;
   width: 100%;
@@ -244,7 +242,7 @@ body {
   background: #eee;
 }
 
-/* grid for cards: 4 per row */
+/* grid for cards: 6 per row */
 .cards-grid {
   margin-top: 20px;
   display: grid;
@@ -264,6 +262,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  cursor: pointer;
 }
 
 /* fixed dimensions for large and small parts inside each card */
@@ -359,8 +358,6 @@ body {
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
-/* Ha a kártya alatti gombok már nem kellenek, a .card.small stílusát 
-   érdemes nullázni vagy törölni, hogy ne foglaljon helyet feleslegesen */
 .tinder-card.fixed-size .card.small {
   position: absolute;
   inset: 0; /* Shorthand to stretch top/bottom/left/right to 0 */
@@ -396,11 +393,72 @@ body {
 
 .cat-distance {
   top: 12px;
-  /* Shifted to 60px right so it doesn't overlap with your .overlay-like-btn (which is at 10px) */
+  /* Shifted to 10px left so it doesn't overlap with your .overlay-like-btn (which is at 10px) */
   left: 10px; 
   background: rgba(0, 0, 0, 0.4);
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 13px;
   backdrop-filter: blur(2px); /* Adds a nice frosted glass effect */
+}
+
+/* ========================= */
+/* MODERN FOOTER       */
+/* ========================= */
+.footer {
+  background-color: #1a1a1a;
+  color: #f9f9f9;
+  padding: 40px 20px 20px 20px;
+  margin-top: auto; /* Ez tolja le a lap aljára, ha kevés a tartalom */
+  border-top: 4px solid black;
+  display: flex;
+  justify-content: center;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 800px;
+  text-align: center;
+}
+
+.footer-content h3 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+.footer-content p {
+  margin: 0;
+  color: #bbb;
+  font-size: 14px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.footer-links a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: crimson;
+  transform: translateY(-2px);
+}
+
+.copyright {
+  margin-top: 20px !important;
+  font-size: 12px !important;
+  color: #777 !important;
 }
