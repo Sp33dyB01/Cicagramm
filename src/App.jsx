@@ -3,9 +3,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Login";
 import Register from "./Register";
 import MainApp from "./MainApp";
-import Profile from "./Profile";
+import Profile from "./profile";
 import Layout from "./Layout";
 import Upload from "./Upload";
+import Beallitasok from "./beallitasok";
 import { authClient } from "./auth-client";
 
 export default function App() {
@@ -58,6 +59,8 @@ export default function App() {
           <Route path="/profile" element={<Profile user={user} />} />
 
           <Route path="/uploads" element={<Upload user={user} />} />
+
+          <Route path="/beallitasok" element={<Beallitasok user={user} />} />
         </Route>
       </Routes>
     </BrowserRouter>

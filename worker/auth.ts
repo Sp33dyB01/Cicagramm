@@ -74,41 +74,5 @@ export const getAuth = (env: Env) => {
       enabled: true,
       autoSignIn: true
     },
-    password: {
-      hash: async (password: string) => {
-        const encoder = new TextEncoder();
-        const salt = crypto.getRandomValues(new Uint8Array(16));
-        const keyMaterial = await crypto.subtle.importKey(
-          "raw", encoder.encode(password), { name: "PBKDF2" }, false, ["deriveBits", "deriveKey"]
-        );
-        const key = await crypto.subtle.deriveKey(
-          { name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" },
-          keyMaterial, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
-        );
-        const hashBuffer = await crypto.subtle.exportKey("raw", key);
-        const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
-        const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, "0")).join("");
-        
-        return `${saltHex}:${hashHex}`;
-      },
-      verify: async ({ hash, password }: {hash: string, password: string} ) => {
-        const [saltHex, originalHash] = hash.split(":");
-        const salt = new Uint8Array(saltHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
-        
-        const encoder = new TextEncoder();
-        const keyMaterial = await crypto.subtle.importKey(
-          "raw", encoder.encode(password), { name: "PBKDF2" }, false, ["deriveBits", "deriveKey"]
-        );
-        const key = await crypto.subtle.deriveKey(
-          { name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" },
-          keyMaterial, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
-        );
-        const attemptHashBuffer = await crypto.subtle.exportKey("raw", key);
-        
-        const attemptHash = Array.from(new Uint8Array(attemptHashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
-        
-        return attemptHash === originalHash;
-      }
-    }
   });
 }

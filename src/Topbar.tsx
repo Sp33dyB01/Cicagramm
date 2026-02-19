@@ -57,7 +57,7 @@ export default function TopBar({ user, onLogout }: { user: SelectFelhasznalo, on
           {open && (
             <div className="profile-dropdown">
               <div onClick={() => { setOpen(false); navigate("/profile"); }}>Profil</div>
-              <div>Beállítások</div>
+              <div onClick={() => { setOpen(false); navigate("/beallitasok"); }}>Beállítások</div>
               <div onClick={() => { setOpen(false); navigate("/uploads") }}>Feltöltés</div>
               <div onClick={logOut}>Kijelentkezés</div>
             </div>

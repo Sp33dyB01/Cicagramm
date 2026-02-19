@@ -27,24 +27,27 @@ const Profile = ({ user }) => {
 
         <div className="profile-details">
           <h2 className="text-2xl font-bold">{user.name}</h2>
-          <h2>{user.name}</h2>
-          <p>{user.rBemutat}</p>
-          <p>Üdvözöllek a profil oldaladon!</p>
+          
+           <p>{user.rBemutat || "Még nincs rövid bemutatkozás"}</p>
+          
         </div>
       </div>
 
       {/* Tabs */}
       <div>
-        <nav className="flex">
-          <button 
+        <nav className="flex border-b border-gray-200 profile-tabs">
+          <button
+            
             onClick={() => setActiveTab('uploads')}
-            className={`py-2 px-4 font-semibold border-gray-800 border-2 ${activeTab === 'uploads' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
+            className={`py-2 px-4 font-semibold ${activeTab === 'uploads' ? 'text-gray-800 border-b-2 border-white-800' : 'text-gray-500'} gob`}
+             
+            
           >
             Saját feltöltések
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('favorites')}
-            className={`py-2 px-4 font-semibold border-gray-800 border-2 ml-[-2px] ${activeTab === 'favorites' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
+            className={`py-2 px-4 font-semibold ${activeTab === 'favorites' ? 'text-gray-800 border-b-2 border-gray-800' : 'text-gray-500'} gob`}
           >
             Kedvencek
           </button>
@@ -52,7 +55,7 @@ const Profile = ({ user }) => {
       </div>
 
       {/* Tab Content */}
-      <div className="border-gray-800 border-2 p-4">
+      <div className="p-4">
         {activeTab === 'uploads' && (
           <div>
             <h3 className="text-xl">Saját feltöltések</h3>
