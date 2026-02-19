@@ -5,7 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect } from 'react';
 import './MainApp.css';
 import type { SelectFelhasznalo } from '../worker/schema'
+import { useToast } from './Toast';
 export default function TopBar({ user, onLogout }: { user: SelectFelhasznalo, onLogout: () => void }) {
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ export default function TopBar({ user, onLogout }: { user: SelectFelhasznalo, on
       onLogout();
       window.location.reload();
     } catch (error) {
+      showToast("Hiba a kijelentkezéskor", "error");
       console.error("Hiba a kijelentkezéskor:", error);
     }
   };

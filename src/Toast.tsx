@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext } from 'react';
 import ErrorMessage from './Error';
 import type { ToastStatus } from './Error';
 import type { ReactNode } from 'react';
@@ -34,10 +34,10 @@ export function ToastProvider({ children }: ToastProviderProps) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <ErrorMessage 
-        errorType={status} 
-        errorMessage={message} 
-        onAnimationEnd={hideToast} 
+      <ErrorMessage
+        errorType={status}
+        errorMessage={message}
+        onAnimationEnd={hideToast}
       />
     </ToastContext.Provider>
   );

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import avatarImg from "./assets/avatar.png"; // Make sure the path matches MainApp.jsx
+import { useToast } from "./Toast";
 // This component receives the logged-in user object as a prop
 export default function Beallitasok({ user }) {
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -50,7 +50,7 @@ export default function Beallitasok({ user }) {
 
       fetchCities();
     } else {
-        setCities([]); // Clear cities if postal code is not 4 digits
+      setCities([]); // Clear cities if postal code is not 4 digits
     }
   }, [formData.irsz]);
 
@@ -63,12 +63,10 @@ export default function Beallitasok({ user }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
     setLoading(true);
 
     if (!formData.nev || !formData.irsz || !formData.varos || !formData.utca) {
-      setError("A név és a cím mezők kitöltése kötelező!");
+      showToast("A név és a cím mezők kitöltése kötelező!", "error");
       setLoading(false);
       return;
     }
@@ -83,7 +81,7 @@ export default function Beallitasok({ user }) {
     if (formData.pKep) {
       submissionData.append('pKep', formData.pKep);
     }
-    
+
     try {
       const response = await fetch(`/api/felhasznalo/${user.id}`, {
         method: 'PATCH',
@@ -93,13 +91,13 @@ export default function Beallitasok({ user }) {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setSuccess("Adataid sikeresen frissítve!");
+        showToast("Adataid sikeresen frissítve!", "success");
         // Optionally, navigate away or refresh user data
       } else {
-        setError(result.error || "Hiba történt a frissítés során.");
+        showToast(result.error || "Hiba történt a frissítés során.", "error");
       }
     } catch (err) {
-      setError("Hiba történt a frissítés során.");
+      showToast("Hiba történt a frissítés során.", "error");
       console.error(err);
     } finally {
       setLoading(false);
@@ -110,7 +108,7 @@ export default function Beallitasok({ user }) {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-          <p>A beállítások megtekintéséhez be kell jelentkezned.</p>
+        <p>A beállítások megtekintéséhez be kell jelentkezned.</p>
       </div>
     );
   }
@@ -122,24 +120,15 @@ export default function Beallitasok({ user }) {
           {formData.nev} beállításai
         </h1>
 
-        {error && (
-          <p className="text-sm text-red-500 text-center mb-3 bg-red-50 p-2 rounded">
-            {error}
-          </p>
-        )}
-        {success && (
-          <p className="text-sm text-green-500 text-center mb-3 bg-green-50 p-2 rounded">
-            {success}
-          </p>
-        )}
+
 
         <form onSubmit={handleSubmit} className="space-y-3">
 
           {/* --- New Profile Section (Display Only) --- */}
           <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-6 mb-4 border-b pb-6">
-            <img 
+            <img
               src={user.pKep ? `/api/images/${user.pKep}` : avatarImg}
-              alt="Profilkép" 
+              alt="Profilkép"
               className="w-32 h-32 rounded-full object-cover border-4 border-black shadow-lg flex-shrink-0"
               onError={(e) => {
                 e.currentTarget.src = avatarImg;
@@ -151,7 +140,7 @@ export default function Beallitasok({ user }) {
               <p className="text-gray-600 italic">{user.rBemutat || "Nincs megadva bemutatkozás."}</p>
             </div>
           </div>
-          
+
           <h3 className="text-xl font-semibold pt-4">Adatok módosítása</h3>
 
           {/* Email is read-only */}
@@ -223,7 +212,7 @@ export default function Beallitasok({ user }) {
             value={formData.utca}
             onChange={(e) => setFormData({ ...formData, utca: e.target.value })}
           />
-          
+
           {/* Profile Picture Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

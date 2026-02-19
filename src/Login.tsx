@@ -13,7 +13,7 @@ interface LoginProps {
 export default function Login({ onLogin }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+
   const { showToast } = useToast();
   // 2. Inicializáljuk a navigációt
   const navigate = useNavigate();
@@ -33,13 +33,13 @@ export default function Login({ onLogin }: LoginProps) {
         }));
 
       if (error) {
-        setError(error.message || "Hiba a bejelentkezés során.");
+        showToast(error.message || "Hiba a bejelentkezés során.", "error");
       } else {
-        console.log("Sikeres bejelentkezés", data);
+        showToast("Sikeres bejelentkezés!", "success");
         onLogin(data?.user);
       }
     } catch (err) {
-      setError("Váratlan hiba történt.");
+      showToast("Váratlan hiba történt.", "error");
     }
   };
 
@@ -48,7 +48,7 @@ export default function Login({ onLogin }: LoginProps) {
       <div className="w-full max-w-sm bg-white border rounded-lg p-6">
         <h1 className="text-4xl text-center mb-6 font-[cursive]">Cicagramm</h1>
 
-        {error && <p className="text-sm text-red-500 text-center mb-3">{error}</p>}
+
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
