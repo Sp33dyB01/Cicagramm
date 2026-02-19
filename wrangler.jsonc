@@ -23,7 +23,7 @@
         {
         "binding": "BUCKET",
         "bucket_name": "images",
-        "preview_bucket_name": "images-dev"
+        "preview_bucket_name": "images"
     }
     ]
 }
