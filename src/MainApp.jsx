@@ -3,6 +3,7 @@ import Modal from "./Modal";
 import React from "react";
 import "./MainApp.css";
 import { useToast } from "./Toast";
+import CatProfile from "./CatProfile";
 
 // 10 rows per page * 5 items per row (based on your CSS grid) = 50 items per page
 const ITEMS_PER_PAGE = 50; 
@@ -175,23 +176,9 @@ export default function MainApp({ user }) {
         isOpen={!!selectedCat} 
         onClose={() => setSelectedCat(null)}
       >
-        {selectedCat && (
-          <div className="cat-modal-view">
-            <img 
-              src={`/api/images/${selectedCat.pKep}`} 
-              style={{ width: '100%', height: '350px', objectFit: 'cover' }}
-              alt={selectedCat.nev}
-            />
-            <div style={{ padding: '20px' }}>
-              <h2>{selectedCat.nev}</h2>
-              <p><strong>Kor:</strong> {selectedCat.kor || selectedCat.age} év</p>
-              <p><strong>Távolság:</strong> {selectedCat.tavolsag || selectedCat.distance} km</p>
-              <p style={{ marginTop: '15px', color: '#666' }}>
-                {selectedCat.rBemutat || "Nincs bemutatkozó szöveg."}
-              </p>
-            </div>
-          </div>
-        )}
+        
+        {/* Ha van kiválasztott macska, átadjuk az azonosítóját az új komponensnek */}
+        {selectedCat && <CatProfile catId={selectedCat.cId} />}
       </Modal>
       {/* --- ÚJ FOOTER SZEKCIÓ --- */}
       <footer className="footer">
