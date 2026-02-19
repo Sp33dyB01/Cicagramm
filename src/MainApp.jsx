@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import Modal from "./Modal";
 import React from "react";
 import "./MainApp.css";
 import { useToast } from "./Toast";
@@ -7,6 +8,7 @@ import { useToast } from "./Toast";
 const ITEMS_PER_PAGE = 50; 
 
 export default function MainApp({ user }) {
+  const [selectedCat, setSelectedCat] = useState(null);
   const { showToast } = useToast();
   const profileRef = useRef(null);
   const [cats, setCats] = useState([]);
@@ -104,7 +106,7 @@ export default function MainApp({ user }) {
         <section className="cards-grid">
           {/* Map over paginatedCats instead of sortedCats */}
           {(paginatedCats || []).map((cat) => (
-            <div className="tinder-card fixed-size" key={cat.cId}>
+            <div className="tinder-card fixed-size" key={cat.cId} onClick={() => setSelectedCat(cat)}>
               <div className="card large">
                 <img
                   src={`/api/images/${cat.pKep}`}
@@ -168,7 +170,29 @@ export default function MainApp({ user }) {
            </div>
          )}
        </div>
-
+        {/* Így használjuk az újrafelhasználható Modalt */}
+      <Modal 
+        isOpen={!!selectedCat} 
+        onClose={() => setSelectedCat(null)}
+      >
+        {selectedCat && (
+          <div className="cat-modal-view">
+            <img 
+              src={`/api/images/${selectedCat.pKep}`} 
+              style={{ width: '100%', height: '350px', objectFit: 'cover' }}
+              alt={selectedCat.nev}
+            />
+            <div style={{ padding: '20px' }}>
+              <h2>{selectedCat.nev}</h2>
+              <p><strong>Kor:</strong> {selectedCat.kor || selectedCat.age} év</p>
+              <p><strong>Távolság:</strong> {selectedCat.tavolsag || selectedCat.distance} km</p>
+              <p style={{ marginTop: '15px', color: '#666' }}>
+                {selectedCat.rBemutat || "Nincs bemutatkozó szöveg."}
+              </p>
+            </div>
+          </div>
+        )}
+      </Modal>
       {/* --- ÚJ FOOTER SZEKCIÓ --- */}
       <footer className="footer">
         <div className="footer-content">
