@@ -1,6 +1,62 @@
 /* ...existing code... */
 :root {
   --header-height: 70px;
+
+  /* Light Mode Colors */
+  --bg-color: #f9f9f9;
+  --text-color: #000000;
+  --card-bg: #ffffff;
+  --border-color: #000000;
+  --sidebar-bg: #ffffff;
+  --input-bg: #ffffff;
+  --secondary-text: #555555;
+  --footer-bg: #1a1a1a; /* Footer stays dark in both usually */
+  --scrollbar-color: #f9f9f9;
+  --dropdown-bg: #ffffff;
+  --thumb-color: #ccc;
+  --thumb-border: #f9f9f9;
+}
+
+[data-theme='dark'] {
+  --bg-color: #121212;
+  --text-color: #f1f1f1;
+  --card-bg: #1e1e1e;
+  --border-color: #444444;
+  --sidebar-bg: #181818;
+  --input-bg: #2a2a2a;
+  --secondary-text: #aaaaaa;
+  --scrollbar-color: #2a2a2a;
+  --dropdown-bg: #1e1e1e;
+  --thumb-color: #2a2a2a;
+  --thumb-border: #1a1a1a;
+}
+
+/* THE ANIMATION: Apply to everything for a smooth fade */
+* {
+  box-sizing: border-box;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.page-info { color: var(--text-color); }
+.cat-distance { border: 1px solid var(--border-color); }
+
+/* Ensure the toggle button looks good */
+.theme-toggle {
+  background: none;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 5px 10px;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+}
+
+.theme-toggle:hover {
+  background-color: var(--border-color);
+  color: var(--bg-color);
 }
 
 /* ensure root elements fill viewport so children using 100% / 100vh actually reach edges */
@@ -18,8 +74,8 @@ html, body, #root {
 body {
   margin: 0;
   font-family: sans-serif;
-  background: #f9f9f9;
-  color: black;
+  background: var(--bg-color);
+  color: var(--text-color);
 }
 
 /* APP */
@@ -36,9 +92,9 @@ body {
   position: sticky; /* keep header visible at top when scrolling */
   top: 0;
   z-index: 999; /* above other content */
-  background: white; /* ensure it covers content beneath */
+  background: var(--card-bg); /* ensure it covers content beneath */
   box-sizing: border-box;
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   padding: 0 20px;
@@ -132,14 +188,17 @@ body {
   padding: 4px 8px;
   cursor: pointer;
   color:black;
+  border-radius: 4px;
 }
 
 .filter-wrapper .filter-input {
   height: 36px;
+  width: auto;
   border: 2px solid black;
   padding: 4px 8px;
   background: white;
   color: black;
+  border-radius: 4px;
 }
 
 .card {
@@ -228,7 +287,7 @@ body {
   right: 0;
   width: 160px;
   border: 3px solid black;
-  background: white;
+  background: var(--dropdown-bg);
   display: flex;
   flex-direction: column;
 }
@@ -239,14 +298,14 @@ body {
 }
 
 .profile-dropdown div:hover {
-  background: #eee;
+  background: #aaa;
 }
 
-/* grid for cards: 6 per row */
+/* grid for cards: 5 per row */
 .cards-grid {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 24px;
   padding: 24px;
   align-items: start;
@@ -461,4 +520,94 @@ body {
   margin-top: 20px !important;
   font-size: 12px !important;
   color: #777 !important;
+}
+
+/* ========================= */
+/* SMART HEADER ANIMATION    */
+/* ========================= */
+
+.header {
+  /* Keep all your existing .header styles, but add this transition: */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* This class is applied via React when scrolling down */
+.header.header-hidden {
+  transform: translateY(-100%);
+  box-shadow: none;
+}
+
+
+/* ========================= */
+/* MODERN SCROLLBAR          */
+/* ========================= */
+
+/* Width of the scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+/* The track (background) of the scrollbar */
+::-webkit-scrollbar-track {
+  background: var(--bg-color); 
+  border-left: 1px solid var(--scrollbar-color);
+}
+ 
+/* The draggable thumb */
+::-webkit-scrollbar-thumb {
+  background: var(--thumb-color); 
+  border-radius: 6px;
+  border: 3px solid var(--thumb-border); /* Creates a "padding" effect around the thumb */
+}
+
+/* Hover effect on the thumb matching your red theme */
+::-webkit-scrollbar-thumb:hover {
+  background: crimson; 
+}
+
+/* ========================= */
+/* PAGINATION CONTROLS       */
+/* ========================= */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0 40px 0;
+  width: 100%;
+}
+
+.page-btn {
+  padding: 8px 16px;
+  border: 2px solid black;
+  background: white;
+  color: black;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px; /* Optional, matches your app's slight rounding */
+}
+
+.page-btn:hover:not(:disabled) {
+  background: crimson;
+  color: white;
+  border-color: crimson;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #eee;
+}
+
+.page-info {
+  font-weight: 700;
+  font-size: 16px;
+  color: #333;
+}
+
+section {
+  margin-bottom: 150px;
 }

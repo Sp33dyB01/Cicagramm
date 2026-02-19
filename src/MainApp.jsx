@@ -2,11 +2,20 @@ import { useState, useEffect, useRef } from "react";
 import React from "react";
 import "./MainApp.css";
 
+// 10 rows per page * 5 items per row (based on your CSS grid) = 50 items per page
+const ITEMS_PER_PAGE = 50; 
+
 export default function MainApp({user}) {
   const profileRef = useRef(null);
   const [cats, setCats] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("name");
+
+  // Get initial page from URL, default to 1
+  const [currentPage, setCurrentPage] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return parseInt(params.get("page")) || 1;
+  });
 
   useEffect(() => {
     fetch("/api/cica")
@@ -21,6 +30,15 @@ export default function MainApp({user}) {
         setLoading(false);
       });
   }, []);
+
+  // Sync state changes back to the URL (e.g., ?page=2) without full page reload
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    const url = new URL(window.location);
+    url.searchParams.set("page", newPage);
+    window.history.pushState({}, "", url);
+    window.scrollTo({ top: 0, behavior: "smooth" }); // Optional: scroll back to top on page change
+  };
 
   const sortedCats = [...cats].sort((a, b) => {
     if (sort === "name") {
@@ -39,6 +57,13 @@ export default function MainApp({user}) {
     return 0;
   });
 
+  // Calculate pagination
+  const totalPages = Math.ceil(sortedCats.length / ITEMS_PER_PAGE);
+  const paginatedCats = sortedCats.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   if (loading) return <div>Betöltés...</div>;
   if (!cats || cats.length === 0) return <div>Nincsenek macskák.</div>;
 
@@ -54,7 +79,10 @@ export default function MainApp({user}) {
                 <select
                   id="sort"
                   value={sort}
-                  onChange={(e) => setSort(e.target.value)}
+                  onChange={(e) => {
+                    setSort(e.target.value);
+                    handlePageChange(1); // Reset to first page on sort change
+                  }}
                   className="sort-select"
                 >
                   <option value="name">Név</option>
@@ -71,7 +99,8 @@ export default function MainApp({user}) {
         </aside>
         
         <section className="cards-grid">
-          {(sortedCats || []).map((cat) => (
+          {/* Map over paginatedCats instead of sortedCats */}
+          {(paginatedCats || []).map((cat) => (
             <div className="tinder-card fixed-size" key={cat.cId}>
               <div className="card large">
                 <img 
@@ -96,6 +125,45 @@ export default function MainApp({user}) {
             </div>
           ))}
          </section>
+
+         {/* --- PAGINATION CONTROLS --- */}
+         {totalPages > 1 && (
+           <div className="pagination">
+             <button 
+               className="page-btn" 
+               disabled={currentPage === 1} 
+               onClick={() => handlePageChange(1)}
+             >
+               &laquo; Első
+             </button>
+             <button 
+               className="page-btn" 
+               disabled={currentPage === 1} 
+               onClick={() => handlePageChange(currentPage - 1)}
+             >
+               &lsaquo; Előző
+             </button>
+             
+             <span className="page-info">
+               {currentPage} / {totalPages}
+             </span>
+
+             <button 
+               className="page-btn" 
+               disabled={currentPage === totalPages} 
+               onClick={() => handlePageChange(currentPage + 1)}
+             >
+               Következő &rsaquo;
+             </button>
+             <button 
+               className="page-btn" 
+               disabled={currentPage === totalPages} 
+               onClick={() => handlePageChange(totalPages)}
+             >
+               Utolsó &raquo;
+             </button>
+           </div>
+         )}
        </div>
 
        {/* --- ÚJ FOOTER SZEKCIÓ --- */}
