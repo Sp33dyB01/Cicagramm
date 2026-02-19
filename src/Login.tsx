@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom"; // 1. Importáljuk a navigációt
 import { authClient } from "./auth-client";
 import retryOperation from "./assets/utils/Retry";
+import { useToast } from "./Toast";
 
 interface LoginProps {
   onLogin: (user: any) => void;
@@ -13,15 +14,14 @@ export default function Login({ onLogin }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  const { showToast } = useToast();
   // 2. Inicializáljuk a navigációt
   const navigate = useNavigate();
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError(""); // Töröljük az előző hibákat
 
     if (!email.trim() || !password.trim()) {
-      setError("Hiányzik az e-mail vagy a jelszó!");
+      showToast("Hiányzik az e-mail vagy a jelszó!", 'error')
       return;
     }
 
@@ -36,8 +36,7 @@ export default function Login({ onLogin }: LoginProps) {
         setError(error.message || "Hiba a bejelentkezés során.");
       } else {
         console.log("Sikeres bejelentkezés", data);
-
-        onLogin(data.user);
+        onLogin(data?.user);
       }
     } catch (err) {
       setError("Váratlan hiba történt.");

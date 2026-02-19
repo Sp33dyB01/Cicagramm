@@ -6,7 +6,9 @@ import MainApp from "./MainApp";
 import Profile from "./profile";
 import Layout from "./Layout";
 import Upload from "./Upload";
+import { ToastProvider} from "./Toast";
 import { authClient } from "./auth-client";
+
 
 export default function App() {
   const [isAuth, setIsAuth] = useState(false);
@@ -43,6 +45,7 @@ export default function App() {
   }
 
   return (
+    <ToastProvider>
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={!isAuth ?
@@ -61,5 +64,6 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </ToastProvider>
   );
 }

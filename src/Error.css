@@ -1,0 +1,12 @@
+@keyframes floating{
+    0%   { transform: translateY(-150%); }       /* Starts off normal */
+  15%  { transform: translateY(100px); }    /* Slides down */
+  85%  { transform: translateY(100px); }    /* Waits here so user can read */
+  100% { transform: translateY(-150%); }
+}
+.lemegy{
+    animation: floating 5s ease-in-out 1 forwards;
+}
+.lemegy:hover {
+    animation-play-state: paused;
+}
