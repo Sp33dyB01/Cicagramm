@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import './Error.css';
 export type ToastStatus = 'idle' | 'error' | 'success' | 'warning';
 
@@ -14,7 +13,7 @@ const alertStyles: { [key: string]: any } = {
   warning: 'bg-yellow-100 text-yellow-800 border-yellow-500',
 };
 
-export default function Error({errorType, errorMessage, onAnimationEnd}: ErrorMessageProps) {
+export default function Error({ errorType, errorMessage, onAnimationEnd }: ErrorMessageProps) {
   // 1. Temporarily set the default state to 'error' so it shows up immediately on refresh
   if (errorType === 'idle') return null;
   return (

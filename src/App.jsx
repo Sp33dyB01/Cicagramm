@@ -7,7 +7,7 @@ import Profile from "./profile";
 import Layout from "./Layout";
 import Upload from "./Upload";
 import Beallitasok from "./beallitasok";
-import { ToastProvider} from "./Toast";
+import { ToastProvider } from "./Toast";
 import { authClient } from "./auth-client";
 
 
@@ -47,26 +47,26 @@ export default function App() {
 
   return (
     <ToastProvider>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={!isAuth ?
-          <Login onLogin={handleLoginSuccess} />
-          : <Navigate to="/" />} />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={!isAuth ?
+            <Login onLogin={handleLoginSuccess} />
+            : <Navigate to="/" />} />
 
-        <Route path="/register" element={<Register onSuccess={() => { }} />} />
+          <Route path="/register" element={<Register onSuccess={() => { handleLoginSuccess }} />} />
 
-        <Route element={<Layout user={user} onLogout={handleLogout} />}>
+          <Route element={<Layout user={user} onLogout={handleLogout} />}>
 
-          <Route path="/" element={<MainApp user={user} />} />
+            <Route path="/" element={<MainApp user={user} />} />
 
-          <Route path="/profile" element={<Profile user={user} />} />
+            <Route path="/profile" element={<Profile user={user} />} />
 
-          <Route path="/uploads" element={<Upload user={user} />} />
+            <Route path="/uploads" element={<Upload user={user} />} />
 
-          <Route path="/beallitasok" element={<Beallitasok user={user} />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+            <Route path="/beallitasok" element={<Beallitasok user={user} />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </ToastProvider>
   );
 }

@@ -4,6 +4,7 @@ import { authClient } from "./auth-client";
 import { getCoordinates } from "../worker/tavolsag";
 import { useNavigate } from "react-router-dom";
 import retryOperation from "./assets/utils/Retry";
+import { useToast } from "./Toast";
 
 interface City {
   id: number;
@@ -26,7 +27,7 @@ interface RegisterProps {
 }
 
 export default function Register({ onSuccess }: RegisterProps) {
-  const [error, setError] = useState<string>("");
+  const { showToast } = useToast();
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const [cities, setCities] = useState<City[]>([]);
@@ -75,11 +76,10 @@ export default function Register({ onSuccess }: RegisterProps) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     if (!formData.email || !formData.jelszo || !formData.nev || !formData.irsz || !formData.utca || !formData.varos) {
-      setError("Kérlek tölts ki minden mezőt!");
+      showToast("Kérlek tölts ki minden mezőt!", "error");
       setLoading(false);
       return;
     }
@@ -87,28 +87,28 @@ export default function Register({ onSuccess }: RegisterProps) {
     try {
       const coords = await getCoordinates(`${formData.irsz} ${formData.varos} ${formData.utca}`);
 
-      const { data, error } = await retryOperation(async () =>
+      const { error } = await retryOperation(async () =>
         authClient.signUp.email({
           email: formData.email,
           password: formData.jelszo,
           name: formData.nev,
-          image: "default.jpeg",
+          image: "",
           irsz: Number(formData.irsz),
           varos: formData.varos,
           utca: formData.utca,
-          lat: coords ? coords.lat : 0,
-          lon: coords ? coords.lon : 0
+          lat: coords?.lat,
+          lon: coords?.lon
         }));
 
       if (error) {
-        setError(error.message || "Hiba történt a regisztráció során.");
+        showToast(error.message || "Hiba történt a regisztráció során.", "error");
       } else {
-        console.log("Registered user:", data);
+        showToast("Sikeres regisztráció!", "success");
         onSuccess();
-        navigate('/login');
+        navigate('/');
       }
     } catch (err) {
-      setError("Hiba történt a regisztráció során.");
+      showToast("Hiba történt a regisztráció során.", "error");
       console.error(err);
     } finally {
       setLoading(false);
@@ -122,11 +122,7 @@ export default function Register({ onSuccess }: RegisterProps) {
           Cicagramm
         </h1>
 
-        {error && (
-          <p className="text-sm text-red-500 text-center mb-3 bg-red-50 p-2 rounded">
-            {error}
-          </p>
-        )}
+
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
