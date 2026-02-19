@@ -96,7 +96,7 @@ export default function MainApp({ user }) {
                   <option value="distance">Távolság</option>
                 </select>
               </div>
-
+                  
               <div className="filter-wrapper">
                 <input className="filter-input" placeholder="Speciális szűrés..." />
               </div>
@@ -116,7 +116,7 @@ export default function MainApp({ user }) {
 
                 <button
                   className="overlay-like-btn"
-                  onClick={() => { console.log('like', cat.cId); }}
+                  onClick={(e) => { e.stopPropagation();  console.log('like', cat.cId); }}
                   title="Kedvencekhez"
                 >
                   ❤

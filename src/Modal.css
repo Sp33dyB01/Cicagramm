@@ -61,6 +61,7 @@
 
 /* ... a bezáró gomb stílusa maradhat a régi ... */
 .modal-close {
+  padding-inline: 0;
   position: absolute;
   top: 15px;
   right: 15px;

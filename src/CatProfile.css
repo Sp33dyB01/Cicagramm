@@ -90,22 +90,23 @@
 /* ========================================= */
 .image-zoom-overlay {
   position: fixed;
-  inset: 0; /* top: 0, left: 0, right: 0, bottom: 0 */
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 20000; /* Nagyon magas, hogy a Modal felett legyen */
+  inset: 0; 
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 20000; 
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: zoom-out; /* Alapból bezár, ha mellékattintasz */
+  cursor: default; /* Alapból bezár, ha mellékattintasz */
   animation: fadeInZoom 0.2s ease-out;
 }
 
 .zoomed-image {
-  max-width: 90vw;
-  max-height: 90vh;
+  max-width: 70vw;
+  max-height: 70vh;
   object-fit: contain;
-  cursor: zoom-in; /* Discord-szerű jelzés, hogy lehet még nagyítani */
+  cursor: zoom-in; 
   border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* Kis árnyék a mélységért */
   transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1);
 }
 
@@ -195,4 +196,24 @@
   margin: 5px 0;
   font-size: 14px;
   line-height: 1.4;
+}
+
+/* --- ÚJ: A bezáró X gomb stílusa --- */
+.zoom-close-btn {
+  position: absolute;
+  top: 25px;
+  right: 30px;
+  background: none; /* Háttér nélküli */
+  border: none;     /* Keret nélküli */
+  color: rgba(255, 255, 255, 0.7); /* Fehér, kis áttetszőséggel */
+  font-size: 45px;  /* Jó nagy X */
+  line-height: 1;   /* Hogy ne legyen extra sorköz */
+  cursor: pointer;
+  z-index: 20001;   /* A kép felett legyen */
+  padding: 0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.zoom-close-btn:hover {
+  color: white;        /* Hoverre teljesen fehér */
+  transform: scale(1.1); /* Picit megnő */
 }
