@@ -259,7 +259,7 @@ body {
 }
 
 /* each tinder-card gets fixed width/height */
-.tinder-card.fixed {
+.tinder-card.fixed-size {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -267,7 +267,7 @@ body {
 }
 
 /* fixed dimensions for large and small parts inside each card */
-.tinder-card.fixed .card.large {
+.tinder-card.fixed-size .card.large {
   position: relative;
   width: 100%;
   height: 260px; /* fixed image height */
@@ -278,13 +278,13 @@ body {
   border-radius: 10px;
 }
 
-.tinder-card.fixed .card.large img {
+.tinder-card.fixed-size .card.large img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.tinder-card.fixed .card.small {
+.tinder-card.fixed-size .card.small {
   width: 100%;
   height: 72px;
   margin-left: 0;
@@ -297,7 +297,7 @@ body {
 }
 
 /* make sure action buttons don't overflow */
-.tinder-card.fixed .action-btn {
+.tinder-card.fixed-size .action-btn {
   width: 52px;
   height: 52px;
   font-size: 22px;
@@ -361,6 +361,46 @@ body {
 
 /* Ha a kártya alatti gombok már nem kellenek, a .card.small stílusát 
    érdemes nullázni vagy törölni, hogy ne foglaljon helyet feleslegesen */
-.tinder-card.fixed .card.small {
-  display: none; /* Vagy height: 0; */
+.tinder-card.fixed-size .card.small {
+  position: absolute;
+  inset: 0; /* Shorthand to stretch top/bottom/left/right to 0 */
+  width: 100%;
+  height: 100%;
+  /* Optional: Adds a subtle dark gradient at the bottom so white text remains readable on bright images */
+  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 30%); 
+  pointer-events: none; /* Ensures the hover effects and heart button clicks still work */
+  display: block; 
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.cat-info {
+  position: absolute;
+  color: white;
+  font-weight: 700;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.9);
+  font-size: 16px;
+  z-index: 5;
+}
+
+.cat-name {
+  bottom: 12px;
+  left: 12px;
+}
+
+.cat-age {
+  bottom: 12px;
+  right: 12px;
+}
+
+.cat-distance {
+  top: 12px;
+  /* Shifted to 60px right so it doesn't overlap with your .overlay-like-btn (which is at 10px) */
+  left: 10px; 
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 13px;
+  backdrop-filter: blur(2px); /* Adds a nice frosted glass effect */
 }

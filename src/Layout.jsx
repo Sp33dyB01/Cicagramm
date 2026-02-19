@@ -1,6 +1,5 @@
 import { Outlet } from "react-router-dom";
 import TopBar from "./Topbar";
-
 export default function Layout({ user, onLogout }) {
   return (
     <div className="app-container">
