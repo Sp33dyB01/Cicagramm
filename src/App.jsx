@@ -15,6 +15,8 @@ export default function App() {
   const [isAuth, setIsAuth] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [ipLon, setIpLon] = useState(null);
+  const [ipLat, setIpLat] = useState(null);
   const handleLogout = () => {
     setIsAuth(false);
     setUser(null);
@@ -33,7 +35,6 @@ export default function App() {
       setUser(baseData);
     }
   };
-
   useEffect(() => {
     async function checkSession() {
       try {
@@ -61,7 +62,23 @@ export default function App() {
     setIsAuth(true);
     setUser(userData);
   };
-
+  useEffect(() => {
+    const getApproximateLocation = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/')
+        const data = await response.json();
+        if (data && !data.error) {
+          setIpLon(data.longitude);
+          setIpLat(data.latitude);
+        }
+        console.log(`Vendég elhelyezkedése: ${data.city}, ${data.latitude}° ${data.longitude}°`)
+      }
+      catch (e) {
+        console.error("Az IP-keresés nem sikerült", e)
+      }
+    }
+    getApproximateLocation();
+  }, [])
   if (isLoading) {
     return <div style={{ padding: 20 }}>Alkalmazás betöltése...</div>;
   }
@@ -78,7 +95,7 @@ export default function App() {
 
           <Route element={<Layout user={user} onLogout={handleLogout} />}>
 
-            <Route path="/" element={<MainApp user={user} />} />
+            <Route path="/" element={<MainApp user={user} ipLat={ipLat} ipLon={ipLon} />} />
 
             <Route path="/uploads" element={<Upload user={user} />} />
 

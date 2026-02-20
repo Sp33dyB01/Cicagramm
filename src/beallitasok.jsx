@@ -11,7 +11,10 @@ export default function Beallitasok({ user, onUpdate }) {
 
   // --- CITY FETCHING STATES ---
   const [cities, setCities] = useState([]);
+  const [postals, setPostals] = useState([]);
   const [loadingCities, setLoadingCities] = useState(false);
+  const [loadingPostal, setLoadingPostal] = useState(false);
+  const [debouncedValue, setDebouncedValue] = useState('');
 
   // Initialize form state with the current user's data
   const [formData, setFormData] = useState({
@@ -39,22 +42,25 @@ export default function Beallitasok({ user, onUpdate }) {
     }
   }, [user]);
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(formData.varos);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [formData.varos]);
+
   // Effect to fetch cities when the postal code (irsz) changes
   useEffect(() => {
     if (formData.irsz && String(formData.irsz).length === 4) {
       const fetchCities = async () => {
         setLoadingCities(true);
-        setCities([]);
-        // Do not reset city here, so the user's saved city remains visible
-        // setFormData(prev => ({ ...prev, varos: '' })); 
-
         try {
-          const res = await fetch(`/api/varos/${formData.irsz}`);
+          const res = await fetch(`/api/varos/irsz/${formData.irsz}`);
           if (res.ok) {
             const data = await res.json();
             setCities(data);
             if (data.length === 1) {
-              setFormData(prev => ({ ...prev, varos: data[0].nev }));
+              setFormData(prev => prev.varos !== data[0].nev ? { ...prev, varos: data[0].nev } : prev);
             }
           }
         } catch (err) {
@@ -69,6 +75,34 @@ export default function Beallitasok({ user, onUpdate }) {
       setCities([]); // Clear cities if postal code is not 4 digits
     }
   }, [formData.irsz]);
+
+  useEffect(() => {
+    if (debouncedValue) {
+      const fetchPostal = async () => {
+        setLoadingPostal(true);
+        try {
+          const res = await fetch(`/api/varos/nev/${debouncedValue}`);
+          if (res.ok) {
+            const data = await res.json();
+            setPostals(data);
+            if (data.length === 1) {
+              setFormData(prev => prev.irsz !== String(data[0].irsz) ? { ...prev, irsz: String(data[0].irsz) } : prev);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch postal codes", err);
+        } finally {
+          setLoadingPostal(false);
+        }
+      };
+      fetchPostal();
+    } else {
+      setPostals([]);
+    }
+  }, [debouncedValue]);
+
+  const isLocationLocked = formData.irsz !== '' && formData.varos !== '';
+
 
   // Handle file input change
   const handleFileChange = (e) => {
@@ -209,13 +243,35 @@ export default function Beallitasok({ user, onUpdate }) {
 
           {/* Address Section */}
           <div className="flex gap-2">
-            <input
-              type="number"
-              className="w-1/3 px-3 py-2 border rounded bg-gray-50"
-              placeholder="Irsz"
-              value={formData.irsz}
-              onChange={(e) => setFormData({ ...formData, irsz: e.target.value })}
-            />
+            <div className="w-1/3 relative">
+              {loadingPostal ? (
+                <div className="w-full px-3 py-2 border rounded bg-gray-100 text-gray-500 italic">
+                  Keresés...
+                </div>
+              ) : postals.length > 1 ? (
+                <select
+                  className="w-full h-[42px] px-3 py-2 border rounded bg-gray-50"
+                  value={formData.irsz}
+                  onChange={(e) => setFormData({ ...formData, irsz: e.target.value })}
+                >
+                  <option value="">-- --</option>
+                  {postals.map((p) => (
+                    <option key={`irsz-${p.id}`} value={p.irsz}>
+                      {p.irsz}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="number"
+                  className="w-full px-3 py-2 border rounded bg-gray-50"
+                  placeholder="Irsz"
+                  value={formData.irsz}
+                  onChange={(e) => setFormData({ ...formData, irsz: e.target.value })}
+                  style={postals.length === 1 ? { backgroundColor: '#e8f0fe' } : {}}
+                />
+              )}
+            </div>
             <div className="w-2/3 relative">
               {loadingCities ? (
                 <div className="w-full px-3 py-2 border rounded bg-gray-100 text-gray-500 italic">
@@ -223,7 +279,7 @@ export default function Beallitasok({ user, onUpdate }) {
                 </div>
               ) : cities.length > 1 ? (
                 <select
-                  className="w-full px-3 py-2 border rounded bg-gray-50"
+                  className="w-full h-[42px] px-3 py-2 border rounded bg-gray-50"
                   value={formData.varos}
                   onChange={(e) => setFormData({ ...formData, varos: e.target.value })}
                 >
@@ -240,8 +296,7 @@ export default function Beallitasok({ user, onUpdate }) {
                   placeholder="Város"
                   value={formData.varos}
                   onChange={(e) => setFormData({ ...formData, varos: e.target.value })}
-                  readOnly={cities.length === 1 && formData.irsz.length === 4}
-                  style={cities.length === 1 && formData.irsz.length === 4 ? { backgroundColor: '#e8f0fe' } : {}}
+                  style={cities.length === 1 ? { backgroundColor: '#e8f0fe' } : {}}
                 />
               )}
             </div>

@@ -27,7 +27,9 @@ export default function Register({ onSuccess }: RegisterProps) {
   const navigate = useNavigate();
   const [cities, setCities] = useState<SelectTelepules[]>([]);
   const [loadingCities, setLoadingCities] = useState<boolean>(false);
-
+  const [loadingPostal, setLoadingPostal] = useState<Boolean>(false)
+  const [postals, setPostals] = useState<SelectTelepules[]>([]);
+  const [debouncedValue, setDebouncedValue] = useState<string>('');
   const [formData, setFormData] = useState<FormData>({
     email: '',
     nev: '',
@@ -38,21 +40,26 @@ export default function Register({ onSuccess }: RegisterProps) {
     pKep: '',
     varos: '',
   });
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(formData.varos);
+    }, 500);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [formData.varos])
 
   useEffect(() => {
     if (formData.irsz.length === 4) {
       const fetchCities = async () => {
         setLoadingCities(true);
-        setCities([]);
-        setFormData(prev => ({ ...prev, varos: '' }));
-
         try {
           const res = await fetch(`/api/varos/irsz/${formData.irsz}`);
           if (res.ok) {
             const data: SelectTelepules[] = await res.json();
             setCities(data);
             if (data.length === 1) {
-              setFormData(prev => ({ ...prev, varos: data[0].nev }));
+              setFormData(prev => prev.varos !== data[0].nev ? { ...prev, varos: data[0].nev } : prev);
             }
           }
         }
@@ -65,10 +72,36 @@ export default function Register({ onSuccess }: RegisterProps) {
       };
 
       fetchCities();
+    } else {
+      setCities([]);
     }
   }, [formData.irsz]);
 
-
+  useEffect(() => {
+    if (debouncedValue) {
+      const fetchPostal = async () => {
+        setLoadingPostal(true)
+        try {
+          const res = await fetch(`/api/varos/nev/${debouncedValue}`)
+          if (res.ok) {
+            const data: SelectTelepules[] = await res.json();
+            setPostals(data);
+            if (data.length === 1) {
+              setFormData(prev => prev.irsz !== String(data[0].irsz) ? { ...prev, irsz: String(data[0].irsz) } : prev)
+            }
+          }
+        }
+        catch (err) {
+          console.error("Failed to fetch postal codes", err)
+        } finally {
+          setLoadingPostal(false)
+        }
+      };
+      fetchPostal();
+    } else {
+      setPostals([]);
+    }
+  }, [debouncedValue])
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -78,29 +111,33 @@ export default function Register({ onSuccess }: RegisterProps) {
       setLoading(false);
       return;
     }
-
     try {
-      const coords = await getCoordinates(`${formData.irsz} ${formData.varos} ${formData.utca}`);
+      const coords = await getCoordinates(formData.irsz, formData.varos, formData.utca);
+      if (coords?.displayName) {
+        const { data, error } = await retryOperation(async () =>
+          authClient.signUp.email({
+            email: formData.email,
+            password: formData.jelszo,
+            name: formData.nev,
+            image: "",
+            irsz: Number(formData.irsz),
+            varos: formData.varos,
+            utca: formData.utca,
+            lat: coords.lat,
+            lon: coords.lon
+          }));
 
-      const {data, error } = await retryOperation(async () =>
-        authClient.signUp.email({
-          email: formData.email,
-          password: formData.jelszo,
-          name: formData.nev,
-          image: "",
-          irsz: Number(formData.irsz),
-          varos: formData.varos,
-          utca: formData.utca,
-          lat: coords?.lat,
-          lon: coords?.lon
-        }));
+        if (error) {
+          showToast(error.message || "Hiba történt a regisztráció során.", "error");
 
-      if (error) {
-        showToast(error.message || "Hiba történt a regisztráció során.", "error");
-      } else {
-        showToast("Sikeres regisztráció!", "success");
-        onSuccess(data?.user);
-        navigate('/');
+        } else {
+          showToast("Sikeres regisztráció!", "success");
+          onSuccess(data?.user);
+          navigate('/');
+        }
+      }
+      else {
+        showToast("Nem található a megadott cím. Kérlek, ellenőrizd az adatokat!", "error")
       }
     } catch (err) {
       showToast("Hiba történt a regisztráció során.", "error");
@@ -142,18 +179,36 @@ export default function Register({ onSuccess }: RegisterProps) {
             onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, jelszo: e.target.value })}
           />
 
-          {/* --- ADDRESS SECTION --- */}
           <div className="flex gap-2">
-            {/* IRSZ Input */}
-            <input
-              type="number"
-              className="w-1/3 px-3 py-2 border rounded bg-gray-50"
-              placeholder="Irsz"
-              value={formData.irsz}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, irsz: e.target.value })}
-            />
-
-            {/* VAROS Input - Changes based on state */}
+            <div className="w-1/3 relative">
+              {loadingPostal ? (
+                <div className="w-full px-3 py-2 border rounded bg-gray-100 text-gray-500 italic">
+                  Keresés...
+                </div>
+              ) : postals.length > 1 ? (
+                <select
+                  className="w-full px-3 h-[42px] py-2 border rounded bg-gray-50"
+                  value={formData.irsz}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, irsz: e.target.value })}
+                >
+                  <option value="">-- --</option>
+                  {postals.map((p) => (
+                    <option key={`irsz-${p.id}`} value={p.irsz}>
+                      {p.irsz}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="number"
+                  className="w-full px-3 py-2 border rounded bg-gray-50"
+                  placeholder="Irsz"
+                  value={formData.irsz}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, irsz: e.target.value })}
+                  style={postals.length === 1 ? { backgroundColor: '#e8f0fe' } : {}}
+                />
+              )}
+            </div>
             <div className="w-2/3 relative">
               {loadingCities ? (
                 <div className="w-full px-3 py-2 border rounded bg-gray-100 text-gray-500 italic">
@@ -162,7 +217,7 @@ export default function Register({ onSuccess }: RegisterProps) {
               ) : cities.length > 1 ? (
                 /* Dropdown if multiple cities found */
                 <select
-                  className="w-full px-3 py-2 border rounded bg-gray-50"
+                  className="w-full h-[42px] px-3 py-2 border rounded bg-gray-50"
                   value={formData.varos}
                   onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, varos: e.target.value })}
                 >
@@ -180,8 +235,6 @@ export default function Register({ onSuccess }: RegisterProps) {
                   placeholder="Város"
                   value={formData.varos}
                   onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, varos: e.target.value })}
-                  /* ReadOnly if we auto-filled it from a single result to prevent typos */
-                  readOnly={cities.length === 1}
                   style={cities.length === 1 ? { backgroundColor: '#e8f0fe' } : {}}
                 />
               )}

@@ -117,9 +117,11 @@ felhasznaloRouter.patch("/:felId", async (c) => {
             updateData.pKep = newPkepKey;
         }
         if (formData['irsz'] || formData['utca']) {
-            const newCoords = await getCoordinates(`${updateData.irsz || result.irsz} ${updateData.varos || result.varos} ${updateData.utca || result.utca}`);
-            updateData.lat = newCoords?.lat;
-            updateData.lon = newCoords?.lon;
+            const newCoords = await getCoordinates(updateData.irsz || result.irsz, updateData.varos || result.varos, updateData.utca || result.utca);
+            if (newCoords?.displayName) {
+                updateData.lat = newCoords?.lat;
+                updateData.lon = newCoords?.lon;
+            }
         }
         await db.update(schema.felhasznalo).set(updateData).where(eq(schema.felhasznalo.id, felId));
         return c.json({ success: true, message: "Felhasználó adatai frissítve!" });
