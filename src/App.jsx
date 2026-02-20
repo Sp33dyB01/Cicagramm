@@ -19,12 +19,27 @@ export default function App() {
     setIsAuth(false);
     setUser(null);
   };
+  const fetchUserProfile = async (userId, baseData) => {
+    try {
+      const profileRes = await fetch(`/api/profile/${userId}`);
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser({ ...baseData, ...profileData });
+      } else {
+        setUser(baseData);
+      }
+    } catch (profileError) {
+      console.error("Hiba a profil betöltésekor:", profileError);
+      setUser(baseData);
+    }
+  };
+
   useEffect(() => {
     async function checkSession() {
       try {
         const { data } = await authClient.getSession();
         if (data?.session) {
-          setUser(data.user);
+          await fetchUserProfile(data.user.id, data.user);
           setIsAuth(true);
         }
       } catch (error) {
@@ -35,6 +50,12 @@ export default function App() {
     }
     checkSession();
   }, []);
+
+  const handleUpdateUser = () => {
+    if (user?.id) {
+      fetchUserProfile(user.id, user);
+    }
+  };
 
   const handleLoginSuccess = (userData) => {
     setIsAuth(true);
@@ -61,7 +82,7 @@ export default function App() {
 
             <Route path="/uploads" element={<Upload user={user} />} />
 
-            <Route path="/beallitasok" element={<Beallitasok user={user} />} />
+            <Route path="/beallitasok" element={<Beallitasok user={user} onUpdate={handleUpdateUser} />} />
             <Route path="/users/:userId" element={<UserProfile />} />
           </Route>
         </Routes>

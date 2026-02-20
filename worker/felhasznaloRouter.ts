@@ -69,7 +69,7 @@ felhasznaloRouter.get("/:felId", async (c) => {
                         species: true
                     }
                 },
-                
+
             }
         }
         );

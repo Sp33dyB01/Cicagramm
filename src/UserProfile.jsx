@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { authClient } from "./auth-client";
 import avatarImg from "./assets/avatar.png";
 import "./MainApp.css";
 
@@ -8,6 +9,21 @@ const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('uploads'); // 'uploads' or 'favorites'
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const { data } = await authClient.getSession();
+        if (data?.session) {
+          setCurrentUser(data.user);
+        }
+      } catch (error) {
+        console.error("Hiba a session ellenőrzésekor:", error);
+      }
+    }
+    checkSession();
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -61,22 +77,24 @@ const UserProfile = () => {
       <div className="flex space-x-4 border-b mb-6">
         <button
           className={`pb-2 px-1 font-semibold transition-colors ${activeTab === 'uploads'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
+            ? 'border-b-2 border-blue-500 text-blue-600'
+            : 'text-gray-500 hover:text-gray-700'
             }`}
           onClick={() => setActiveTab('uploads')}
         >
           {user.nev} feltöltései
         </button>
-        <button
-          className={`pb-2 px-1 font-semibold transition-colors ${activeTab === 'favorites'
+        {currentUser && currentUser.id === user.id && (
+          <button
+            className={`pb-2 px-1 font-semibold transition-colors ${activeTab === 'favorites'
               ? 'border-b-2 border-blue-500 text-blue-600'
               : 'text-gray-500 hover:text-gray-700'
-            }`}
-          onClick={() => setActiveTab('favorites')}
-        >
-          Kedvencek
-        </button>
+              }`}
+            onClick={() => setActiveTab('favorites')}
+          >
+            Kedvencek
+          </button>
+        )}
       </div>
 
       {/* Tab Content */}

@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import avatarImg from "./assets/avatar.png"; // Make sure the path matches MainApp.jsx
 import { useToast } from "./Toast";
 // This component receives the logged-in user object as a prop
-export default function Beallitasok({ user }) {
+export default function Beallitasok({ user, onUpdate }) {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   // --- CITY FETCHING STATES ---
   const [cities, setCities] = useState([]);
@@ -15,13 +16,28 @@ export default function Beallitasok({ user }) {
   // Initialize form state with the current user's data
   const [formData, setFormData] = useState({
     email: user?.email || '',
-    nev: user?.name || '',
+    nev: user?.nev || user?.name || '',
     rBemutat: user?.rBemutat || '',
     irsz: user?.irsz || '',
     varos: user?.varos || '',
     utca: user?.utca || '',
     pKep: null, // This will hold the File object if a new picture is selected
   });
+
+  // Sync formData when user prop updates (e.g. after a successful save)
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        email: user.email || prev.email,
+        nev: user.nev || user.name || prev.nev,
+        rBemutat: user.rBemutat !== undefined ? user.rBemutat : prev.rBemutat,
+        irsz: user.irsz || prev.irsz,
+        varos: user.varos || prev.varos,
+        utca: user.utca || prev.utca,
+      }));
+    }
+  }, [user]);
 
   // Effect to fetch cities when the postal code (irsz) changes
   useEffect(() => {
@@ -56,8 +72,14 @@ export default function Beallitasok({ user }) {
 
   // Handle file input change
   const handleFileChange = (e) => {
-    if (e.target.files.length > 0) {
+    if (e.target.files && e.target.files.length > 0) {
       setFormData({ ...formData, pKep: e.target.files[0] });
+    }
+  };
+
+  const handleImageClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -83,7 +105,7 @@ export default function Beallitasok({ user }) {
     }
 
     try {
-      const response = await fetch(`/api/felhasznalo/${user.id}`, {
+      const response = await fetch(`/api/profile/${user.id}`, {
         method: 'PATCH',
         body: submissionData, // No headers needed, browser sets it for FormData
       });
@@ -92,7 +114,9 @@ export default function Beallitasok({ user }) {
 
       if (response.ok && result.success) {
         showToast("Adataid sikeresen frissítve!", "success");
-        // Optionally, navigate away or refresh user data
+        if (onUpdate) {
+          onUpdate(); // Trigger state update in App.jsx
+        }
       } else {
         showToast(result.error || "Hiba történt a frissítés során.", "error");
       }
@@ -117,7 +141,7 @@ export default function Beallitasok({ user }) {
     <div className="w-full flex justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-4xl bg-white border rounded-lg p-6">
         <h1 className="text-3xl text-center mb-6 font-semibold">
-          {formData.nev} beállításai
+          {user.nev} beállításai
         </h1>
 
 
@@ -126,18 +150,35 @@ export default function Beallitasok({ user }) {
 
           {/* --- New Profile Section (Display Only) --- */}
           <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-6 mb-4 border-b pb-6">
-            <img
-              src={user.pKep ? `/api/images/${user.pKep}` : avatarImg}
-              alt="Profilkép"
-              className="w-32 h-32 rounded-full object-cover border-4 border-black shadow-lg flex-shrink-0"
-              onError={(e) => {
-                e.currentTarget.src = avatarImg;
-                e.currentTarget.onerror = null;
-              }}
+            <div
+              className="relative w-32 h-32 cursor-pointer group rounded-full overflow-hidden border-4 border-black shadow-lg flex-shrink-0"
+              onClick={handleImageClick}
+              title="Kattints a profilkép módosításához"
+            >
+              <img
+                src={formData.pKep ? URL.createObjectURL(formData.pKep) : (user?.pKep ? `/api/images/${user.pKep}` : avatarImg)}
+                alt="Profilkép"
+                className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
+                onError={(e) => {
+                  e.currentTarget.src = avatarImg;
+                  e.currentTarget.onerror = null;
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-40">
+                <span className="text-white text-sm font-semibold">Módosítás</span>
+              </div>
+            </div>
+            {/* hidden file input */}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              ref={fileInputRef}
+              className="hidden"
             />
             <div className="flex-grow w-full space-y-2">
-              <h2 className="text-3xl font-bold">{user.name}</h2>
-              <p className="text-gray-600 italic">{user.rBemutat || "Nincs megadva bemutatkozás."}</p>
+              <h2 className="text-3xl font-bold">{user?.nev || user?.name || "Ismeretlen"}</h2>
+              <p className="text-gray-600 italic">{user?.rBemutat || "Nincs megadva bemutatkozás."}</p>
             </div>
           </div>
 
@@ -213,20 +254,7 @@ export default function Beallitasok({ user }) {
             onChange={(e) => setFormData({ ...formData, utca: e.target.value })}
           />
 
-          {/* Profile Picture Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Profilkép cseréje
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
-          </div>
 
-          <br />
           <button
             type="submit"
             disabled={loading}
