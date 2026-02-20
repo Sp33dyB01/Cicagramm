@@ -1,0 +1,219 @@
+.cat-profile-container {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px; /* Szekciók közötti távolság */
+}
+
+/* Felső rész (PFP + Macska adatok balra, Gazda jobbra) */
+.profile-top {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.profile-top-left {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.main-pfp {
+  width: 160px;
+  height: 160px;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 2px solid var(--border-color, #000);
+}
+
+.cat-stats h2 {
+  margin: 0 0 10px 0;
+  font-size: 24px;
+}
+
+.cat-stats p, .profile-top-right p {
+  margin: 5px 0;
+  font-size: 15px;
+}
+
+.profile-top-right {
+  min-width: 200px;
+  background: var(--bg-color, #f9f9f9);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #ccc);
+}
+
+.profile-top-right h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+/* Középső rész */
+.profile-middle h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.description-text {
+  line-height: 1.6;
+  color: var(--secondary-text, #555);
+}
+
+/* Alsó rész (Bélyegképek) */
+.thumbnail-grid {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  padding-bottom: 10px; /* Hogy a scrollbar elférjen */
+}
+
+.thumbnail-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid var(--border-color, #000);
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.thumbnail-img:hover {
+  transform: scale(1.05);
+  border-color: crimson;
+}
+
+/* ========================================= */
+/* DISCORD-SZERŰ IMAGE ZOOM OVERLAY          */
+/* ========================================= */
+.image-zoom-overlay {
+  position: fixed;
+  inset: 0; 
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 20000; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: default; /* Alapból bezár, ha mellékattintasz */
+  animation: fadeInZoom 0.2s ease-out;
+}
+
+.zoomed-image {
+  max-width: 70vw;
+  max-height: 70vh;
+  object-fit: contain;
+  cursor: zoom-in; 
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* Kis árnyék a mélységért */
+  transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+/* Amikor a képre kattintasz, nagyít (scale 1.5) */
+.zoomed-image.zoomed-in {
+  transform: scale(1.5);
+  cursor: zoom-out;
+}
+
+@keyframes fadeInZoom {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* --- ÚJ: Egységes osztály a nagyítható képekhez --- */
+.zoomable {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.zoomable:hover {
+  transform: scale(1.03); /* Kicsit megnő, ha fölé viszed az egeret */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Fő kép módosítása, hogy jól működjön a hover */
+.main-pfp {
+  width: 160px;
+  height: 160px;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 2px solid var(--border-color, #000);
+  flex-shrink: 0; /* Ne nyomja össze a flexbox */
+}
+
+/* --- GAZDI ADATOK STÍLUSA --- */
+.profile-top-right {
+  flex: 1; /* Kitölti a maradék helyet jobbra */
+  min-width: 250px;
+  background: var(--bg-color, #f9f9f9);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #ccc);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.profile-top-right h3 {
+  margin: 0;
+  border-bottom: 2px solid var(--border-color, #ddd);
+  padding-bottom: 5px;
+}
+
+.owner-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.owner-pfp {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%; /* Kerek profilkép a gazdinak */
+  object-fit: cover;
+  border: 2px solid var(--border-color, #000);
+}
+
+.owner-basic-info p {
+  margin: 0 0 5px 0;
+}
+
+.owner-name {
+  font-size: 18px;
+}
+
+.owner-email a {
+  color: crimson;
+  text-decoration: none;
+}
+
+.owner-email a:hover {
+  text-decoration: underline;
+}
+
+.owner-details p {
+  margin: 5px 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* --- ÚJ: A bezáró X gomb stílusa --- */
+.zoom-close-btn {
+  position: absolute;
+  top: 25px;
+  right: 30px;
+  background: none; /* Háttér nélküli */
+  border: none;     /* Keret nélküli */
+  color: rgba(255, 255, 255, 0.7); /* Fehér, kis áttetszőséggel */
+  font-size: 45px;  /* Jó nagy X */
+  line-height: 1;   /* Hogy ne legyen extra sorköz */
+  cursor: pointer;
+  z-index: 20001;   /* A kép felett legyen */
+  padding: 0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.zoom-close-btn:hover {
+  color: white;        /* Hoverre teljesen fehér */
+  transform: scale(1.1); /* Picit megnő */
+}

@@ -46,13 +46,13 @@ export const getAuth = (env: Env) => {
       additionalFields: {
         irsz: { type: "number" },
         utca: { type: "string" },
-        hazszam: { type: "number" },
-        pKep: { type: "string" },
-        admin: { type: "number" },
-        lat: { type: "number" },
-        lon: { type: "number" },
+        hazszam: { type: "number", required: false },
+        pKep: { type: "string", required: false },
+        admin: { type: "number", required: false },
+        lat: { type: "number", required: false },
+        lon: { type: "number", required: false },
         varos: { type: "string" },
-        rBemutat: { type: "string" }
+        rBemutat: { type: "string", required: false }
       },
       fields: {
         name: "nev",
@@ -84,7 +84,7 @@ export const getAuth = (env: Env) => {
             { name: "PBKDF2", salt: salt, iterations: 5000, hash: "SHA-256" },
             keyMaterial, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
           );
-          const hashBuffer = await crypto.subtle.exportKey("raw", key);
+          const hashBuffer = await crypto.subtle.exportKey("raw", key) as ArrayBuffer;
 
           const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
           const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, "0")).join("");
@@ -103,7 +103,7 @@ export const getAuth = (env: Env) => {
             { name: "PBKDF2", salt: salt, iterations: 5000, hash: "SHA-256" },
             keyMaterial, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
           );
-          const attemptHashBuffer = await crypto.subtle.exportKey("raw", key);
+          const attemptHashBuffer = await crypto.subtle.exportKey("raw", key) as ArrayBuffer;
 
           const attemptHash = Array.from(new Uint8Array(attemptHashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
 
@@ -113,3 +113,5 @@ export const getAuth = (env: Env) => {
     },
   });
 }
+
+export type Auth = ReturnType<typeof getAuth>;
