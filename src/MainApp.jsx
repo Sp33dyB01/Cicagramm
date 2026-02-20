@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import Modal from "./Modal";
 import React from "react";
 import "./MainApp.css";
@@ -124,6 +125,7 @@ export default function MainApp({ user }) {
 
                 <div className="card small">
                   <span className="cat-info cat-name">{cat.nev || "Ismeretlen"}</span>
+                  
                   <span className="cat-info cat-age">{cat.kor || cat.age || "? év"}</span>
                   <span className="cat-info cat-distance">{cat.tavolsag || cat.distance || "? km"}</span>
                 </div>

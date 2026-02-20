@@ -117,7 +117,7 @@ useEffect(() => {
             />
             {open && (
             <div className="profile-dropdown">
-              <div onClick={() => { setOpen(false); navigate("/profile"); }}>Profil</div>
+              <div onClick={() => { setOpen(false); navigate(`/users/${user.id}`); }}>Profil</div>
               <div onClick={() => { setOpen(false); navigate("/beallitasok"); }}>Beállítások</div>
               <div onClick={() => { setOpen(false); navigate("/uploads") }}>Feltöltés</div>
               <div onClick={logOut}>Kijelentkezés</div>
