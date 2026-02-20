@@ -61,13 +61,15 @@ felhasznaloRouter.get("/:felId", async (c) => {
         const result = await db.query.felhasznalo.findFirst({
             where: (table, { eq }) => (eq(table.id, felId)),
             with: {
+                fav: true,
                 cats:
                 {
                     with: {
                         images: true,
                         species: true
                     }
-                }
+                },
+                
             }
         }
         );
@@ -132,6 +134,7 @@ felhasznaloRouter.get("/", async (c) => {
     try {
         const result = await db.query.felhasznalo.findMany({
             with: {
+                fav: true,
                 cats:
                 {
                     with: {

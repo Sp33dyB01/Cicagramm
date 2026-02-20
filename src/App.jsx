@@ -53,7 +53,7 @@ export default function App() {
             <Login onLogin={handleLoginSuccess} />
             : <Navigate to="/" />} />
 
-          <Route path="/register" element={<Register onSuccess={() => { handleLoginSuccess }} />} />
+          <Route path="/register" element={<Register onSuccess={handleLoginSuccess} />} />
 
           <Route element={<Layout user={user} onLogout={handleLogout} />}>
 

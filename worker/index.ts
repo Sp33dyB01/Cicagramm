@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import cicaRouter from "./cicaRouter";
 import { getAuth } from "./auth";
 import felhasznaloRouter from './felhasznaloRouter';
+import kedvencRouter from './kedvencRouter';
 const app = new Hono<{ Bindings: Env }>();
 export interface Env {
   DB: D1Database;
@@ -16,7 +17,7 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
   const auth = getAuth(c.env);
   return auth.handler(c.req.raw);
 });
-app.get('/api/varos/:irsz', async (c) => {
+app.get('/api/varos/irsz/:irsz', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   const irsz = Number(c.req.param('irsz'));
   try {
@@ -29,12 +30,12 @@ app.get('/api/varos/:irsz', async (c) => {
     return c.json({ error: "Szerver oldali hiba" }, 500);
   }
 });
-app.get('/api/varos/:varos', async (c) => {
+app.get('/api/varos/nev/:varos', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   const varos = c.req.param('varos');
   try {
     const result = await db.query.telepulesek.findMany({
-      where: (table, { ilike }) => (ilike(table.nev, varos))
+      where: (table, { eq }) => (eq(table.nev, varos))
     });
     return c.json(result);
   } catch (e) {
@@ -42,6 +43,7 @@ app.get('/api/varos/:varos', async (c) => {
     return c.json({ error: "Szerver oldali hiba" }, 500);
   }
 });
+
 app.get('/api/fajta', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   try {
@@ -62,7 +64,7 @@ app.get('/api/images/:mkepId', async (c) => {
 });
 app.route("/api/cica", cicaRouter);
 app.route("/api/profile", felhasznaloRouter);
-
+app.route("api/kedvencek", kedvencRouter);
 app.notFound(async (c) => {
   if (c.req.path.startsWith('/api/')) {
     return c.json({ error: "API route nem található" }, 404);
