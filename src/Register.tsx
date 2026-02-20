@@ -5,12 +5,7 @@ import { getCoordinates } from "../worker/tavolsag";
 import { useNavigate } from "react-router-dom";
 import retryOperation from "./assets/utils/Retry";
 import { useToast } from "./Toast";
-
-interface City {
-  id: number;
-  nev: string;
-}
-
+import type { SelectTelepules } from "../worker/schema";
 interface FormData {
   email: string;
   nev: string;
@@ -23,14 +18,14 @@ interface FormData {
 }
 
 interface RegisterProps {
-  onSuccess: () => void;
+  onSuccess: (user: any) => void;
 }
 
 export default function Register({ onSuccess }: RegisterProps) {
   const { showToast } = useToast();
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
-  const [cities, setCities] = useState<City[]>([]);
+  const [cities, setCities] = useState<SelectTelepules[]>([]);
   const [loadingCities, setLoadingCities] = useState<boolean>(false);
 
   const [formData, setFormData] = useState<FormData>({
@@ -52,9 +47,9 @@ export default function Register({ onSuccess }: RegisterProps) {
         setFormData(prev => ({ ...prev, varos: '' }));
 
         try {
-          const res = await fetch(`/api/varos/${formData.irsz}`);
+          const res = await fetch(`/api/varos/irsz/${formData.irsz}`);
           if (res.ok) {
-            const data: City[] = await res.json();
+            const data: SelectTelepules[] = await res.json();
             setCities(data);
             if (data.length === 1) {
               setFormData(prev => ({ ...prev, varos: data[0].nev }));
@@ -87,7 +82,7 @@ export default function Register({ onSuccess }: RegisterProps) {
     try {
       const coords = await getCoordinates(`${formData.irsz} ${formData.varos} ${formData.utca}`);
 
-      const { error } = await retryOperation(async () =>
+      const {data, error } = await retryOperation(async () =>
         authClient.signUp.email({
           email: formData.email,
           password: formData.jelszo,
@@ -104,7 +99,7 @@ export default function Register({ onSuccess }: RegisterProps) {
         showToast(error.message || "Hiba történt a regisztráció során.", "error");
       } else {
         showToast("Sikeres regisztráció!", "success");
-        onSuccess();
+        onSuccess(data?.user);
         navigate('/');
       }
     } catch (err) {

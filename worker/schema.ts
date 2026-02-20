@@ -6,8 +6,8 @@ export const fajta = sqliteTable('fajta', {
 });
 export const telepulesek = sqliteTable("telepulesek", {
   id: integer('id').primaryKey(),
-  nev: text('nev'),
-  irsz: integer('irsz'),
+  nev: text('nev').notNull(),
+  irsz: integer('irsz').notNull(),
 });
 export const felhasznalo = sqliteTable('felhasznalo', {
   id: text('fel_id').primaryKey().notNull(),
@@ -86,7 +86,18 @@ export const cicaRelations = relations(cica, ({ many, one }) => ({
     fields: [cica.fajId],
     references: [fajta.id],
   }),
+  favBy: many(kedvencek)
 }));
-
+export const kedvencekRelations = relations(kedvencek, ({ one }) => ({
+  felhasznalo: one(felhasznalo, {
+    fields: [kedvencek.felId],
+    references: [felhasznalo.id],
+  }),
+  cica: one(cica, {
+    fields: [kedvencek.cId],
+    references: [cica.cId],
+  }),
+}));
 export type SelectFajta = typeof fajta.$inferSelect;
 export type SelectFelhasznalo = typeof felhasznalo.$inferSelect;
+export type SelectTelepules = typeof telepulesek.$inferSelect;
