@@ -24,13 +24,41 @@ export default function CatProfile({ catId }) {
       });
   }, [catId]);
 
-  if (loading) return <div className="p-6 animate-pulse space-y-4">
-    <div className="h-6 bg-gray-300 rounded w-3/4"></div>
-    <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-    <div className="h-4 bg-gray-300 rounded w-2/3"></div>
-    <div className="h-32 bg-gray-300 rounded"></div>
-  </div>;
-  if (!catData) return <div className="error-state">Nem sikerült betölteni az adatokat.</div>;
+  if (loading || !catData) {
+  return (
+    <div className="p-6 animate-pulse space-y-6">
+      
+      {/* Felső rész skeleton */}
+      <div className="flex gap-6">
+        <div className="w-40 h-40 bg-gray-300 dark:bg-gray-700 rounded-xl"></div>
+
+        <div className="flex-1 space-y-3">
+          <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded w-1/3"></div>
+          <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/4"></div>
+          <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/4"></div>
+          <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/5"></div>
+          <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/6"></div>
+        </div>
+      </div>
+
+      {/* Leírás skeleton */}
+      <div className="space-y-3">
+        <div className="h-5 bg-gray-300 dark:bg-gray-700 rounded w-1/4"></div>
+        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-full"></div>
+        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-5/6"></div>
+        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-4/6"></div>
+      </div>
+
+      {/* Thumbnail grid skeleton */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="h-24 bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+        <div className="h-24 bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+        <div className="h-24 bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+      </div>
+
+    </div>
+  );
+}
 
   const owner = catData.owner;
 
