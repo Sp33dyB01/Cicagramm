@@ -11,12 +11,16 @@ export interface Coordinates {
 }
 
 
-const getCoordinates = async (adress: string): Promise<Coordinates | null> => {
-    if (!adress || adress.trim() === "") {
-        return null;
-    }
-    const query = encodeURIComponent(adress);
-    const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`;
+const getCoordinates = async (irsz: string, varos: string, utca: string): Promise<Coordinates | null> => {
+
+    const params = new URLSearchParams({
+        postalcode: irsz,
+        city: varos,
+        street: utca,
+        format: 'json',
+        limit: '1'
+    });
+    const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
     try {
         const response = await fetch(url, {
             headers: {

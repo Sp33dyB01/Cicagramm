@@ -64,7 +64,7 @@ app.get('/api/images/:mkepId', async (c) => {
 });
 app.route("/api/cica", cicaRouter);
 app.route("/api/profile", felhasznaloRouter);
-app.route("api/kedvencek", kedvencRouter);
+app.route("/api/kedvencek", kedvencRouter);
 app.notFound(async (c) => {
   if (c.req.path.startsWith('/api/')) {
     return c.json({ error: "API route nem található" }, 404);
