@@ -62,6 +62,19 @@ app.get('/api/images/:mkepId', async (c) => {
   headers.set('etag', object.httpEtag);
   return new Response(object.body, { headers });
 });
+app.get('/api/ipinfo', (c) => {
+  const cf = c.req.raw.cf;
+
+  if (cf) {
+    return c.json({
+      city: cf.city,
+      lat: cf.latitude,
+      lon: cf.longitude,
+    });
+  }
+
+  return c.json({ error: "Helyadatok nem elérhetők" }, 404);
+});
 app.route("/api/cica", cicaRouter);
 app.route("/api/profile", felhasznaloRouter);
 app.route("/api/kedvencek", kedvencRouter);
