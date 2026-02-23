@@ -85,7 +85,7 @@ export default function MainApp({ user }) {
 
 
   // 4. Rendezés az új, kiszámolt távolság alapján
-  const sortedCats2 = [...catsWithDistance].sort((a, b) => {
+  const sortedCats = [...catsWithDistance].sort((a, b) => {
     if (sort === "name") return (a.nev || "").localeCompare(b.nev || "");
     if (sort === "age") return (a.kor || 0) - (b.kor || 0);
     
@@ -107,22 +107,7 @@ export default function MainApp({ user }) {
     window.scrollTo({ top: 0, behavior: "smooth" }); // Optional: scroll back to top on page change
   };
 
-  const sortedCats = [...cats].sort((a, b) => {
-    if (sort === "name") {
-      return (a.nev || "").localeCompare(b.nev || "");
-    }
-    if (sort === "age") {
-      const ageA = a.kor || a.age || 0;
-      const ageB = b.kor || b.age || 0;
-      return ageA - ageB;
-    }
-    if (sort === "distance") {
-      const distA = a.tavolsag || a.distance || 0;
-      const distB = b.tavolsag || b.distance || 0;
-      return distA - distB;
-    }
-    return 0;
-  });
+  
 
   // Calculate pagination
   const totalPages = Math.ceil(sortedCats.length / ITEMS_PER_PAGE);
