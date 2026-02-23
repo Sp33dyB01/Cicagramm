@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Modal from "./Modal";
 import React from "react";
@@ -6,6 +6,7 @@ import "./MainApp.css";
 import { useToast } from "./Toast";
 import CatProfile from "./CatProfile";
 import avatarImg from "./assets/avatar.png"; // ÚJ: Kell a fallback képhez
+import { getDistance } from "/worker/tavolsag"; 
 
 // 10 rows per page * 5 items per row (based on your CSS grid) = 50 items per page
 const ITEMS_PER_PAGE = 50; 
@@ -18,12 +19,31 @@ export default function MainApp({ user }) {
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("name");
   const [viewMode, setViewMode] = useState("grid");
+  const [userCoords, setUserCoords] = useState(null);
 
   // Get initial page from URL, default to 1
   const [currentPage, setCurrentPage] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return parseInt(params.get("page")) || 1;
   });
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // A getDistance függvény Coordinates objektumot (lat, lon) vár
+          setUserCoords({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+            displayName: "Saját helyzet" 
+          });
+        },
+        (error) => {
+          console.warn("Helymeghatározás megtagadva vagy sikertelen:", error);
+        }
+      );
+    }
+  }, []);
 
   useEffect(() => {
     fetch("/api/cica")
@@ -40,6 +60,44 @@ export default function MainApp({ user }) {
       });
   }, []);
 
+  const catsWithDistance = useMemo(() => {
+    return cats.map(cat => {
+      // Feltételezve, hogy az adatbázisból (vagy a cat objektumból) jön a cica/gazda koordinátája.
+      // Ezt igazítsd a pontos JSON struktúrádhoz! (pl. cat.owner.lat)
+      const catLat = parseFloat(cat.ownerLat || cat.lat || (cat.owner && cat.owner.lat));
+      const catLon = parseFloat(cat.ownerLon || cat.lon || (cat.owner && cat.owner.lon));
+
+      let dist = null;
+      
+      // Csak akkor számolunk, ha megvan a saját helyzetünk ÉS a cica koordinátái is érvényesek
+      if (userCoords && !isNaN(catLat) && !isNaN(catLon)) {
+        const catCoords = { lat: catLat, lon: catLon, displayName: "" };
+        dist = getDistance(userCoords, catCoords); // Hívjuk a te tavolsag.ts-ben lévő függvényedet
+      }
+
+      return { 
+        ...cat, 
+        // A kiszámolt távolságot le is kerekíthetjük 1 tizedesjegyre
+        calculatedDistance: dist !== null ? Math.round(dist * 10) / 10 : null 
+      };
+    });
+  }, [cats, userCoords]);
+
+
+  // 4. Rendezés az új, kiszámolt távolság alapján
+  const sortedCats2 = [...catsWithDistance].sort((a, b) => {
+    if (sort === "name") return (a.nev || "").localeCompare(b.nev || "");
+    if (sort === "age") return (a.kor || 0) - (b.kor || 0);
+    
+    // Távolság alapú rendezés: ami közelebb van, az lesz elöl
+    if (sort === "distance") {
+      const distA = a.calculatedDistance !== null ? a.calculatedDistance : Infinity;
+      const distB = b.calculatedDistance !== null ? b.calculatedDistance : Infinity;
+      return distA - distB;
+    }
+    return 0;
+  });
+  
   // Sync state changes back to the URL (e.g., ?page=2) without full page reload
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
@@ -137,7 +195,9 @@ export default function MainApp({ user }) {
                   <span className="cat-info cat-name">{cat.nev || "Ismeretlen"}</span>
                   
                   <span className="cat-info cat-age">{cat.kor || cat.age || "? év"}</span>
-                  <span className="cat-info cat-distance">{cat.tavolsag || cat.distance || "? km"}</span>
+                  <span className="cat-info cat-distance">
+                  {cat.calculatedDistance !== null ? `${cat.calculatedDistance} km` : "? km"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -157,7 +217,7 @@ export default function MainApp({ user }) {
                   <div className="post-header-info">
                     <span className="post-author">{cat.owner?.nev || "Ismeretlen Gazdi"}</span>
                     <span className="post-meta">
-                      {cat.tavolsag || "? km"}
+                    {cat.kor || "? év"} • {cat.calculatedDistance !== null ? `${cat.calculatedDistance} km-re` : "Távolság ismeretlen"}
                     </span>
                   </div>
                 </div>
