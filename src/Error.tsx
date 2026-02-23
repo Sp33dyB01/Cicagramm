@@ -19,7 +19,6 @@ export default function Error({ errorType, errorMessage, onAnimationEnd }: Error
   return (
     <div>
       <div className={`fixed top-0 left-1/2 -translate-x-1/2 p-4 border-2 rounded shadow-lg z-50 ${alertStyles[errorType]} lemegy`} onAnimationEnd={onAnimationEnd}>
-        <p className="font-bold capitalize">{errorType}</p>
         <p className="text-sm opacity-90">{errorMessage}</p>
       </div>
     </div>

@@ -42,12 +42,12 @@ felhasznaloRouter.delete("/:felId", async (c) => {
                 if (cat.pKep)
                     deletePromises.push(c.env.BUCKET.delete(cat.pKep))
             }
-            if (result.pKep)
-                deletePromises.push(c.env.BUCKET.delete(result.pKep))
-            await Promise.all(deletePromises)
-            await db.delete(schema.felhasznalo).where(eq(schema.felhasznalo.id, felId));
-            return c.json({ success: true, message: "Sikeres törlés" })
         }
+        if (result.pKep)
+            deletePromises.push(c.env.BUCKET.delete(result.pKep))
+        await Promise.all(deletePromises)
+        await db.delete(schema.felhasznalo).where(eq(schema.felhasznalo.id, felId));
+        return c.json({ success: true, message: "Sikeres törlés" })
     }
     catch (e) {
         console.log(e);

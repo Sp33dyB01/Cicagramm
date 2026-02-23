@@ -156,6 +156,7 @@ cicaRouter.get('/', async (c) => {
     ownerNev: schema.felhasznalo.nev,
     ownerIrsz: schema.felhasznalo.irsz,
     ownerCity: schema.felhasznalo.varos,
+    ownerPFP: schema.felhasznalo.pKep
   })
     .from(schema.cica)
     .innerJoin(schema.felhasznalo, eq(schema.cica.felId, schema.felhasznalo.id));
@@ -187,23 +188,27 @@ cicaRouter.get('/', async (c) => {
     query.orderBy(sql`${schema.cica.kor} ${direction}`);
   const pageSize = display ? 40 : 10;
   const offset = (Number(page) - 1) * pageSize;
-  query.limit(pageSize).offset(offset);
+
   try {
+    const countQuery = db.select({ count: sql<number>`count(*)` })
+      .from(schema.cica)
+      .innerJoin(schema.felhasznalo, eq(schema.cica.felId, schema.felhasznalo.id));
+    if (filters.length > 0) {
+      countQuery.where(and(...filters));
+    }
+    const [{ count }] = await countQuery;
+    const totalPages = Math.ceil(count / pageSize);
+
+    query.limit(pageSize).offset(offset);
     const result = await query.all();
+
     if (!result)
       return c.json({ error: "Nincs ilyen cica" }, 400)
     const formattedResult = result.map(row => ({
       ...row,
-      owner: {
-        nev: row.ownerNev,
-        lat: row.ownerLat,
-        lon: row.ownerLon,
-        city: row.ownerCity,
-        irsz: row.ownerIrsz
-      }
     }));
 
-    return c.json(formattedResult)
+    return c.json({ data: formattedResult, totalPages })
   }
   catch (e) {
     console.error(e);

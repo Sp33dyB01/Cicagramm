@@ -7,6 +7,7 @@ import Layout from "./Layout";
 import Upload from "./Upload";
 import Beallitasok from "./beallitasok";
 import UserProfile from "./UserProfile";
+import Admin from "./Admin";
 import { ToastProvider } from "./Toast";
 import { authClient } from "./auth-client";
 
@@ -101,6 +102,7 @@ export default function App() {
 
             <Route path="/beallitasok" element={<Beallitasok user={user} onUpdate={handleUpdateUser} />} />
             <Route path="/users/:userId" element={<UserProfile />} />
+            <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/" />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -38,9 +38,9 @@ export default function TopBar({ user, onLogout }: { user: SelectFelhasznalo, on
   }, []);
 
   const [showHeader, setShowHeader] = useState(true);
-const [lastScrollY, setLastScrollY] = useState(0);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
-useEffect(() => {
+  useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -59,28 +59,28 @@ useEffect(() => {
     }
   };
 
-useEffect(() => {
-  const handleScroll = () => {
-    const currentScrollY = window.scrollY;
-    
-    // If scrolling down AND past the header height (70px), hide it
-    if (currentScrollY > lastScrollY && currentScrollY > 70) {
-      setShowHeader(false);
-    } else {
-      // If scrolling up, show it
-      setShowHeader(true);
-    }
-    
-    setLastScrollY(currentScrollY);
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
 
-// Initialize theme from system preference or localStorage
-  
+      // If scrolling down AND past the header height (70px), hide it
+      if (currentScrollY > lastScrollY && currentScrollY > 70) {
+        setShowHeader(false);
+      } else {
+        // If scrolling up, show it
+        setShowHeader(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    // Initialize theme from system preference or localStorage
 
 
-  window.addEventListener("scroll", handleScroll, { passive: true });
-  return () => window.removeEventListener("scroll", handleScroll);
-}, [lastScrollY]);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   return (
     <header className={`header ${!showHeader ? "header-hidden" : ""}`}>
@@ -91,12 +91,12 @@ useEffect(() => {
         onClick={handleLogoClick}
         style={{ cursor: 'pointer' }}
       />
-      
+
       {/* Spacer to push controls to the right */}
       <div style={{ flex: 1 }}></div>
 
       <div className="controls-right" style={{ display: 'flex', alignItems: 'center' }}>
-        
+
         {/* THE DARK MODE TOGGLE */}
         <button className="theme-toggle" onClick={toggleTheme} title="Téma váltása">
           {isDark ? "🌙" : "☀️"}
@@ -116,13 +116,14 @@ useEffect(() => {
               style={{ cursor: 'pointer' }}
             />
             {open && (
-            <div className="profile-dropdown">
-              <div onClick={() => { setOpen(false); navigate(`/users/${user.id}`); }}>Profil</div>
-              <div onClick={() => { setOpen(false); navigate("/beallitasok"); }}>Beállítások</div>
-              <div onClick={() => { setOpen(false); navigate("/uploads") }}>Feltöltés</div>
-              <div onClick={logOut}>Kijelentkezés</div>
-            </div>
-          )}
+              <div className="profile-dropdown">
+                <div onClick={() => { setOpen(false); navigate(`/users/${user.id}`); }}>Profil</div>
+                <div onClick={() => { setOpen(false); navigate("/beallitasok"); }}>Beállítások</div>
+                <div onClick={() => { setOpen(false); navigate("/uploads") }}>Feltöltés</div>
+                {user.admin ? <div onClick={() => { setOpen(false); navigate("/admin") }}>Admin felület</div> : null}
+                <div onClick={logOut}>Kijelentkezés</div>
+              </div>
+            )}
           </div>
         ) : (
           <h4 className="profile-wrapper" onClick={() => navigate("/login")}>
