@@ -66,13 +66,13 @@ export default function App() {
   useEffect(() => {
     const getApproximateLocation = async () => {
       try {
-        const response = await fetch('api/ipinfo')
+        const response = await fetch('http://ip-api.com/json/?fields=49360')
         const data = await response.json();
         if (data && !data.error) {
-          setIpLon(data.longitude);
-          setIpLat(data.latitude);
+          setIpLon(data.lon);
+          setIpLat(data.lat);
         }
-        console.log(`Vendég elhelyezkedése: ${data.city}, ${data.latitude}° ${data.longitude}°`)
+        console.log(`Vendég elhelyezkedése: ${data.city}, ${data.lat}° ${data.lon}°`)
       }
       catch (e) {
         console.error("Az IP-keresés nem sikerült", e)

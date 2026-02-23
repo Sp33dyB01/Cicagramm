@@ -62,27 +62,6 @@ app.get('/api/images/:mkepId', async (c) => {
   headers.set('etag', object.httpEtag);
   return new Response(object.body, { headers });
 });
-app.get('/api/ipinfo', async (c) => {
-  try {
-    const response = await fetch('https://ipapi.co/json/', {
-      headers: { 'User-Agent': 'Cloudflare-Worker' }
-    });
-
-    if (!response.ok) {
-      return new Response(
-        JSON.stringify({ error: "Nem sikerült lekérni az IP adatokat" }),
-        { status: response.status, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    const data = await response.json();
-    return c.json(data);
-
-  } catch (error) {
-    console.error("IP API Fetch Error:", error);
-    return c.json({ error: "Szerver oldali hiba az IP lekérdezésnél" }, 500);
-  }
-});
 app.route("/api/cica", cicaRouter);
 app.route("/api/profile", felhasznaloRouter);
 app.route("/api/kedvencek", kedvencRouter);
