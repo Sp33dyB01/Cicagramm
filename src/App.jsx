@@ -66,7 +66,7 @@ export default function App() {
   useEffect(() => {
     const getApproximateLocation = async () => {
       try {
-        const response = await fetch('https://ipapi.co/json/')
+        const response = await fetch('api/ipinfo')
         const data = await response.json();
         if (data && !data.error) {
           setIpLon(data.longitude);
