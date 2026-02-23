@@ -15,6 +15,10 @@
   --dropdown-bg: #ffffff;
   --thumb-color: #ccc;
   --thumb-border: #f9f9f9;
+  --skeleton-bg: #e2e2e2;
+  --filter-bg: #ffffff;
+  --filter-border: #000000;
+  --theme-toggle-bg: #f9f9f9;
 }
 
 [data-theme='dark'] {
@@ -29,6 +33,10 @@
   --dropdown-bg: #1e1e1e;
   --thumb-color: #2a2a2a;
   --thumb-border: #1a1a1a;
+  --skeleton-bg: #2a2a2a;
+  --filter-bg: #2a2a2a;
+  --filter-border: #444444;
+  --theme-toggle-bg: #444444;
 }
 
 /* THE ANIMATION: Apply to everything for a smooth fade */
@@ -55,7 +63,7 @@
 }
 
 .theme-toggle:hover {
-  background-color: var(--border-color);
+  background-color: var(--theme-toggle-bg);
   color: var(--bg-color);
 }
 
@@ -184,21 +192,21 @@ body {
 
 .sort-select {
   height: 36px;
-  border: 2px solid black;
-  background: white;
+  border: 2px solid var(--filter-border);
+  background: var(--filter-bg);
   padding: 4px 8px;
   cursor: pointer;
-  color:black;
+  color: var(--text-color);
   border-radius: 4px;
 }
 
 .filter-wrapper .filter-input {
   height: 36px;
   width: auto;
-  border: 2px solid black;
+  border: 2px solid var(--filter-border);
   padding: 4px 8px;
-  background: white;
-  color: black;
+  background: var(--filter-bg);
+  color: var(--text-color);
   border-radius: 4px;
 }
 
@@ -613,3 +621,134 @@ body {
 section {
   margin-bottom: 150px;
 }
+
+.skeleton-box {
+  background-color: var(--skeleton-bg);
+  /* A transition gondoskodik a finom színátmenetről téma váltáskor */
+  transition: background-color 0.3s ease; 
+}
+
+/* ========================= */
+/* VIEW TOGGLE & FEED VIEW   */
+/* ========================= */
+
+.view-toggle-btn {
+  height: 36px;
+  border: 2px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-color);
+  padding: 4px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.view-toggle-btn:hover {
+  background: var(--theme-toggle-bg);
+  color: var(--text-color);
+}
+
+.feed-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  padding: 20px 16px;
+  width: 100%;
+}
+
+.feed-post {
+  width: 100%;
+  max-width: 550px; /* Nem lesz túl széles asztali gépen sem */
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.post-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+}
+
+.post-header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.post-author {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-color);
+}
+
+.post-meta {
+  font-size: 13px;
+  color: var(--secondary-text);
+}
+
+.post-image-container {
+  width: 100%;
+  background: var(--bg-color); /* Ha a kép nem tölti ki, a háttér illeszkedik a témához */
+  border-bottom: 1px solid var(--border-color);
+}
+
+.post-image {
+  width: 100%;
+  max-height: 550px;
+  object-fit: cover; /* Teljes szélességben kitölti */
+  display: block;
+}
+
+.post-actions {
+  display: flex;
+  padding: 8px 16px;
+  gap: 16px;
+}
+
+.post-action-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.post-action-btn:hover {
+  background: var(--bg-color);
+}
+
+.post-action-btn.like-btn:hover {
+  color: crimson;
+  background: rgba(220, 20, 60, 0.1);
+}
+
+.post-content {
+  padding: 0 16px 16px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-color);
+}
+

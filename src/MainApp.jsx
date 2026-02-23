@@ -5,6 +5,7 @@ import React from "react";
 import "./MainApp.css";
 import { useToast } from "./Toast";
 import CatProfile from "./CatProfile";
+import avatarImg from "./assets/avatar.png"; // ÚJ: Kell a fallback képhez
 
 // 10 rows per page * 5 items per row (based on your CSS grid) = 50 items per page
 const ITEMS_PER_PAGE = 50; 
@@ -16,6 +17,7 @@ export default function MainApp({ user }) {
   const [cats, setCats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("name");
+  const [viewMode, setViewMode] = useState("grid");
 
   // Get initial page from URL, default to 1
   const [currentPage, setCurrentPage] = useState(() => {
@@ -79,7 +81,15 @@ export default function MainApp({ user }) {
       <div className="main-body">
         <aside className="sidebar">
           <div className="sidebar-header">
-            <div className="sidebar-header-left"></div>
+            <div className="sidebar-header-left">
+              {/* --- ÚJ: Nézetváltó gomb --- */}
+              <button 
+                className="view-toggle-btn"
+                onClick={() => setViewMode(viewMode === "grid" ? "feed" : "grid")}
+              >
+                {viewMode === "grid" ? "📱 Hírfolyam nézet" : "🗂️ Rács nézet"}
+              </button>
+            </div>
             <div className="controls">
               <div className="sort-wrapper">
                 <label htmlFor="sort" className="sort-label">Rendezés:</label>
@@ -104,7 +114,7 @@ export default function MainApp({ user }) {
             </div>
           </div>
         </aside>
-
+        {viewMode === "grid" ? (
         <section className="cards-grid">
           {/* Map over paginatedCats instead of sortedCats */}
           {(paginatedCats || []).map((cat) => (
@@ -133,7 +143,54 @@ export default function MainApp({ user }) {
             </div>
           ))}
          </section>
+        ) : (<section className="feed-container">
+            {(paginatedCats || []).map((cat) => (
+              <div className="feed-post" key={cat.cId}>
+                {/* Poszt Fejléc */}
+                <div className="post-header">
+                  <img 
+                    src={cat.owner?.pKep ? `/api/images/${cat.owner.pKep}` : avatarImg} 
+                    alt="gazdi" 
+                    className="post-avatar"
+                    onError={(e) => { e.currentTarget.src = avatarImg; }}
+                  />
+                  <div className="post-header-info">
+                    <span className="post-author">{cat.owner?.nev || "Ismeretlen Gazdi"}</span>
+                    <span className="post-meta">
+                      {cat.tavolsag || "? km"}
+                    </span>
+                  </div>
+                </div>
 
+                {/* Poszt Kép */}
+                <div className="post-image-container">
+                  <img src={`/api/images/${cat.pKep}`} alt={cat.nev} className="post-image" />
+                </div>
+
+                {/* Poszt Interakciók */}
+                <div className="post-actions">
+                  <button 
+                    className="post-action-btn like-btn" 
+                    onClick={() => console.log('like', cat.cId)}
+                  >
+                    ❤ Tetszik
+                  </button>
+                  <button 
+                    className="post-action-btn" 
+                    onClick={() => setSelectedCat(cat)}
+                  >
+                    💬 Részletek
+                  </button>
+                </div>
+
+                {/* Poszt Leírás (Opcionális extra adatok) */}
+                <div className="post-content">
+                  <strong>{cat.nev}</strong> várja az álomgazdiját! Kattints a részletekért, ha megtetszett.
+                </div>
+              </div>
+            ))}
+          </section>
+        )}
          {/* --- PAGINATION CONTROLS --- */}
          {totalPages > 1 && (
            <div className="pagination">

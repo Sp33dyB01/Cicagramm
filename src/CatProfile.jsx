@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from "react";
 import avatarImg from './assets/avatar.png';
 import "./CatProfile.css";
+import "./Topbar.jsx";
 
 export default function CatProfile({ catId }) {
   const [catData, setCatData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [zoomedImage, setZoomedImage] = useState(null);
   const [isZoomedIn, setIsZoomedIn] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+useEffect(() => {
+  if (!loading) {
+    setTimeout(() => setVisible(true), 50);
+  }
+}, [loading]);
 
   useEffect(() => {
     if (!catId) return;
@@ -25,45 +33,39 @@ export default function CatProfile({ catId }) {
   }, [catId]);
 
   if (loading || !catData) {
-  return (
-    <div className="p-6 animate-pulse space-y-6">
-      
-      {/* Felső rész skeleton */}
-      <div className="flex gap-6">
-        <div className="w-40 h-40 bg-gray-300 dark:bg-gray-700 rounded-xl"></div>
+    return (
+      <div className="p-6 animate-pulse space-y-6">
 
-        <div className="flex-1 space-y-3">
-          <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded w-1/3"></div>
-          <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/4"></div>
-          <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/4"></div>
-          <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/5"></div>
-          <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/6"></div>
+        <div className="flex gap-6">
+          <div className="w-40 h-40 rounded-xl skeleton-box" />
+
+          <div className="flex-1 space-y-3">
+            <div className="h-6 w-1/3 rounded skeleton-box" />
+            <div className="h-4 w-1/4 rounded skeleton-box" />
+            <div className="h-4 w-1/5 rounded skeleton-box" />
+            <div className="h-4 w-1/6 rounded skeleton-box" />
+          </div>
         </div>
-      </div>
 
-      {/* Leírás skeleton */}
-      <div className="space-y-3">
-        <div className="h-5 bg-gray-300 dark:bg-gray-700 rounded w-1/4"></div>
-        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-full"></div>
-        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-5/6"></div>
-        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-4/6"></div>
-      </div>
+        <div className="space-y-3">
+          <div className="h-5 w-1/4 rounded skeleton-box" />
+          <div className="h-4 w-full rounded skeleton-box" />
+          <div className="h-4 w-5/6 rounded skeleton-box" />
+        </div>
 
-      {/* Thumbnail grid skeleton */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="h-24 bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
-        <div className="h-24 bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
-        <div className="h-24 bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
       </div>
-
-    </div>
-  );
-}
+    );
+  }
 
   const owner = catData.owner;
 
   return (
-    <div className="cat-profile-container">
+
+    <div className={`cat-profile-container
+    transition-all duration-500 ease-out
+    ${visible ? "opacity-100 blur-0 scale-100"
+               : "opacity-0 blur-sm scale-95"}
+  `}>
       {/* FELSŐ SZEKCIÓ: PFP, Macska adatok, Gazda adatok */}
       <div className="profile-top">
         <div className="profile-top-left">
