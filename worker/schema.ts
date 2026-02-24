@@ -101,3 +101,4 @@ export const kedvencekRelations = relations(kedvencek, ({ one }) => ({
 export type SelectFajta = typeof fajta.$inferSelect;
 export type SelectFelhasznalo = typeof felhasznalo.$inferSelect;
 export type SelectTelepules = typeof telepulesek.$inferSelect;
+export type SelectCica = typeof cica.$inferSelect;

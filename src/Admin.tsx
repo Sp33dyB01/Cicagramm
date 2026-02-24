@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import avatarImg from "./assets/avatar.png";
 import { useToast } from "./Toast";
 import "./MainApp.css";
+import type { SelectFelhasznalo, SelectCica } from "../worker/schema";
 
 export default function Admin() {
     const { showToast } = useToast();
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<(SelectFelhasznalo & { cats: SelectCica[] })[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedUserId, setSelectedUserId] = useState<string>("all");
     const [activeTab, setActiveTab] = useState<"details" | "posts">("details");
@@ -99,6 +100,7 @@ export default function Admin() {
     };
 
     const startEditMode = () => {
+        if (!selectedUser) return;
         setEditFormData({
             nev: selectedUser.nev || "",
             email: selectedUser.email || "",
@@ -379,7 +381,7 @@ export default function Admin() {
                                             <p><strong className="font-semibold text-[var(--text-color)]">Email:</strong> {selectedUser.email}</p>
                                             <p><strong className="font-semibold text-[var(--text-color)]">Cím:</strong> {selectedUser.irsz}, {selectedUser.varos}, {selectedUser.utca}</p>
                                             <p><strong className="font-semibold text-[var(--text-color)]">Bemutatkozás:</strong> {selectedUser.rBemutat || "Nincs megadva"}</p>
-                                            <p><strong className="font-semibold text-[var(--text-color)]">Regisztráció:</strong> {new Date(selectedUser.regDatum).toLocaleString('hu-HU')}</p>
+                                            <p><strong className="font-semibold text-[var(--text-color)]">Regisztráció:</strong> {new Date(selectedUser.createdAt).toLocaleString('hu-HU')}</p>
                                             <p><strong className="font-semibold text-[var(--text-color)]">Admin:</strong> {selectedUser.admin ? "Igen" : "Nem"}</p>
 
                                             <div className="flex flex-wrap gap-3 pt-6 border-t border-[var(--border-color)] mt-6">
