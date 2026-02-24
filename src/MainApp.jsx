@@ -27,6 +27,49 @@ export default function MainApp({ user, ipLat, ipLon }) {
     return parseInt(params.get("page")) || 1;
   });
 
+  // --- ÚJ: Szűrőpanel state-ek ---
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    fajId: "",
+    minKor: 0,
+    maxKor: 20,
+    ivartalanitott: "", // "" = mindegy, "1" = igen, "0" = nem
+    nem: "" // "" = mindegy, "him" = hím, "nosteny" = nőstény
+  });
+
+  const [appliedFilters, setAppliedFilters] = useState(filters);
+  // Gombnyomásra lefutó függvény: élesíti a szűrőket és visszaugrik az 1. oldalra
+  const handleApplyFilters = () => {
+    setAppliedFilters(filters);
+    setCurrentPage(1);
+    setIsFilterOpen(false); // Ezt opcionálisan kiveheted, ha szeretnéd, hogy a panel nyitva maradjon szűrés után.
+  };
+
+  // Segédfüggvény a szűrők változásához
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => {
+      const newFilters = { ...prev, [name]: value };
+      // Biztosítjuk, hogy a minKor ne legyen nagyobb a maxKor-nál
+      if (name === "minKor" && parseInt(value) > parseInt(prev.maxKor)) {
+        newFilters.maxKor = value;
+      }
+      if (name === "maxKor" && parseInt(value) < parseInt(prev.minKor)) {
+        newFilters.minKor = value;
+      }
+      return newFilters;
+    });
+  };
+
+  // Szűrés alkalmazása (első oldalra ugrik és újrafech-el)
+  const applyFilters = () => {
+    setCurrentPage(1);
+    // Az useEffect a currentPage változása miatt automatikusan lefut,
+    // de kell egy plusz trigger, ezért beteheted a filters-t az useEffect függőségeibe,
+    // vagy manuálisan triggerelheted. A legegyszerűbb, ha az useEffect függőségi
+    // listájába betesszük a filters-t is, lásd lentebb.
+  };
+
   /*useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -57,7 +100,12 @@ export default function MainApp({ user, ipLat, ipLon }) {
     const fetchUrl = new URL(window.location.origin + "/api/cica");
     fetchUrl.searchParams.set("page", currentPage);
     fetchUrl.searchParams.set("sort", apiSort);
-    // TODO: handle filter inputs once implemented.
+
+    if (appliedFilters.fajId) fetchUrl.searchParams.set("fajId", appliedFilters.fajId);
+    if (appliedFilters.minKor > 0) fetchUrl.searchParams.set("minKor", appliedFilters.minKor);
+    if (appliedFilters.maxKor < 20) fetchUrl.searchParams.set("maxKor", appliedFilters.maxKor);
+    if (appliedFilters.ivartalanitott !== "") fetchUrl.searchParams.set("ivartalanitott", appliedFilters.ivartalanitott);
+    if (appliedFilters.nem !== "") fetchUrl.searchParams.set("nem", appliedFilters.nem);
 
     if (user) {
       if (user.lat && user.lon) {
@@ -88,7 +136,7 @@ export default function MainApp({ user, ipLat, ipLon }) {
         console.error("Hiba:", err);
         setLoading(false);
       });
-  }, [currentPage, sort, user, ipLat, ipLon]);
+  }, [currentPage, sort, user, ipLat, ipLon, appliedFilters]);
 
   const catsWithDistance = useMemo(() => {
     return cats.map(cat => {
@@ -137,18 +185,27 @@ export default function MainApp({ user, ipLat, ipLon }) {
       <div className="main-body">
         <aside className="sidebar">
           <div className="sidebar-header">
-            <div className="sidebar-header-left">
-              {/* --- ÚJ: Nézetváltó gomb --- */}
-              <button
-                className="view-toggle-btn"
-                onClick={() => setViewMode(viewMode === "grid" ? "feed" : "grid")}
+            
+            {/* Felső vezérlősáv: Egy vonalban maradnak */}
+            <div className="top-controls">
+              <div className="sidebar-header-left">
+                <button
+                  className="view-toggle-btn"
+                  onClick={() => setViewMode(viewMode === "grid" ? "feed" : "grid")}
+                >
+                  {viewMode === "grid" ? "📱 Hírfolyam" : "🗂️ Rács"}
+                </button>
+              </div>
+
+              {/* Középső szűrő gomb, ami megnyitja/bezárja a lenyíló panelt */}
+              <button 
+                className={`filter-toggle-btn ${isFilterOpen ? 'active' : ''}`}
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
               >
-                {viewMode === "grid" ? "📱 Hírfolyam nézet" : "🗂️ Rács nézet"}
+                ⚙️ Speciális szűrés
               </button>
-            </div>
-            <div className="controls">
+
               <div className="sort-wrapper">
-                <label htmlFor="sort" className="sort-label">Rendezés:</label>
                 <select
                   id="sort"
                   value={sort}
@@ -156,10 +213,6 @@ export default function MainApp({ user, ipLat, ipLon }) {
                     const newSort = e.target.value;
                     setSort(newSort);
                     setCurrentPage(1);
-                    const url = new URL(window.location);
-                    url.searchParams.set("sort", newSort);
-                    url.searchParams.set("page", 1);
-                    window.history.pushState({}, "", url);
                   }}
                   className="sort-select"
                 >
@@ -168,11 +221,72 @@ export default function MainApp({ user, ipLat, ipLon }) {
                   <option value="distance">Távolság</option>
                 </select>
               </div>
+            </div>
 
-              <div className="filter-wrapper">
-                <input className="filter-input" placeholder="Speciális szűrés..." />
+            {/* --- Lenyíló animált szűrőpanel, ami a top-controls alatt nyílik ki --- */}
+            <div className={`filter-panel ${isFilterOpen ? 'open' : ''}`}>
+              <div className="filter-panel-content">
+                
+                {/* 1. Szűrő feltétel */}
+                <div className="filter-group">
+                  <label>Fajta</label>
+                  <select name="fajId" value={filters.fajId} onChange={handleFilterChange}>
+                    <option value="">Bármilyen</option>
+                    <option value="1">Házimacska</option>
+                    <option value="2">Perzsa</option>
+                    <option value="3">Maine Coon</option>
+                  </select>
+                </div>
+
+                {/* 2. Szűrő feltétel */}
+                <div className="filter-group slider-group">
+                  <label>
+                    Életkor: <strong>{filters.minKor} - {filters.maxKor} év</strong>
+                  </label>
+                  <div className="sliders">
+                    <input 
+                      type="range" name="minKor" 
+                      min="0" max="20" 
+                      value={filters.minKor} onChange={handleFilterChange} 
+                    />
+                    <input 
+                      type="range" name="maxKor" 
+                      min="0" max="20" 
+                      value={filters.maxKor} onChange={handleFilterChange} 
+                    />
+                  </div>
+                </div>
+
+                {/* 3. Szűrő feltétel */}
+                <div className="filter-group">
+                  <label>Ivartalanított</label>
+                  <select name="ivartalanitott" value={filters.ivartalanitott} onChange={handleFilterChange}>
+                    <option value="">Mindegy</option>
+                    <option value="1">Igen</option>
+                    <option value="0">Nem</option>
+                  </select>
+                </div>
+
+                {/* 4. Szűrő feltétel */}
+                <div className="filter-group">
+                  <label>Nem</label>
+                  <select name="nem" value={filters.nem} onChange={handleFilterChange}>
+                    <option value="">Mindegy</option>
+                    <option value="him">Hím</option>
+                    <option value="nosteny">Nőstény</option>
+                  </select>
+                </div>
+
+                {/* ÚJ: Szűrést alkalmazó gomb a panel alján/szélén */}
+                <div className="filter-actions">
+                  <button className="apply-filter-btn" onClick={handleApplyFilters}>
+                    🔍 Szűrés alkalmazása
+                  </button>
+                </div>
+
               </div>
             </div>
+
           </div>
         </aside>
         {viewMode === "grid" ? (
