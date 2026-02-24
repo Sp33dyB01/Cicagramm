@@ -177,7 +177,14 @@ export default function MainApp({ user, ipLat, ipLon }) {
     window.scrollTo({ top: 0, behavior: "smooth" }); // Optional: scroll back to top on page change
   };
 
-  if (loading) return <div>Betöltés...</div>;
+  if (loading) {
+  return (
+    <div className="loading-container">
+      <div className="modern-spinner"></div>
+      <p>Cicák keresése...</p>
+    </div>
+  );
+}
   if (!cats || cats.length === 0) return <div>Nincsenek macskák.</div>;
 
   return (
@@ -230,7 +237,7 @@ export default function MainApp({ user, ipLat, ipLon }) {
                 {/* 1. Szűrő feltétel */}
                 <div className="filter-group">
                   <label>Fajta</label>
-                  <select name="fajId" value={filters.fajId} onChange={handleFilterChange}>
+                  <select name="fajId" value={filters.fajId} onChange={handleFilterChange}> {/*Ideiglenes - ezeket majd lekérjük adatbázisból */}
                     <option value="">Bármilyen</option>
                     <option value="1">Házimacska</option>
                     <option value="2">Perzsa</option>
@@ -272,8 +279,8 @@ export default function MainApp({ user, ipLat, ipLon }) {
                   <label>Nem</label>
                   <select name="nem" value={filters.nem} onChange={handleFilterChange}>
                     <option value="">Mindegy</option>
-                    <option value="him">Hím</option>
-                    <option value="nosteny">Nőstény</option>
+                    <option value="0">Hím</option>
+                    <option value="1">Nőstény</option>
                   </select>
                 </div>
 

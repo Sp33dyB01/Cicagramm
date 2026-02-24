@@ -850,3 +850,41 @@ section {
   color: var(--text-color);
   transition: all 0.3s ease;
 }
+
+/* Konténer a teljes képernyős középre igazításhoz */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh; /* Hogy a tartalom közepén legyen, de ne lógjon ki */
+  width: 100%;
+}
+
+.loading-container p {
+  margin-top: 15px;
+  font-size: 1.1rem;
+  color: #666;
+  font-weight: 500;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* A modern forgó ikon */
+.modern-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3; /* Világos szürke háttérkör */
+  border-top: 5px solid #ff6b6b; /* A kiemelt szín (a te témádhoz illően) */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Az animáció definíciója */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
