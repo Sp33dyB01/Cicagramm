@@ -14,6 +14,14 @@ export default function MainApp({ user, ipLat, ipLon }) {
   const profileRef = useRef(null);
   const [cats, setCats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fajtak, setFajtak] = useState([]);
+  // ÚJ: Fajták lekérése az API-ból (hasonlóan az Upload.tsx-hez)
+  useEffect(() => {
+    fetch('/api/fajta')
+      .then(res => res.json())
+      .then(data => setFajtak(data))
+      .catch(err => console.error("Hiba a fajták lekérésekor:", err));
+  }, []);
   const [sort, setSort] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get("sort") || "name";
@@ -180,8 +188,12 @@ export default function MainApp({ user, ipLat, ipLon }) {
   if (loading) {
   return (
     <div className="loading-container">
-      <div className="modern-spinner"></div>
-      <p>Cicák keresése...</p>
+      <div className="paw-print-loader">
+        <div className="paw paw-1">🐾</div>
+        <div className="paw paw-2">🐾</div>
+        <div className="paw paw-3">🐾</div>
+      </div>
+      <p className="loading-text">Cicák cserkészése...</p>
     </div>
   );
 }
@@ -237,11 +249,14 @@ export default function MainApp({ user, ipLat, ipLon }) {
                 {/* 1. Szűrő feltétel */}
                 <div className="filter-group">
                   <label>Fajta</label>
-                  <select name="fajId" value={filters.fajId} onChange={handleFilterChange}> {/*Ideiglenes - ezeket majd lekérjük adatbázisból */}
-                    <option value="">Bármilyen</option>
-                    <option value="1">Házimacska</option>
-                    <option value="2">Perzsa</option>
-                    <option value="3">Maine Coon</option>
+                  <select name="fajId" value={filters.fajId} onChange={handleFilterChange}>
+                  <option value="">Bármilyen</option>
+                  {/* ÚJ: Dinamikus lista az API-ból érkező adatok alapján */}
+                  {fajtak.map((f) => (
+                  <option key={f.id} value={f.id}>
+                  {f.fajta}
+                  </option>
+                  ))}
                   </select>
                 </div>
 

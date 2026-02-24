@@ -851,40 +851,55 @@ section {
   transition: all 0.3s ease;
 }
 
-/* Konténer a teljes képernyős középre igazításhoz */
+/* Konténer */
 .loading-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 60vh; /* Hogy a tartalom közepén legyen, de ne lógjon ki */
-  width: 100%;
+  min-height: 60vh;
 }
 
-.loading-container p {
-  margin-top: 15px;
-  font-size: 1.1rem;
-  color: #666;
-  font-weight: 500;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* Tappancsok elrendezése */
+.paw-print-loader {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
-/* A modern forgó ikon */
-.modern-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3; /* Világos szürke háttérkör */
-  border-top: 5px solid #ff6b6b; /* A kiemelt szín (a te témádhoz illően) */
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.paw {
+  font-size: 40px;
+  opacity: 0;
+  filter: grayscale(1) brightness(1.5); /* Szürkés, halvány alap */
+  animation: pawWalk 1.2s infinite;
 }
 
-/* Az animáció definíciója */
-@keyframes spin {
+/* Egyedi késleltetések a lépkedéshez */
+.paw-1 { animation-delay: 0s; }
+.paw-2 { animation-delay: 0.3s; transform: translateY(-10px); }
+.paw-3 { animation-delay: 0.6s; }
+
+/* Szöveg animálása */
+.loading-text {
+  font-size: 1.2rem;
+  color: #ff6b6b;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* Lépkedő animáció */
+@keyframes pawWalk {
   0% {
-    transform: rotate(0deg);
+    opacity: 0;
+    transform: scale(0.8);
   }
-  100% {
-    transform: rotate(360deg);
+  30% {
+    opacity: 1;
+    transform: scale(1.2);
+    filter: grayscale(0) brightness(1); /* Színessé válik, amikor "lép" */
+  }
+  60%, 100% {
+    opacity: 0;
+    transform: scale(0.8);
   }
 }
