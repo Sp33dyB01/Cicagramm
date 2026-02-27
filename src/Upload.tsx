@@ -1,17 +1,13 @@
 import type { SelectFelhasznalo } from '../worker/schema';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useToast } from './Toast';
+import { useFajtak } from "./hooks/useFajtak";
 
 export default function Upload(user: SelectFelhasznalo) {
     const { showToast } = useToast();
     const [loading, setLoading] = useState(false);
-    const [fajtak, setFajtak] = useState<any[]>([]);
-    useEffect(() => {
-        fetch('/api/fajta')
-            .then(res => res.json())
-            .then(data => setFajtak(data))
-            .catch(err => console.error("Hiba a fajták lekérésekor:", err));
-    }, []);
+    const fajtak = useFajtak();
+
     const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
@@ -37,11 +33,9 @@ export default function Upload(user: SelectFelhasznalo) {
         }
     };
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-            <div className="w-full max-w-lg bg-white border rounded-lg p-6 shadow-lg">
+        <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 px-4 py-12 transition-colors">
+            <div className="w-full max-w-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl p-6 shadow-sm">
                 <h2 className="text-2xl font-bold text-center mb-6">Új Cica Feltöltése</h2>
-
-
 
                 <form onSubmit={handleUpload} className="space-y-4">
                     <div>
@@ -50,10 +44,9 @@ export default function Upload(user: SelectFelhasznalo) {
                             type="text"
                             placeholder="Név (pl. Cirmi)"
                             required
-                            className="w-full px-3 py-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
                         />
                     </div>
-
 
                     <div className="flex gap-4">
                         <input
@@ -61,7 +54,7 @@ export default function Upload(user: SelectFelhasznalo) {
                             type="number"
                             placeholder="Kor (év)"
                             required
-                            className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
                         />
                         <input
                             name="tomeg"
@@ -69,14 +62,14 @@ export default function Upload(user: SelectFelhasznalo) {
                             step="0.1"
                             placeholder="Tömeg (kg)"
                             required
-                            className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
                         />
                     </div>
                     <div>
                         <select
                             name="nem"
                             required
-                            className="w-full px-3 py-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
                         >
                             <option value="0">Hím</option>
                             <option value="1">Nőstény</option>
@@ -86,7 +79,7 @@ export default function Upload(user: SelectFelhasznalo) {
                         <select
                             name="fajId"
                             required
-                            className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
                         >
                             <option value="">-- Válassz Fajtát --</option>
                             {fajtak.map((f) => (
@@ -96,7 +89,7 @@ export default function Upload(user: SelectFelhasznalo) {
                         <select
                             name="ivartalanitott"
                             required
-                            className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
                         >
                             <option value="0">Nem ivartalanított</option>
                             <option value="1">Ivartalanított</option>
@@ -106,41 +99,45 @@ export default function Upload(user: SelectFelhasznalo) {
                     <textarea
                         name="rBemutat"
                         placeholder="Rövid bemutatkozás..."
-                        className="w-full px-3 py-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+                        className="w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors min-h-[100px]"
                     />
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                             Profilkép (Kötelező):
                             <input
                                 name="pKep"
                                 type="file"
                                 accept="image/*"
                                 required
-                                className="mt-1 block w-full text-sm text-gray-500
+                                className="mt-1 block w-full text-sm text-neutral-500 dark:text-neutral-400
                                     file:mr-4 file:py-2 file:px-4
                                     file:rounded-full file:border-0
-                                    file:text-sm file:font-semibold
-                                    file:bg-blue-50 file:text-blue-700
-                                    hover:file:bg-blue-100"
+                                    file:text-sm file:font-bold
+                                    file:bg-rose-50 file:text-rose-700
+                                    dark:file:bg-rose-950/30 dark:file:text-rose-400
+                                    hover:file:bg-rose-100 dark:hover:file:bg-rose-950/50
+                                    cursor-pointer"
                             />
                         </label>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                             Galéria:
                             <input
                                 name="mKepek[]"
                                 type="file"
                                 accept="image/*"
                                 multiple
-                                className="mt-1 block w-full text-sm text-gray-500
+                                className="mt-1 block w-full text-sm text-neutral-500 dark:text-neutral-400
                                     file:mr-4 file:py-2 file:px-4
                                     file:rounded-full file:border-0
-                                    file:text-sm file:font-semibold
-                                    file:bg-blue-50 file:text-blue-700
-                                    hover:file:bg-blue-100"
+                                    file:text-sm file:font-bold
+                                    file:bg-rose-50 file:text-rose-700
+                                    dark:file:bg-rose-950/30 dark:file:text-rose-400
+                                    hover:file:bg-rose-100 dark:hover:file:bg-rose-950/50
+                                    cursor-pointer"
                             />
                         </label>
                     </div>
@@ -148,7 +145,7 @@ export default function Upload(user: SelectFelhasznalo) {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-2.5 mt-4 bg-rose-600 text-white rounded-lg font-bold hover:bg-rose-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md active:scale-[0.98]"
                     >
                         {loading ? 'Mentés...' : 'Cica Mentése'}
                     </button>

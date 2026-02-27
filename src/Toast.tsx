@@ -4,7 +4,7 @@ import type { ToastStatus } from './Error';
 import type { ReactNode } from 'react';
 
 // 1. Define what functions are available globally
-interface ToastContextType {
+export interface ToastContextType {
   showToast: (message: string, status?: ToastStatus) => void;
 }
 

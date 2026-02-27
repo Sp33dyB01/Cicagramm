@@ -45,107 +45,129 @@ const UserProfile = () => {
   }, [userId]);
 
   if (loading) {
-    return <div>Betöltés...</div>;
+    return <div className="min-h-[50vh] flex justify-center items-center text-neutral-500">Betöltés...</div>;
   }
 
   if (!user) {
-    return <div>A felhasználó nem található.</div>;
+    return <div className="min-h-[50vh] flex justify-center items-center text-neutral-500">A felhasználó nem található.</div>;
   }
 
   return (
-    <div className="profile-container p-4">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 text-neutral-900 dark:text-neutral-100 transition-colors">
       {/* Profile Picture Section */}
-      <div className="flex items-center space-x-4 mb-8">
-        <div className="profile-image-wrapper">
+      <div className="flex flex-col md:flex-row items-center gap-6 mb-8 p-6 bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700">
+        <div className="relative shrink-0">
           <img
             src={`/api/images/${user.pKep}` || avatarImg}
             alt="User Profile"
-            className="w-40 h-40 rounded-full object-cover"
+            className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-neutral-100 dark:border-neutral-700 shadow-md"
             onError={(e) => {
               e.currentTarget.src = avatarImg
               e.currentTarget.onerror = null;
             }}
           />
         </div>
-        <div className="profile-details">
-          <h2 className="text-2xl font-bold">{user.nev}</h2>
-          <p>{user.rBemutat || "Még nincs rövid bemutatkozás"}</p>
+        <div className="flex flex-col text-center md:text-left">
+          <h2 className="text-3xl font-bold mb-2">{user.nev}</h2>
+          <p className="text-neutral-600 dark:text-neutral-400 italic text-lg">{user.rBemutat || "Még nincs rövid bemutatkozás"}</p>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex space-x-4 border-b mb-6">
+      <div className="flex space-x-6 border-b border-neutral-200 dark:border-neutral-700 mb-8 px-2">
         <button
-          className={`pb-2 px-1 font-semibold transition-colors ${activeTab === 'uploads'
-            ? 'border-b-2 border-blue-500 text-blue-600'
-            : 'text-gray-500 hover:text-gray-700'
+          className={`pb-3 px-2 font-semibold text-lg transition-colors relative ${activeTab === 'uploads'
+            ? 'text-rose-600 dark:text-rose-500'
+            : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200'
             }`}
           onClick={() => setActiveTab('uploads')}
         >
           {user.nev} feltöltései
+          {activeTab === 'uploads' && (
+            <div className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-rose-600 dark:bg-rose-500 rounded-t-full"></div>
+          )}
         </button>
         {currentUser && currentUser.id === user.id && (
           <button
-            className={`pb-2 px-1 font-semibold transition-colors ${activeTab === 'favorites'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
+            className={`pb-3 px-2 font-semibold text-lg transition-colors relative ${activeTab === 'favorites'
+              ? 'text-rose-600 dark:text-rose-500'
+              : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200'
               }`}
             onClick={() => setActiveTab('favorites')}
           >
             Kedvencek
+            {activeTab === 'favorites' && (
+              <div className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-rose-600 dark:bg-rose-500 rounded-t-full"></div>
+            )}
           </button>
         )}
       </div>
 
       {/* Tab Content */}
       {activeTab === 'uploads' && (
-        <div>
+        <div className="pb-10">
           {user.cats && user.cats.length > 0 ? (
-            <div className="cards-grid">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-2">
               {user.cats.map((cat) => (
-                <div className="tinder-card fixed-size" key={cat.cId}>
-                  <div className="card large">
-                    <img
-                      src={`/api/images/${cat.pKep}`}
-                      alt={cat.nev || "Cica kép"}
-                    />
-                    <div className="card small">
-                      <span className="cat-info cat-name">{cat.nev || "Ismeretlen"}</span>
-                    </div>
+                <div
+                  key={cat.cId}
+                  className="relative rounded-2xl overflow-hidden shadow-lg bg-neutral-200 dark:bg-neutral-800 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl group h-[350px] sm:h-[400px]"
+                >
+                  <img
+                    src={`/api/images/${cat.pKep}`}
+                    alt={cat.nev || "Cica kép"}
+                    className="w-full h-full object-cover select-none"
+                    onError={(e) => {
+                      e.currentTarget.src = avatarImg
+                      e.currentTarget.onerror = null;
+                    }}
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                    <span className="text-2xl font-bold text-white drop-shadow-md">{cat.nev || "Ismeretlen"}</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 italic">Ennek a felhasználónak nincsenek még feltöltött cicái.</p>
+            <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-10 text-center border border-neutral-200 dark:border-neutral-700 border-dashed">
+              <p className="text-neutral-500 dark:text-neutral-400 italic text-lg">Ennek a felhasználónak nincsenek még feltöltött cicái.</p>
+            </div>
           )}
         </div>
       )}
 
       {activeTab === 'favorites' && (
-        <div>
+        <div className="pb-10">
           {user.fav && user.fav.length > 0 ? (
-            <div className="cards-grid">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-2">
               {user.fav.map((favItem) => {
                 const cat = favItem.cat;
                 if (!cat) return null;
                 return (
-                  <div className="tinder-card fixed-size" key={`fav-${cat.cId}`}>
-                    <div className="card large">
-                      <img
-                        src={`/api/images/${cat.pKep}`}
-                        alt={cat.nev || "Cica kép"}
-                      />
-                      <div className="card small">
-                        <span className="cat-info cat-name">{cat.nev || "Ismeretlen"}</span>
-                      </div>
+                  <div
+                    key={`fav-${cat.cId}`}
+                    className="relative rounded-2xl overflow-hidden shadow-lg bg-neutral-200 dark:bg-neutral-800 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl group h-[350px] sm:h-[400px]"
+                  >
+                    <img
+                      src={`/api/images/${cat.pKep}`}
+                      alt={cat.nev || "Cica kép"}
+                      className="w-full h-full object-cover select-none"
+                      onError={(e) => {
+                        e.currentTarget.src = avatarImg
+                        e.currentTarget.onerror = null;
+                      }}
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                      <span className="text-2xl font-bold text-white drop-shadow-md">{cat.nev || "Ismeretlen"}</span>
                     </div>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <p className="text-gray-500 italic">Ennek a felhasználónak nincsenek még kedvenc cicái.</p>
+            <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-10 text-center border border-neutral-200 dark:border-neutral-700 border-dashed">
+              <p className="text-neutral-500 dark:text-neutral-400 italic text-lg">Ennek a felhasználónak nincsenek még kedvenc cicái.</p>
+            </div>
           )}
         </div>
       )}

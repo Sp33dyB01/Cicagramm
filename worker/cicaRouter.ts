@@ -138,6 +138,12 @@ cicaRouter.get('/', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   const { fajId, minKor, maxKor, ivartalanitott, nem, sort = '1N', lat, lon, page = 1, display } = c.req.query();
 
+  const auth = getAuth(c.env);
+  const session = await auth.api.getSession({
+    headers: c.req.raw.headers
+  });
+  const userId = session?.user?.id;
+
   const filters = [];
   if (fajId)
     filters.push(eq(schema.cica.fajId, Number(fajId)));
@@ -170,8 +176,8 @@ cicaRouter.get('/', async (c) => {
   // távolság szerint
   if (sort[0] == '2') {
     if (lat && lon) {
-      const uLat = parseFloat(lat);
-      const uLon = parseFloat(lon);
+      const uLat = parseFloat(lat as string);
+      const uLon = parseFloat(lon as string);
 
       orderbyClause = sql`((${schema.felhasznalo.lat} - ${uLat})*(${schema.felhasznalo.lat} - ${uLat})+
       (${schema.felhasznalo.lon} - ${uLon})*(${schema.felhasznalo.lon} - ${uLon})) ${direction}`
@@ -204,8 +210,20 @@ cicaRouter.get('/', async (c) => {
 
     if (!result)
       return c.json({ error: "Nincs ilyen cica" }, 400)
+
+    let likedCatIds = new Set<string>();
+    if (userId) {
+      const userLikes = await db.select({ cId: schema.kedvencek.cId })
+        .from(schema.kedvencek)
+        .where(eq(schema.kedvencek.felId, userId));
+      userLikes.forEach(l => {
+        if (l.cId) likedCatIds.add(l.cId);
+      });
+    }
+
     const formattedResult = result.map(row => ({
       ...row,
+      isLiked: likedCatIds.has(row.cId)
     }));
 
     return c.json({ data: formattedResult, totalPages })

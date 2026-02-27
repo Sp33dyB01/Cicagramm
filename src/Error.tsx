@@ -8,9 +8,9 @@ interface ErrorMessageProps {
   onAnimationEnd: () => void;
 }
 const alertStyles: { [key: string]: any } = {
-  error: 'bg-red-100 text-red-800 border-red-500',
-  success: 'bg-green-100 text-green-800 border-green-500',
-  warning: 'bg-yellow-100 text-yellow-800 border-yellow-500',
+  error: 'bg-rose-100 text-rose-800 border-rose-500 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800',
+  success: 'bg-green-100 text-green-800 border-green-500 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800',
+  warning: 'bg-amber-100 text-amber-800 border-amber-500 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800',
 };
 
 export default function Error({ errorType, errorMessage, onAnimationEnd }: ErrorMessageProps) {

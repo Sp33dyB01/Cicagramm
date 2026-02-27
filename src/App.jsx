@@ -16,8 +16,7 @@ export default function App() {
   const [isAuth, setIsAuth] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [ipLon, setIpLon] = useState(null);
-  const [ipLat, setIpLat] = useState(null);
+  const [ipCoords, setIpCoords] = useState(null);
   const handleLogout = () => {
     setIsAuth(false);
     setUser(null);
@@ -69,8 +68,7 @@ export default function App() {
         const response = await fetch('api/ipinfo')
         const data = await response.json();
         if (data && !data.error) {
-          setIpLon(data.lon);
-          setIpLat(data.lat);
+          setIpCoords({ lat: data.lat, lon: data.lon, displayName: data.city });
         }
         console.log(`Vendég elhelyezkedése: ${data.city}, ${data.lat}° ${data.lon}°`)
       }
@@ -81,7 +79,11 @@ export default function App() {
     getApproximateLocation();
   }, [])
   if (isLoading) {
-    return <div style={{ padding: 20 }}>Alkalmazás betöltése...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100">
+        <div className="text-xl font-bold animate-pulse">Alkalmazás betöltése...</div>
+      </div>
+    );
   }
 
   return (
@@ -96,7 +98,7 @@ export default function App() {
 
           <Route element={<Layout user={user} onLogout={handleLogout} />}>
 
-            <Route path="/" element={<MainApp user={user} ipLat={ipLat} ipLon={ipLon} />} />
+            <Route path="/" element={<MainApp user={user} ipCoords={ipCoords} />} />
 
             <Route path="/uploads" element={<Upload user={user} />} />
 

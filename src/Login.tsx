@@ -44,36 +44,40 @@ export default function Login({ onLogin }: LoginProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm bg-white border rounded-lg p-6">
-        <h1 className="text-4xl text-center mb-6 font-[cursive]">Cicagramm</h1>
+    <div className="min-h-[calc(100vh-70px)] flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 px-4 py-8 transition-colors">
+      <div className="w-full max-w-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-xl p-8">
+        <h1 className="text-4xl text-center mb-8 font-[cursive] text-rose-600 dark:text-rose-500 drop-shadow-sm">
+          Cicagramm
+        </h1>
 
-
-
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            className="w-full px-3 py-2 border rounded bg-gray-50"
+            className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow"
             placeholder="E-mail"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
           <input
             type="password"
-            className="w-full px-3 py-2 border rounded bg-gray-50"
+            className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow"
             placeholder="Jelszó"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <br /><br />
-          <button className="w-full py-2 bg-blue-500 text-white rounded font-semibold">
-            Bejelentkezés
-          </button>
+          <div className="pt-2">
+            <button
+              type="submit"
+              className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold transition-all shadow-md active:scale-[0.98] hover:shadow-lg"
+            >
+              Bejelentkezés
+            </button>
+          </div>
         </form>
 
-        <p className="text-sm text-center mt-4">
+        <p className="text-sm text-center mt-6 text-neutral-600 dark:text-neutral-400">
           Nincs fiókod?{" "}
           <span
-            className="text-blue-500 cursor-pointer"
+            className="text-rose-600 dark:text-rose-500 font-semibold cursor-pointer hover:text-rose-700 dark:hover:text-rose-400 transition-colors"
             onClick={() => navigate("/register")}
           >
             Regisztrálj!

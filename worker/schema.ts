@@ -17,10 +17,9 @@ export const felhasznalo = sqliteTable('felhasznalo', {
   admin: integer('admin').default(0), // 0 or 1
   nev: text('nev').notNull(),
   rBemutat: text('r_bemutat'),
-  irsz: integer('irsz'),
-  varos: text('varos'),
-  utca: text('utca', { length: 50 }),
-  hazszam: integer('hazszam'),
+  irsz: integer('irsz').notNull(),
+  varos: text('varos').notNull(),
+  utca: text('utca', { length: 50 }).notNull(),
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
   lat: real("szk").notNull().default(1),

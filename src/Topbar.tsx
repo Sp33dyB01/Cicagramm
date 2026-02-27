@@ -83,50 +83,48 @@ export default function TopBar({ user, onLogout }: { user: SelectFelhasznalo, on
   }, [lastScrollY]);
 
   return (
-    <header className={`header ${!showHeader ? "header-hidden" : ""}`}>
+    <header className={`fixed top-0 w-full h-[70px] bg-white dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 z-50 flex items-center px-5 gap-5 transition-transform duration-300 ${!showHeader ? "-translate-y-full shadow-none" : ""}`}>
       <img
         src={catIcon}
         alt="logo"
-        className="logo"
+        className="w-12 h-12 rounded-lg object-cover border border-neutral-400 dark:border-neutral-600 flex-shrink-0 cursor-pointer"
         onClick={handleLogoClick}
-        style={{ cursor: 'pointer' }}
       />
 
       {/* Spacer to push controls to the right */}
-      <div style={{ flex: 1 }}></div>
+      <div className="flex-1"></div>
 
-      <div className="controls-right" style={{ display: 'flex', alignItems: 'center' }}>
+      <div className="flex items-center gap-4 ml-auto text-neutral-900 dark:text-neutral-100">
 
         {/* THE DARK MODE TOGGLE */}
-        <button className="theme-toggle" onClick={toggleTheme} title="Téma váltása">
+        <button className="p-2 flex items-center justify-center text-xl border-2 border-neutral-200 dark:border-neutral-600 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors" onClick={toggleTheme} title="Téma váltása">
           {isDark ? "🌙" : "☀️"}
         </button>
 
         {user ? (
-          <div className="profile-wrapper" ref={profileRef}>
+          <div className="relative" ref={profileRef}>
             <img
               src={`/api/images/${user.pKep}`}
               alt="profile"
-              className="profile-pic"
+              className="w-10 h-10 rounded-full border border-neutral-800 dark:border-neutral-200 cursor-pointer object-cover"
               onClick={() => setOpen(!open)}
               onError={(e) => {
                 e.currentTarget.src = avatarImg;
                 e.currentTarget.onerror = null;
               }}
-              style={{ cursor: 'pointer' }}
             />
             {open && (
-              <div className="profile-dropdown">
-                <div onClick={() => { setOpen(false); navigate(`/users/${user.id}`); }}>Profil</div>
-                <div onClick={() => { setOpen(false); navigate("/beallitasok"); }}>Beállítások</div>
-                <div onClick={() => { setOpen(false); navigate("/uploads") }}>Feltöltés</div>
-                {user.admin ? <div onClick={() => { setOpen(false); navigate("/admin") }}>Admin felület</div> : null}
-                <div onClick={logOut}>Kijelentkezés</div>
+              <div className="absolute top-[60px] right-0 w-48 bg-white dark:bg-neutral-800 border-2 border-neutral-800 dark:border-neutral-200 rounded-[10px] shadow-xl flex flex-col py-2 z-50 overflow-hidden text-neutral-900 dark:text-neutral-100 font-semibold text-sm">
+                <div className="px-4 py-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer transition-colors" onClick={() => { setOpen(false); navigate(`/users/${user.id}`); }}>Profil</div>
+                <div className="px-4 py-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer transition-colors" onClick={() => { setOpen(false); navigate("/beallitasok"); }}>Beállítások</div>
+                <div className="px-4 py-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer transition-colors" onClick={() => { setOpen(false); navigate("/uploads") }}>Feltöltés</div>
+                {user.admin && <div className="px-4 py-3 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer transition-colors" onClick={() => { setOpen(false); navigate("/admin") }}>Admin felület</div>}
+                <div className="px-4 py-3 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer transition-colors border-t border-neutral-100 dark:border-neutral-700" onClick={logOut}>Kijelentkezés</div>
               </div>
             )}
           </div>
         ) : (
-          <h4 className="profile-wrapper" onClick={() => navigate("/login")}>
+          <h4 className="font-bold cursor-pointer hover:text-rose-600 transition-colors" onClick={() => navigate("/login")}>
             Bejelentkezés/Regisztráció
           </h4>
         )}
