@@ -1,4 +1,4 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useCallback } from 'react';
 import ErrorMessage from './Error';
 import type { ToastStatus } from './Error';
 import type { ReactNode } from 'react';
@@ -21,15 +21,14 @@ export function ToastProvider({ children }: ToastProviderProps) {
   const [status, setStatus] = useState<ToastStatus>('idle');
   const [message, setMessage] = useState<string>('');
 
-  // The function exposed to the app. We default the status to 'error'.
-  const showToast = (newMessage: string, newStatus: ToastStatus = 'error') => {
+  const showToast = useCallback((newMessage: string, newStatus: ToastStatus = 'error') => {
     setMessage(newMessage);
     setStatus(newStatus);
-  };
+  }, []);
 
-  const hideToast = () => {
+  const hideToast = useCallback(() => {
     setStatus('idle');
-  };
+  }, []);
 
   return (
     <ToastContext.Provider value={{ showToast }}>

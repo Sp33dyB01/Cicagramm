@@ -118,7 +118,7 @@ export default function TopBar({ user, onLogout }: { user: SelectFelhasznalo, on
                 <div className="px-4 py-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer transition-colors" onClick={() => { setOpen(false); navigate(`/users/${user.id}`); }}>Profil</div>
                 <div className="px-4 py-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer transition-colors" onClick={() => { setOpen(false); navigate("/beallitasok"); }}>Beállítások</div>
                 <div className="px-4 py-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer transition-colors" onClick={() => { setOpen(false); navigate("/uploads") }}>Feltöltés</div>
-                {user.admin && <div className="px-4 py-3 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer transition-colors" onClick={() => { setOpen(false); navigate("/admin") }}>Admin felület</div>}
+                {user.admin ? <div className="px-4 py-3 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer transition-colors" onClick={() => { setOpen(false); navigate("/admin") }}>Admin felület</div> : null}
                 <div className="px-4 py-3 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer transition-colors border-t border-neutral-100 dark:border-neutral-700" onClick={logOut}>Kijelentkezés</div>
               </div>
             )}
