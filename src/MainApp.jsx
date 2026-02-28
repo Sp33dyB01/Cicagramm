@@ -38,9 +38,9 @@ export default function MainApp({ user, ipCoords }) {
 
   return (
     <div className="flex flex-col min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 transition-colors">
-      <div className="flex flex-col md:flex-row flex-1 w-full max-w-7xl mx-auto pt-[70px]">
+      <div className="flex flex-col md:flex-row flex-1 w-full mx-auto pt-[70px]">
         {/* Sidebar */}
-        <aside className="w-full md:w-64 p-5 flex flex-col gap-5 flex-shrink-0 bg-white dark:bg-neutral-800 border-r border-neutral-200 dark:border-neutral-700">
+        <aside className="w-full md:w-64 p-5 flex flex-col gap-5 flex-shrink-0 bg-white dark:bg-neutral-800 border-b md:border border-neutral-200 dark:border-neutral-700 md:rounded-xl md:sticky md:top-5 md:h-[calc(100vh-40px)] md:overflow-y-auto">
           <div className="flex flex-col w-full">
 
             {/* Top Controls */}
@@ -141,6 +141,10 @@ export default function MainApp({ user, ipCoords }) {
           totalPages={totalPages}
           handlePageChange={handlePageChange}
         />
+
+        {/* --- DUMMY RIGHT SIDEBAR FOR CENTERING --- */}
+        {/* Helps balance the 256px wide filter sidebar so CatsFeed is perfectly physically centered */}
+        <div className="hidden md:block w-64 p-5 flex-shrink-0 pointer-events-none md:sticky md:top-5 md:h-[calc(100vh-40px)]"></div>
       </div>
       {/* Így használjuk az újrafelhasználható Modalt */}
       <Modal

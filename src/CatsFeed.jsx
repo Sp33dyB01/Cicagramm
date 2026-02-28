@@ -35,7 +35,7 @@ export default function CatsFeed({
     return (
         <main className="flex-1 w-full min-w-0 p-4 md:p-8 flex flex-col items-center">
             {layout === "grid" ? (
-                <section className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6 p-6 w-full justify-center z-0">
+                <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-6 w-full justify-center z-0 max-w-[1500px]">
                     {(paginatedCats || []).map((cat) => (
                         <div
                             className="group relative flex flex-col items-center cursor-pointer rounded-xl overflow-hidden border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm hover:shadow-lg transition-all"
