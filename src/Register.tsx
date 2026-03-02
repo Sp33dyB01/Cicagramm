@@ -5,7 +5,8 @@ import { getCoordinates } from "../worker/tavolsag";
 import { useNavigate } from "react-router-dom";
 import retryOperation from "./assets/utils/Retry";
 import { useToast } from "./Toast";
-import type { SelectTelepules } from "../worker/schema";
+import { usePostal } from "./hooks/usePostal";
+import { useCities } from "./hooks/useCities";
 interface FormData {
   email: string;
   nev: string;
@@ -25,83 +26,31 @@ export default function Register({ onSuccess }: RegisterProps) {
   const { showToast } = useToast();
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
-  const [cities, setCities] = useState<SelectTelepules[]>([]);
-  const [loadingCities, setLoadingCities] = useState<boolean>(false);
-  const [loadingPostal, setLoadingPostal] = useState<Boolean>(false)
-  const [postals, setPostals] = useState<SelectTelepules[]>([]);
-  const [debouncedValue, setDebouncedValue] = useState<string>('');
   const [formData, setFormData] = useState<FormData>({
     email: '',
     nev: '',
     jelszo: '',
-    rBemutat: 'bemutat',
+    rBemutat: '',
     irsz: '',
     utca: '',
     pKep: '',
     varos: '',
   });
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(formData.varos);
-    }, 500);
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [formData.varos])
+
+  const { cities, loadingCities, setCities } = usePostal(formData.irsz);
+  const { postals, loadingPostal, setPostals } = useCities(formData.varos);
 
   useEffect(() => {
-    if (formData.irsz.length === 4) {
-      const fetchCities = async () => {
-        setLoadingCities(true);
-        try {
-          const res = await fetch(`/api/varos/irsz/${formData.irsz}`);
-          if (res.ok) {
-            const data: SelectTelepules[] = await res.json();
-            setCities(data);
-            if (data.length === 1) {
-              setFormData(prev => prev.varos !== data[0].nev ? { ...prev, varos: data[0].nev } : prev);
-            }
-          }
-        }
-        catch (err) {
-          console.error("Failed to fetch cities", err);
-        }
-        finally {
-          setLoadingCities(false);
-        }
-      };
-
-      fetchCities();
-    } else {
-      setCities([]);
+    if (cities.length === 1 && formData.varos !== cities[0].nev) {
+      setFormData(prev => ({ ...prev, varos: cities[0].nev }));
     }
-  }, [formData.irsz]);
+  }, [cities]);
 
   useEffect(() => {
-    if (debouncedValue) {
-      const fetchPostal = async () => {
-        setLoadingPostal(true)
-        try {
-          const res = await fetch(`/api/varos/nev/${debouncedValue}`)
-          if (res.ok) {
-            const data: SelectTelepules[] = await res.json();
-            setPostals(data);
-            if (data.length === 1) {
-              setFormData(prev => prev.irsz !== String(data[0].irsz) ? { ...prev, irsz: String(data[0].irsz) } : prev)
-            }
-          }
-        }
-        catch (err) {
-          console.error("Failed to fetch postal codes", err)
-        } finally {
-          setLoadingPostal(false)
-        }
-      };
-      fetchPostal();
-    } else {
-      setPostals([]);
+    if (postals.length === 1 && String(formData.irsz) !== String(postals[0].irsz)) {
+      setFormData(prev => ({ ...prev, irsz: String(postals[0].irsz) }));
     }
-  }, [debouncedValue])
+  }, [postals]);
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -155,27 +104,39 @@ export default function Register({ onSuccess }: RegisterProps) {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow"
-            placeholder="E-mail"
-            type="email"
-            value={formData.email}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, email: e.target.value })}
-          />
-          <input
-            className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow"
-            placeholder="Felhasználónév"
-            value={formData.nev}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, nev: e.target.value })}
-          />
+          <div>
+            <input
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+              placeholder="E-mail"
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, email: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kérjük, adjon meg egy érvényes e-mail címet!</p>
+          </div>
+          <div>
+            <input
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+              placeholder="Felhasználónév"
+              required
+              value={formData.nev}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, nev: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A felhasználónév megadása kötelező!</p>
+          </div>
 
-          <input
-            type="password"
-            className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow"
-            placeholder="Jelszó"
-            value={formData.jelszo}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, jelszo: e.target.value })}
-          />
+          <div>
+            <input
+              type="password"
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+              placeholder="Jelszó"
+              required
+              value={formData.jelszo}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, jelszo: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A jelszó megadása kötelező!</p>
+          </div>
 
           <div className="flex gap-3">
             <div className="w-1/3 relative">
@@ -184,26 +145,38 @@ export default function Register({ onSuccess }: RegisterProps) {
                   Keresés...
                 </div>
               ) : postals.length > 1 ? (
-                <select
-                  className="w-full px-3 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow appearance-none"
-                  value={formData.irsz}
-                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, irsz: e.target.value })}
-                >
-                  <option value="">-- --</option>
-                  {postals.map((p) => (
-                    <option key={`irsz-${p.id}`} value={p.irsz}>
-                      {p.irsz}
-                    </option>
-                  ))}
-                </select>
+                <div>
+                  <select
+                    className="peer w-full px-3 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow appearance-none invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                    value={formData.irsz}
+                    required
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, irsz: e.target.value })}
+                  >
+                    <option value="">-- --</option>
+                    {postals.map((p) => (
+                      <option key={`irsz-${p.id}`} value={p.irsz}>
+                        {p.irsz}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező!</p>
+                </div>
               ) : (
-                <input
-                  type="number"
-                  className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow"
-                  placeholder="Irsz"
-                  value={formData.irsz}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, irsz: e.target.value })}
-                />
+                <div>
+                  <input
+                    type="number"
+                    className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                    placeholder="Irsz"
+                    required
+                    value={formData.irsz}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      const val = e.target.value;
+                      setFormData({ ...formData, irsz: val });
+                      if (val.length !== 4) setCities([]);
+                    }}
+                  />
+                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező!</p>
+                </div>
               )}
             </div>
             <div className="w-2/3 relative">
@@ -213,36 +186,48 @@ export default function Register({ onSuccess }: RegisterProps) {
                 </div>
               ) : cities.length > 1 ? (
                 /* Dropdown if multiple cities found */
-                <select
-                  className="w-full px-3 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow appearance-none"
-                  value={formData.varos}
-                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, varos: e.target.value })}
-                >
-                  <option value="">-- Válassz --</option>
-                  {cities.map((c) => (
-                    <option key={c.id} value={c.nev}>
-                      {c.nev}
-                    </option>
-                  ))}
-                </select>
+                <div>
+                  <select
+                    className="peer w-full px-3 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow appearance-none invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                    value={formData.varos}
+                    required
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, varos: e.target.value })}
+                  >
+                    <option value="">-- Válassz --</option>
+                    {cities.map((c) => (
+                      <option key={c.id} value={c.nev}>
+                        {c.nev}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A város kiválasztása kötelező!</p>
+                </div>
               ) : (
                 /* Normal input if 0 or 1 city found (allow manual override if 0) */
-                <input
-                  className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow"
-                  placeholder="Város"
-                  value={formData.varos}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, varos: e.target.value })}
-                />
+                <div>
+                  <input
+                    className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                    placeholder="Város"
+                    required
+                    value={formData.varos}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, varos: e.target.value })}
+                  />
+                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A város megadása kötelező!</p>
+                </div>
               )}
             </div>
           </div>
 
-          <input
-            className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow"
-            placeholder="Utca, házszám"
-            value={formData.utca}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, utca: e.target.value })}
-          />
+          <div>
+            <input
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+              placeholder="Utca, házszám"
+              required
+              value={formData.utca}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, utca: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Utca, házszám megadása kötelező!</p>
+          </div>
           {/* --------------------- */}
 
           <div className="pt-2">

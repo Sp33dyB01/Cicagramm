@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import avatarImg from './assets/avatar.png';
+import { useNavigate } from 'react-router-dom';
 import "./CatProfile.css";
 import "./Topbar.jsx";
 
@@ -9,7 +10,7 @@ export default function CatProfile({ catId }) {
   const [zoomedImage, setZoomedImage] = useState(null);
   const [isZoomedIn, setIsZoomedIn] = useState(false);
   const [visible, setVisible] = useState(false);
-
+  const navigate = useNavigate();
   useEffect(() => {
     if (!loading) {
       setTimeout(() => setVisible(true), 50);
@@ -107,7 +108,7 @@ export default function CatProfile({ catId }) {
                 }}
               />
               <div className="flex flex-col">
-                <p className="m-0 mb-1 text-lg font-bold"><strong>{owner.nev}</strong></p>
+                <p className="m-0 mb-1 text-lg font-bold cursor-pointer" onClick={() => navigate(`users/${owner.id}`)}><strong>{owner.nev}</strong></p>
                 <p className="m-0 mb-1"><a className="text-rose-600 hover:underline" href={`mailto:${owner.email}`}>{owner.email}</a></p>
               </div>
             </div>

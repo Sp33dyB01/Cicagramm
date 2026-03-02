@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+
 export interface filters {
     fajId: string;
     minKor: number;
@@ -8,18 +10,43 @@ export interface filters {
 }
 
 export function useFilters(setCurrentPage: (value: React.SetStateAction<number>) => void) {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [filters, setFilters] = useState<filters>({
-        fajId: "",
-        minKor: 0,
-        maxKor: 20,
-        ivartalanitott: "",
-        nem: ""
-    });
-    const [appliedFilters, setAppliedFilters] = useState(filters);
+
+    const initialAppliedFilters: filters = {
+        fajId: searchParams.get("fajId") || "",
+        minKor: Number(searchParams.get("minKor")) || 0,
+        maxKor: searchParams.get("maxKor") ? Number(searchParams.get("maxKor")) : 20,
+        ivartalanitott: searchParams.get("ivartalanitott") || "",
+        nem: searchParams.get("nem") || ""
+    };
+
+    const [filters, setFilters] = useState<filters>(initialAppliedFilters);
+    const [appliedFilters, setAppliedFilters] = useState<filters>(initialAppliedFilters);
+
+    useEffect(() => {
+        const updatedFilters: filters = {
+            fajId: searchParams.get("fajId") || "",
+            minKor: Number(searchParams.get("minKor")) || 0,
+            maxKor: searchParams.get("maxKor") ? Number(searchParams.get("maxKor")) : 20,
+            ivartalanitott: searchParams.get("ivartalanitott") || "",
+            nem: searchParams.get("nem") || ""
+        };
+        setAppliedFilters(updatedFilters);
+        setFilters(updatedFilters);
+    }, [searchParams]);
 
     const handleApplyFilters = () => {
-        setAppliedFilters(filters);
+        const newParams = new URLSearchParams(searchParams);
+
+        if (filters.fajId) newParams.set("fajId", filters.fajId); else newParams.delete("fajId");
+        if (filters.minKor > 0) newParams.set("minKor", String(filters.minKor)); else newParams.delete("minKor");
+        if (filters.maxKor < 20) newParams.set("maxKor", String(filters.maxKor)); else newParams.delete("maxKor");
+        if (filters.ivartalanitott) newParams.set("ivartalanitott", filters.ivartalanitott); else newParams.delete("ivartalanitott");
+        if (filters.nem) newParams.set("nem", filters.nem); else newParams.delete("nem");
+
+        setSearchParams(newParams);
+
         if (setCurrentPage) setCurrentPage(1);
         setIsFilterOpen(false);
     };

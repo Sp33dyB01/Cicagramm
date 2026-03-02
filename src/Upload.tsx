@@ -15,15 +15,15 @@ export default function Upload(user: SelectFelhasznalo) {
         const form = e.currentTarget;
         const rawFormData = new FormData(e.currentTarget);
         const optimizedFormData = new FormData();
-        for (const [key,value] of rawFormData.entries()){
-            if (value instanceof File && value.name !== ""){
+        for (const [key, value] of rawFormData.entries()) {
+            if (value instanceof File && value.name !== "") {
                 try {
                     const webpFile = await convertToWebP(value) as Blob;
                     optimizedFormData.append(key, webpFile);
                 } catch (error) {
                     console.error(`Failed to convert ${value.name}:`, error);
                     optimizedFormData.append(key, value);
-            }
+                }
             }
             else {
                 optimizedFormData.append(key, value);
@@ -61,56 +61,72 @@ export default function Upload(user: SelectFelhasznalo) {
                             type="text"
                             placeholder="Név (pl. Cirmi)"
                             required
-                            className="w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
+                            className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
                         />
+                        <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A cica nevének megadása kötelező!</p>
                     </div>
 
                     <div className="flex gap-4">
-                        <input
-                            name="kor"
-                            type="number"
-                            placeholder="Kor (év)"
-                            required
-                            className="flex-1 px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
-                        />
-                        <input
-                            name="tomeg"
-                            type="number"
-                            step="0.1"
-                            placeholder="Tömeg (kg)"
-                            required
-                            className="flex-1 px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
-                        />
+                        <div className="flex-1">
+                            <input
+                                name="kor"
+                                type="number"
+                                placeholder="Kor (év)"
+                                required
+                                max='20'
+                                className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                            />
+                            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Adja meg a kort (max 20 év)!</p>
+                        </div>
+                        <div className="flex-1">
+                            <input
+                                name="tomeg"
+                                type="number"
+                                step="0.1"
+                                placeholder="Tömeg (kg)"
+                                required
+                                max="30"
+                                className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                            />
+                            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Adja meg a tömeget (max 30.0 kg)!</p>
+                        </div>
                     </div>
                     <div>
                         <select
                             name="nem"
                             required
-                            className="w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
+                            className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
                         >
                             <option value="0">Hím</option>
                             <option value="1">Nőstény</option>
                         </select>
+                        <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Válassza ki a cica nemét!</p>
                     </div>
                     <div className="flex gap-4">
-                        <select
-                            name="fajId"
-                            required
-                            className="flex-1 px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
-                        >
-                            <option value="">-- Válassz Fajtát --</option>
-                            {fajtak.map((f) => (
-                                <option key={f.id} value={f.id}>{f.fajta}</option>
-                            ))}
-                        </select>
-                        <select
-                            name="ivartalanitott"
-                            required
-                            className="flex-1 px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
-                        >
-                            <option value="0">Nem ivartalanított</option>
-                            <option value="1">Ivartalanított</option>
-                        </select>
+                        <div className="flex-1">
+                            <select
+                                name="fajId"
+                                required
+                                className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                            >
+                                <option value="">-- Válassz Fajtát --</option>
+                                {fajtak.map((f) => (
+                                    <option key={f.id} value={f.id}>{f.fajta}</option>
+                                ))}
+                            </select>
+                            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Válasszon egy fajtát!</p>
+                        </div>
+                        <div className="flex-1">
+                            <select
+                                name="ivartalanitott"
+                                required
+                                className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                            >
+                                <option value="0">Nem ivartalanított</option>
+                                <option value="1">Ivartalanított</option>
+                            </select>
+                            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező adat!</p>
+                        </div>
                     </div>
 
                     <textarea
@@ -127,7 +143,7 @@ export default function Upload(user: SelectFelhasznalo) {
                                 type="file"
                                 accept="image/*"
                                 required
-                                className="mt-1 block w-full text-sm text-neutral-500 dark:text-neutral-400
+                                className="peer mt-1 block w-full text-sm text-neutral-500 dark:text-neutral-400
                                     file:mr-4 file:py-2 file:px-4
                                     file:rounded-full file:border-0
                                     file:text-sm file:font-bold
@@ -136,6 +152,7 @@ export default function Upload(user: SelectFelhasznalo) {
                                     hover:file:bg-rose-100 dark:hover:file:bg-rose-950/50
                                     cursor-pointer"
                             />
+                            <p className="mt-2 text-xs text-rose-500 hidden peer-invalid:block">A cica profilképe kötelező!</p>
                         </label>
                     </div>
 

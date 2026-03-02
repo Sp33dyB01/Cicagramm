@@ -2,6 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import avatarImg from "./assets/avatar.png"; // Make sure the path matches MainApp.jsx
 import { useToast } from "./Toast";
+import convertToWebP from "./helper/imageToWebP";
+import { usePostal } from "./hooks/usePostal";
+import { useCities } from "./hooks/useCities";
+
 // This component receives the logged-in user object as a prop
 export default function Beallitasok({ user, onUpdate }) {
   const { showToast } = useToast();
@@ -10,13 +14,6 @@ export default function Beallitasok({ user, onUpdate }) {
   const fileInputRef = useRef(null);
 
   // --- CITY FETCHING STATES ---
-  const [cities, setCities] = useState([]);
-  const [postals, setPostals] = useState([]);
-  const [loadingCities, setLoadingCities] = useState(false);
-  const [loadingPostal, setLoadingPostal] = useState(false);
-  const [debouncedValue, setDebouncedValue] = useState('');
-
-  // Initialize form state with the current user's data
   const [formData, setFormData] = useState({
     email: user?.email || '',
     nev: user?.nev || user?.name || '',
@@ -27,81 +24,21 @@ export default function Beallitasok({ user, onUpdate }) {
     pKep: null, // This will hold the File object if a new picture is selected
   });
 
-  // Sync formData when user prop updates (e.g. after a successful save)
+  const { cities, loadingCities, setCities } = usePostal(formData.irsz);
+  const { postals, loadingPostal, setPostals } = useCities(formData.varos);
+
+  // Use effects to update formData if exactly 1 result is returned
   useEffect(() => {
-    if (user) {
-      setFormData(prev => ({
-        ...prev,
-        email: user.email || prev.email,
-        nev: user.nev || user.name || prev.nev,
-        rBemutat: user.rBemutat !== undefined ? user.rBemutat : prev.rBemutat,
-        irsz: user.irsz || prev.irsz,
-        varos: user.varos || prev.varos,
-        utca: user.utca || prev.utca,
-      }));
+    if (cities.length === 1 && formData.varos !== cities[0].nev) {
+      setFormData(prev => ({ ...prev, varos: cities[0].nev }));
     }
-  }, [user]);
+  }, [cities]);
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(formData.varos);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [formData.varos]);
-
-  // Effect to fetch cities when the postal code (irsz) changes
-  useEffect(() => {
-    if (formData.irsz && String(formData.irsz).length === 4) {
-      const fetchCities = async () => {
-        setLoadingCities(true);
-        try {
-          const res = await fetch(`/api/varos/irsz/${formData.irsz}`);
-          if (res.ok) {
-            const data = await res.json();
-            setCities(data);
-            if (data.length === 1) {
-              setFormData(prev => prev.varos !== data[0].nev ? { ...prev, varos: data[0].nev } : prev);
-            }
-          }
-        } catch (err) {
-          console.error("Failed to fetch cities", err);
-        } finally {
-          setLoadingCities(false);
-        }
-      };
-
-      fetchCities();
-    } else {
-      setCities([]); // Clear cities if postal code is not 4 digits
+    if (postals.length === 1 && String(formData.irsz) !== String(postals[0].irsz)) {
+      setFormData(prev => ({ ...prev, irsz: String(postals[0].irsz) }));
     }
-  }, [formData.irsz]);
-
-  useEffect(() => {
-    if (debouncedValue) {
-      const fetchPostal = async () => {
-        setLoadingPostal(true);
-        try {
-          const res = await fetch(`/api/varos/nev/${debouncedValue}`);
-          if (res.ok) {
-            const data = await res.json();
-            setPostals(data);
-            if (data.length === 1) {
-              setFormData(prev => prev.irsz !== String(data[0].irsz) ? { ...prev, irsz: String(data[0].irsz) } : prev);
-            }
-          }
-        } catch (err) {
-          console.error("Failed to fetch postal codes", err);
-        } finally {
-          setLoadingPostal(false);
-        }
-      };
-      fetchPostal();
-    } else {
-      setPostals([]);
-    }
-  }, [debouncedValue]);
-
-  const isLocationLocked = formData.irsz !== '' && formData.varos !== '';
+  }, [postals]);
 
 
   // Handle file input change
@@ -135,7 +72,13 @@ export default function Beallitasok({ user, onUpdate }) {
     submissionData.append('varos', formData.varos);
     submissionData.append('utca', formData.utca);
     if (formData.pKep) {
-      submissionData.append('pKep', formData.pKep);
+      try {
+        const webpFile = await convertToWebP(formData.pKep);
+        submissionData.append('pKep', webpFile);
+      } catch (error) {
+        console.error("Failed to convert image to WebP:", error);
+        submissionData.append('pKep', formData.pKep);
+      }
     }
 
     try {
@@ -224,12 +167,16 @@ export default function Beallitasok({ user, onUpdate }) {
             readOnly
           />
 
-          <input
-            className="w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:focus:border-rose-500 focus:border-rose-500 outline-none transition-colors"
-            placeholder="Felhasználónév"
-            value={formData.nev}
-            onChange={(e) => setFormData({ ...formData, nev: e.target.value })}
-          />
+          <div>
+            <input
+              className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:focus:border-rose-500 focus:border-rose-500 outline-none transition-colors invalid:border-rose-500 focus:invalid:border-rose-500"
+              placeholder="Felhasználónév"
+              required
+              value={formData.nev}
+              onChange={(e) => setFormData({ ...formData, nev: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A felhasználónév megadása kötelező!</p>
+          </div>
           <textarea
             className="w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:focus:border-rose-500 focus:border-rose-500 outline-none transition-colors"
             placeholder="Rövid bemutatkozás"
@@ -246,27 +193,38 @@ export default function Beallitasok({ user, onUpdate }) {
                   Keresés...
                 </div>
               ) : postals.length > 1 ? (
-                <select
-                  className="w-full h-[42px] px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors"
-                  value={formData.irsz}
-                  onChange={(e) => setFormData({ ...formData, irsz: e.target.value })}
-                >
-                  <option value="">-- --</option>
-                  {postals.map((p) => (
-                    <option key={`irsz-${p.id}`} value={p.irsz}>
-                      {p.irsz}
-                    </option>
-                  ))}
-                </select>
+                <div>
+                  <select
+                    className="peer w-full h-[42px] px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500"
+                    value={formData.irsz}
+                    required
+                    onChange={(e) => setFormData({ ...formData, irsz: e.target.value })}
+                  >
+                    <option value="">-- --</option>
+                    {postals.map((p) => (
+                      <option key={`irsz-${p.id}`} value={p.irsz}>
+                        {p.irsz}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező irányítószám!</p>
+                </div>
               ) : (
-                <input
-                  type="number"
-                  className="w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors disabled:bg-rose-50 dark:disabled:bg-rose-950/20"
-                  placeholder="Irsz"
-                  value={formData.irsz}
-                  onChange={(e) => setFormData({ ...formData, irsz: e.target.value })}
-                  disabled={postals.length === 1}
-                />
+                <div>
+                  <input
+                    type="number"
+                    className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500"
+                    placeholder="Irsz"
+                    required
+                    value={formData.irsz}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData({ ...formData, irsz: val });
+                      if (val.length !== 4) setCities([]); // Clear cities if irsz is manual and not full
+                    }}
+                  />
+                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező!</p>
+                </div>
               )}
             </div>
             <div className="w-2/3 relative">
@@ -275,36 +233,49 @@ export default function Beallitasok({ user, onUpdate }) {
                   Keresés...
                 </div>
               ) : cities.length > 1 ? (
-                <select
-                  className="w-full h-[42px] px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors"
-                  value={formData.varos}
-                  onChange={(e) => setFormData({ ...formData, varos: e.target.value })}
-                >
-                  <option value="">-- Válassz --</option>
-                  {cities.map((c) => (
-                    <option key={c.id} value={c.nev}>
-                      {c.nev}
-                    </option>
-                  ))}
-                </select>
+                <div>
+                  <select
+                    className="peer w-full h-[42px] px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500"
+                    value={formData.varos}
+                    required
+                    onChange={(e) => setFormData({ ...formData, varos: e.target.value })}
+                  >
+                    <option value="">-- Válassz --</option>
+                    {cities.map((c) => (
+                      <option key={c.id} value={c.nev}>
+                        {c.nev}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező város!</p>
+                </div>
               ) : (
-                <input
-                  className="w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors disabled:bg-rose-50 dark:disabled:bg-rose-950/20"
-                  placeholder="Város"
-                  value={formData.varos}
-                  onChange={(e) => setFormData({ ...formData, varos: e.target.value })}
-                  disabled={cities.length === 1}
-                />
+                <div>
+                  <input
+                    className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500"
+                    placeholder="Város"
+                    required
+                    value={formData.varos}
+                    onChange={(e) => {
+                      setFormData({ ...formData, varos: e.target.value });
+                    }}
+                  />
+                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező!</p>
+                </div>
               )}
             </div>
           </div>
 
-          <input
-            className="w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors"
-            placeholder="Utca, házszám"
-            value={formData.utca}
-            onChange={(e) => setFormData({ ...formData, utca: e.target.value })}
-          />
+          <div>
+            <input
+              className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500"
+              placeholder="Utca, házszám"
+              required
+              value={formData.utca}
+              onChange={(e) => setFormData({ ...formData, utca: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Utca, házszám megadása kötelező!</p>
+          </div>
 
 
           <button

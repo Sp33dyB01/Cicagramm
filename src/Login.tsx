@@ -51,19 +51,28 @@ export default function Login({ onLogin }: LoginProps) {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow"
-            placeholder="E-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow"
-            placeholder="Jelszó"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div>
+            <input
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+              placeholder="E-mail"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kérjük, adjon meg egy érvényes e-mail címet!</p>
+          </div>
+          <div>
+            <input
+              type="password"
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+              placeholder="Jelszó"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A jelszó megadása kötelező!</p>
+          </div>
           <div className="pt-2">
             <button
               type="submit"

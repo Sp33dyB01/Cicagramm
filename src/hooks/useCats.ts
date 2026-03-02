@@ -49,7 +49,9 @@ export function useCats({ currentPage, sort, user, ipCoords, appliedFilters, sho
             fetchUrl.searchParams.set("lon", String(ipCoords.lon));
         }
 
-        fetch(fetchUrl.toString())
+        fetch(fetchUrl.toString(), {
+
+        })
             .then((res) => res.json())
             .then((data) => {
                 console.log("Fetched cats:", data);

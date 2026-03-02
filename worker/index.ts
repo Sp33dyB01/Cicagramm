@@ -13,6 +13,14 @@ export interface Env {
   BETTER_AUTH_URL?: string;
   BUCKET: R2Bucket;
 }
+async function generateETag(dataString: string) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(dataString);
+  const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return `"${hashHex}"`;
+}
 app.on(["POST", "GET"], "/api/auth/*", async (c) => {
   const auth = getAuth(c.env);
   return auth.handler(c.req.raw);
@@ -48,6 +56,23 @@ app.get('/api/fajta', async (c) => {
   const db = drizzle(c.env.DB, { schema });
   try {
     const result = await db.query.fajta.findMany();
+    const jsonString = JSON.stringify(result)
+    const eTag = await generateETag(jsonString)
+    const clientEtag = c.req.header('If-None-Match');
+    const cleanClientEtag = clientEtag ? clientEtag.replace(/^W\//, '') : null;
+
+    if (cleanClientEtag === eTag) {
+      return new Response(null, {
+        status: 304,
+        headers: {
+          'ETag': eTag,
+          'Cache-Control': 'no-cache'
+        }
+      });
+    }
+    c.header('ETag', eTag);
+    c.header('Cache-Control', 'no-cache')
+    c.header('Content-Type', 'application/json');
     return c.json(result);
   } catch (e) {
     return c.json({ error: "Failed to fetch species" }, 500);
@@ -57,9 +82,20 @@ app.get('/api/images/:mkepId', async (c) => {
   const mkepId = c.req.param('mkepId');
   const object = await c.env.BUCKET.get(mkepId);
   if (!object) return c.json({ error: "Kép nem található" }, 404);
+  const clientEtag = c.req.header("If-None-Match");
+  if (clientEtag && clientEtag == object.httpEtag) {
+    return new Response(null, {
+      status: 304,
+      headers: {
+        'etag': object.httpEtag,
+        'cache-control': 'public, max-age=604800'
+      }
+    })
+  }
   const headers = new Headers();
   object.writeHttpMetadata(headers);
   headers.set('etag', object.httpEtag);
+  headers.set('cache-control', 'public, max-age=604800');
   return new Response(object.body, { headers });
 });
 app.get('/api/ipinfo', (c) => {

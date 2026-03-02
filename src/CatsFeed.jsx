@@ -50,7 +50,7 @@ export default function CatsFeed({
                                 />
 
                                 <button
-                                    className={`absolute top-3 right-3 w-11 h-11 rounded-full border-none flex items-center justify-center text-xl z-10 transition-all duration-200 transform scale-90 opacity-0 group-hover:opacity-100 group-hover:scale-100 shadow-md ${cat.isLiked
+                                    className={`cursor-pointer absolute top-3 right-3 w-11 h-11 rounded-full border-none flex items-center justify-center text-xl z-10 transition-all duration-200 transform scale-90 opacity-0 group-hover:opacity-100 group-hover:scale-100 shadow-md ${cat.isLiked
                                         ? 'bg-white text-rose-600 opacity-100 scale-100'
                                         : 'bg-black/60 text-white hover:bg-white hover:text-rose-600 hover:scale-110'
                                         }`}
@@ -146,14 +146,14 @@ export default function CatsFeed({
             {totalPages > 1 && (
                 <div className="flex flex-wrap justify-center items-center gap-4 my-8 w-full">
                     <button
-                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all"
+                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
                         disabled={currentPage === 1}
                         onClick={() => handlePageChange(1)}
                     >
                         &laquo; Első
                     </button>
                     <button
-                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all"
+                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
                         disabled={currentPage === 1}
                         onClick={() => handlePageChange(currentPage - 1)}
                     >
@@ -165,14 +165,14 @@ export default function CatsFeed({
                     </span>
 
                     <button
-                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all"
+                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
                         disabled={currentPage === totalPages}
                         onClick={() => handlePageChange(currentPage + 1)}
                     >
                         Következő &rsaquo;
                     </button>
                     <button
-                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all"
+                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
                         disabled={currentPage === totalPages}
                         onClick={() => handlePageChange(totalPages)}
                     >
