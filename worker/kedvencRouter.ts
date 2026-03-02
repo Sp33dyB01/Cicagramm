@@ -43,5 +43,27 @@ kedvencRouter.delete("/:cId", async (c) => {
         console.error(e)
         return c.json({ error: "Hiba történt" }, 500);
     }
+});
+kedvencRouter.get("/:felId", async (c) => {
+    const db = drizzle(c.env.DB, { schema });
+    const auth = getAuth(c.env);
+    const felId = c.req.param('felId');
+    const session = await auth.api.getSession({
+        headers: c.req.raw.headers
+    });
+    if (!session)
+        return c.json({ error: "Bejelentkezés szükséges" }, 401);
+    try{
+        const result = await db.query.kedvencek.findMany({
+            where: (table, { eq }) => eq(table.felId, felId),
+            with: {
+                cat: true
+            }
+        })
+        return c.json(result)
+    }
+    catch (e){
+        return c.json({error: "Szerver oldali hiba"}, 500);
+    }
 })
 export default kedvencRouter;

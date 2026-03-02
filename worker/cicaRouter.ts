@@ -28,7 +28,7 @@ cicaRouter.post('/', async (c) => {
     if (!nev || !kor || !tomeg || isNaN(ivartalanitott) || !fajId || !pKepFile || isNaN(nem)) {
       return c.json({ error: "Hiányzó adatok!" }, 400);
     }
-    const pkepKey = `pfp-${crypto.randomUUID()}-${pKepFile.name}`
+    const pkepKey = `pfp-${crypto.randomUUID()}`
     await c.env.BUCKET.put(pkepKey, pKepFile);
     const newcId = crypto.randomUUID();
     await db.insert(schema.cica).values({
@@ -44,10 +44,14 @@ cicaRouter.post('/', async (c) => {
       nem: nem
     });
     let filesUpload: File[] = [];
-    if (Array.isArray(mKepek))
-      filesUpload = mKepek as File[];
-    else if (mKepek instanceof File)
+    if (Array.isArray(mKepek)) {
+      filesUpload = mKepek.filter(
+        (file) => file instanceof File && file.size > 0 && file.name !== ''
+      ) as File[];
+    }
+    else if (mKepek instanceof File && mKepek.size > 0 && mKepek.name !== '') {
       filesUpload = [mKepek];
+    };
     if (filesUpload.length > 0) {
       const mKepekPromise = filesUpload.map(async (file) => {
         const kepKey = crypto.randomUUID();

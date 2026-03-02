@@ -92,7 +92,7 @@ export const kedvencekRelations = relations(kedvencek, ({ one }) => ({
     fields: [kedvencek.felId],
     references: [felhasznalo.id],
   }),
-  cica: one(cica, {
+  cat: one(cica, {
     fields: [kedvencek.cId],
     references: [cica.cId],
   }),

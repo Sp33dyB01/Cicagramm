@@ -2,6 +2,7 @@ import type { SelectFelhasznalo } from '../worker/schema';
 import { useState } from 'react';
 import { useToast } from './Toast';
 import { useFajtak } from "./hooks/useFajtak";
+import convertToWebP from "./helper/imageToWebP"
 
 export default function Upload(user: SelectFelhasznalo) {
     const { showToast } = useToast();
@@ -11,18 +12,34 @@ export default function Upload(user: SelectFelhasznalo) {
     const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
-        const form = e.currentTarget;
-        const formData = new FormData(form);
+        const rawFormData = new FormData(e.currentTarget);
+        const optimizedFormData = new FormData();
+        for (const [key,value] of rawFormData.entries()){
+            if (value instanceof File && value.name !== ""){
+                try {
+        const webpFile = await convertToWebP(value) as Blob;
+        // Append the optimized file to the new form
+        optimizedFormData.append(key, webpFile);
+      } catch (error) {
+        console.error(`Failed to convert ${value.name}:`, error);
+        // Fallback: append the original file if conversion fails
+        optimizedFormData.append(key, value);
+      }
+    }
+    else {
+      optimizedFormData.append(key, value);
+    }
+        }
         try {
             const res = await fetch('/api/cica', {
                 method: 'POST',
-                body: formData,
+                body: optimizedFormData,
             });
             const data = await res.json();
 
             if (res.ok) {
                 showToast(`Siker! Új cica ID: ${data.cId}`, "success");
-                form.reset();
+                e.currentTarget.reset();
             } else {
                 showToast(data.error || 'Hiba történt', "error");
             }
