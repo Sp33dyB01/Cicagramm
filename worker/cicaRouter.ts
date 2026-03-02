@@ -301,7 +301,9 @@ cicaRouter.patch('/:cId', async (c) => {
       });
       await Promise.all(deletePromises);
     }
-    await db.update(schema.cica).set(updateData).where(eq(schema.cica.cId, cId));
+    if (Object.keys(updateData).length > 0) {
+      await db.update(schema.cica).set(updateData).where(eq(schema.cica.cId, cId));
+    }
     return c.json({ success: true, message: "Cica adatai frissítve!" });
   }
   catch (e) {

@@ -33,7 +33,7 @@ export const getAuth = (env: Env) => {
         }
       })
     ],
-    trustedOrigins: ["http://localhost:5173"],
+    trustedOrigins: ["http://localhost:5173", "http://127.0.0.1:8787"],
     database: drizzleAdapter(db, {
       provider: "sqlite",
       schema: {

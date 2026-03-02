@@ -12,23 +12,22 @@ export default function Upload(user: SelectFelhasznalo) {
     const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
+        const form = e.currentTarget;
         const rawFormData = new FormData(e.currentTarget);
         const optimizedFormData = new FormData();
         for (const [key,value] of rawFormData.entries()){
             if (value instanceof File && value.name !== ""){
                 try {
-        const webpFile = await convertToWebP(value) as Blob;
-        // Append the optimized file to the new form
-        optimizedFormData.append(key, webpFile);
-      } catch (error) {
-        console.error(`Failed to convert ${value.name}:`, error);
-        // Fallback: append the original file if conversion fails
-        optimizedFormData.append(key, value);
-      }
-    }
-    else {
-      optimizedFormData.append(key, value);
-    }
+                    const webpFile = await convertToWebP(value) as Blob;
+                    optimizedFormData.append(key, webpFile);
+                } catch (error) {
+                    console.error(`Failed to convert ${value.name}:`, error);
+                    optimizedFormData.append(key, value);
+            }
+            }
+            else {
+                optimizedFormData.append(key, value);
+            }
         }
         try {
             const res = await fetch('/api/cica', {
@@ -39,11 +38,12 @@ export default function Upload(user: SelectFelhasznalo) {
 
             if (res.ok) {
                 showToast(`Siker! Új cica ID: ${data.cId}`, "success");
-                e.currentTarget.reset();
+                form.reset();
             } else {
                 showToast(data.error || 'Hiba történt', "error");
             }
         } catch (err) {
+            console.log(err)
             showToast('Hálózati hiba', "error");
         } finally {
             setLoading(false);
