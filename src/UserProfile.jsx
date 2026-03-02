@@ -3,13 +3,15 @@ import { useParams } from "react-router-dom";
 import { authClient } from "./auth-client";
 import avatarImg from "./assets/avatar.png";
 import "./MainApp.css";
-
+import EditCatModal from "./EditCatModal";
 const UserProfile = () => {
   const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('uploads'); // 'uploads' or 'favorites'
   const [currentUser, setCurrentUser] = useState(null);
+  const [editingCat, setEditingCat] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     async function checkSession() {
@@ -42,7 +44,7 @@ const UserProfile = () => {
         console.error("Hiba a felhasználó betöltésekor:", err);
         setLoading(false);
       });
-  }, [userId]);
+  }, [userId, refreshKey]);
 
   if (loading) {
     return <div className="min-h-[50vh] flex justify-center items-center text-neutral-500">Betöltés...</div>;
@@ -53,7 +55,7 @@ const UserProfile = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 text-neutral-900 dark:text-neutral-100 transition-colors">
+    <div className="max-w-7xl mx-auto p-4 pt-24 sm:p-6 sm:pt-28 lg:p-8 lg:pt-32 text-neutral-900 dark:text-neutral-100 transition-colors">
       {/* Profile Picture Section */}
       <div className="flex flex-col md:flex-row items-center gap-6 mb-8 p-6 bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700">
         <div className="relative shrink-0">
@@ -111,7 +113,10 @@ const UserProfile = () => {
               {user.cats.map((cat) => (
                 <div
                   key={cat.cId}
-                  className="relative rounded-2xl overflow-hidden shadow-lg bg-neutral-200 dark:bg-neutral-800 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl group h-[350px] sm:h-[400px]"
+                  onClick={() => {
+                    if (currentUser && currentUser.id === user.id) setEditingCat(cat);
+                  }}
+                  className={`relative rounded-2xl overflow-hidden shadow-lg bg-neutral-200 dark:bg-neutral-800 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl group h-[350px] sm:h-[400px] ${currentUser && currentUser.id === user.id ? 'cursor-pointer' : ''}`}
                 >
                   <img
                     src={`/api/images/${cat.pKep}`}
@@ -170,6 +175,17 @@ const UserProfile = () => {
             </div>
           )}
         </div>
+      )}
+
+      {editingCat && (
+        <EditCatModal
+          cat={editingCat}
+          onClose={() => setEditingCat(null)}
+          onSave={() => {
+            setEditingCat(null);
+            setRefreshKey((prev) => prev + 1);
+          }}
+        />
       )}
     </div>
   );
