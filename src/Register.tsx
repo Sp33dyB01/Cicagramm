@@ -7,6 +7,7 @@ import retryOperation from "./assets/utils/Retry";
 import { useToast } from "./Toast";
 import { usePostal } from "./hooks/usePostal";
 import { useCities } from "./hooks/useCities";
+
 interface FormData {
   email: string;
   nev: string;
@@ -25,6 +26,7 @@ interface RegisterProps {
 export default function Register({ onSuccess }: RegisterProps) {
   const { showToast } = useToast();
   const [loading, setLoading] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState(false); // Added state
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     email: '',
@@ -51,8 +53,10 @@ export default function Register({ onSuccess }: RegisterProps) {
       setFormData(prev => ({ ...prev, irsz: String(postals[0].irsz) }));
     }
   }, [postals]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setSubmitted(true); // Trigger submitted state
     setLoading(true);
 
     if (!formData.email || !formData.jelszo || !formData.nev || !formData.irsz || !formData.utca || !formData.varos) {
@@ -60,6 +64,7 @@ export default function Register({ onSuccess }: RegisterProps) {
       setLoading(false);
       return;
     }
+
     try {
       const coords = await getCoordinates(formData.irsz, formData.varos, formData.utca);
       if (coords?.displayName) {
@@ -78,7 +83,6 @@ export default function Register({ onSuccess }: RegisterProps) {
 
         if (error) {
           showToast(error.message || "Hiba történt a regisztráció során.", "error");
-
         } else {
           showToast("Sikeres regisztráció!", "success");
           onSuccess(data?.user);
@@ -103,39 +107,41 @@ export default function Register({ onSuccess }: RegisterProps) {
           Cicagramm
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} data-submitted={submitted} className="space-y-4 group">
+
           <div>
             <input
-              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
               placeholder="E-mail"
               type="email"
               required
               value={formData.email}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, email: e.target.value })}
             />
-            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kérjük, adjon meg egy érvényes e-mail címet!</p>
+            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">Kérjük, adjon meg egy érvényes e-mail címet!</p>
           </div>
+
           <div>
             <input
-              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
               placeholder="Felhasználónév"
               required
               value={formData.nev}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, nev: e.target.value })}
             />
-            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A felhasználónév megadása kötelező!</p>
+            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">A felhasználónév megadása kötelező!</p>
           </div>
 
           <div>
             <input
               type="password"
-              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
               placeholder="Jelszó"
               required
               value={formData.jelszo}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, jelszo: e.target.value })}
             />
-            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A jelszó megadása kötelező!</p>
+            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">A jelszó megadása kötelező!</p>
           </div>
 
           <div className="flex gap-3">
@@ -147,7 +153,7 @@ export default function Register({ onSuccess }: RegisterProps) {
               ) : postals.length > 1 ? (
                 <div>
                   <select
-                    className="peer w-full px-3 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow appearance-none invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                    className="peer w-full px-3 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow appearance-none group-data-[submitted=true]:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                     value={formData.irsz}
                     required
                     onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, irsz: e.target.value })}
@@ -159,13 +165,13 @@ export default function Register({ onSuccess }: RegisterProps) {
                       </option>
                     ))}
                   </select>
-                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező!</p>
+                  <p className="mt-1 text-xs text-rose-500 hidden group-data-[submitted=true]:peer-invalid:block">Kötelező!</p>
                 </div>
               ) : (
                 <div>
                   <input
                     type="number"
-                    className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                    className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                     placeholder="Irsz"
                     required
                     value={formData.irsz}
@@ -175,7 +181,7 @@ export default function Register({ onSuccess }: RegisterProps) {
                       if (val.length !== 4) setCities([]);
                     }}
                   />
-                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező!</p>
+                  <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">Kötelező!</p>
                 </div>
               )}
             </div>
@@ -185,10 +191,9 @@ export default function Register({ onSuccess }: RegisterProps) {
                   Keresés...
                 </div>
               ) : cities.length > 1 ? (
-                /* Dropdown if multiple cities found */
                 <div>
                   <select
-                    className="peer w-full px-3 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow appearance-none invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                    className="peer w-full px-3 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow appearance-none group-data-[submitted=true]:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                     value={formData.varos}
                     required
                     onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, varos: e.target.value })}
@@ -200,19 +205,18 @@ export default function Register({ onSuccess }: RegisterProps) {
                       </option>
                     ))}
                   </select>
-                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A város kiválasztása kötelező!</p>
+                  <p className="mt-1 text-xs text-rose-500 hidden group-data-[submitted=true]:peer-invalid:block">A város kiválasztása kötelező!</p>
                 </div>
               ) : (
-                /* Normal input if 0 or 1 city found (allow manual override if 0) */
                 <div>
                   <input
-                    className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                    className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                     placeholder="Város"
                     required
                     value={formData.varos}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, varos: e.target.value })}
                   />
-                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A város megadása kötelező!</p>
+                  <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">A város megadása kötelező!</p>
                 </div>
               )}
             </div>
@@ -220,15 +224,14 @@ export default function Register({ onSuccess }: RegisterProps) {
 
           <div>
             <input
-              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
               placeholder="Utca, házszám"
               required
               value={formData.utca}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, utca: e.target.value })}
             />
-            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Utca, házszám megadása kötelező!</p>
+            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">Utca, házszám megadása kötelező!</p>
           </div>
-          {/* --------------------- */}
 
           <div className="pt-2">
             <button

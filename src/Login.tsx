@@ -1,7 +1,6 @@
-// Login.tsx
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { useNavigate } from "react-router-dom"; // 1. Importáljuk a navigációt
+import { useNavigate } from "react-router-dom";
 import { authClient } from "./auth-client";
 import retryOperation from "./assets/utils/Retry";
 import { useToast } from "./Toast";
@@ -13,12 +12,13 @@ interface LoginProps {
 export default function Login({ onLogin }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [submitted, setSubmitted] = useState(false); // Added state
   const { showToast } = useToast();
-  // 2. Inicializáljuk a navigációt
   const navigate = useNavigate();
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setSubmitted(true); // Trigger submitted state
 
     if (!email.trim() || !password.trim()) {
       showToast("Hiányzik az e-mail vagy a jelszó!", 'error')
@@ -50,28 +50,28 @@ export default function Login({ onLogin }: LoginProps) {
           Cicagramm
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} data-submitted={submitted} className="space-y-4 group">
           <div>
             <input
-              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
               placeholder="E-mail"
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kérjük, adjon meg egy érvényes e-mail címet!</p>
+            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">Kérjük, adjon meg egy érvényes e-mail címet!</p>
           </div>
           <div>
             <input
               type="password"
-              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
               placeholder="Jelszó"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A jelszó megadása kötelező!</p>
+            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">A jelszó megadása kötelező!</p>
           </div>
           <div className="pt-2">
             <button

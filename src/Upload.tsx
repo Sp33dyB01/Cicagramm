@@ -7,14 +7,17 @@ import convertToWebP from "./helper/imageToWebP"
 export default function Upload(user: SelectFelhasznalo) {
     const { showToast } = useToast();
     const [loading, setLoading] = useState(false);
+    const [submitted, setSubmitted] = useState(false); // Added state
     const fajtak = useFajtak();
 
     const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setSubmitted(true); // Trigger submitted state
         setLoading(true);
         const form = e.currentTarget;
         const rawFormData = new FormData(e.currentTarget);
         const optimizedFormData = new FormData();
+
         for (const [key, value] of rawFormData.entries()) {
             if (value instanceof File && value.name !== "") {
                 try {
@@ -29,6 +32,7 @@ export default function Upload(user: SelectFelhasznalo) {
                 optimizedFormData.append(key, value);
             }
         }
+
         try {
             const res = await fetch('/api/cica', {
                 method: 'POST',
@@ -38,6 +42,7 @@ export default function Upload(user: SelectFelhasznalo) {
 
             if (res.ok) {
                 showToast(`Siker! Új cica ID: ${data.cId}`, "success");
+                setSubmitted(false); // Reset on success
                 form.reset();
             } else {
                 showToast(data.error || 'Hiba történt', "error");
@@ -49,23 +54,31 @@ export default function Upload(user: SelectFelhasznalo) {
             setLoading(false);
         }
     };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 px-4 py-12 transition-colors">
             <div className="w-full max-w-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl p-6 shadow-sm">
                 <h2 className="text-2xl font-bold text-center mb-6">Új Cica Feltöltése</h2>
 
-                <form onSubmit={handleUpload} className="space-y-4">
+                {/* Added group and data-submitted */}
+                <form onSubmit={handleUpload} data-submitted={submitted} className="group space-y-4">
+
+                    {/* --- TEXT INPUT (Fix applied to the <p> tag) --- */}
                     <div>
                         <input
                             name="nev"
                             type="text"
                             placeholder="Név (pl. Cirmi)"
                             required
-                            className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                            className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                         />
-                        <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A cica nevének megadása kötelező!</p>
+                        {/* Fixed line below */}
+                        <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">
+                            A cica nevének megadása kötelező!
+                        </p>
                     </div>
 
+                    {/* --- NUMBER INPUTS (Fix applied to the <p> tags) --- */}
                     <div className="flex gap-4">
                         <div className="flex-1">
                             <input
@@ -74,9 +87,12 @@ export default function Upload(user: SelectFelhasznalo) {
                                 placeholder="Kor (év)"
                                 required
                                 max='20'
-                                className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                                className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                             />
-                            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Adja meg a kort (max 20 év)!</p>
+                            {/* Fixed line below */}
+                            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">
+                                Adja meg a kort (max 20 év)!
+                            </p>
                         </div>
                         <div className="flex-1">
                             <input
@@ -86,46 +102,52 @@ export default function Upload(user: SelectFelhasznalo) {
                                 placeholder="Tömeg (kg)"
                                 required
                                 max="30"
-                                className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                                className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                             />
-                            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Adja meg a tömeget (max 30.0 kg)!</p>
+                            {/* Fixed line below */}
+                            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">
+                                Adja meg a tömeget (max 30.0 kg)!
+                            </p>
                         </div>
                     </div>
+
+                    {/* --- SELECTS (NO placeholder trick, only group-data) --- */}
                     <div>
                         <select
                             name="nem"
                             required
-                            className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                            className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors group-data-[submitted=true]:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                         >
                             <option value="0">Hím</option>
                             <option value="1">Nőstény</option>
                         </select>
-                        <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Válassza ki a cica nemét!</p>
+                        <p className="mt-1 text-xs text-rose-500 hidden group-data-[submitted=true]:peer-invalid:block">Válassza ki a cica nemét!</p>
                     </div>
+
                     <div className="flex gap-4">
                         <div className="flex-1">
                             <select
                                 name="fajId"
                                 required
-                                className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                                className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors group-data-[submitted=true]:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                             >
                                 <option value="">-- Válassz Fajtát --</option>
                                 {fajtak.map((f) => (
                                     <option key={f.id} value={f.id}>{f.fajta}</option>
                                 ))}
                             </select>
-                            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Válasszon egy fajtát!</p>
+                            <p className="mt-1 text-xs text-rose-500 hidden group-data-[submitted=true]:peer-invalid:block">Válasszon egy fajtát!</p>
                         </div>
                         <div className="flex-1">
                             <select
                                 name="ivartalanitott"
                                 required
-                                className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500 focus:invalid:ring-rose-500"
+                                className="peer w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors group-data-[submitted=true]:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                             >
                                 <option value="0">Nem ivartalanított</option>
                                 <option value="1">Ivartalanított</option>
                             </select>
-                            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező adat!</p>
+                            <p className="mt-1 text-xs text-rose-500 hidden group-data-[submitted=true]:peer-invalid:block">Kötelező adat!</p>
                         </div>
                     </div>
 
@@ -135,6 +157,7 @@ export default function Upload(user: SelectFelhasznalo) {
                         className="w-full px-3 py-2 border rounded-lg border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors min-h-[100px]"
                     />
 
+                    {/* --- FILES (NO placeholder trick, only group-data) --- */}
                     <div className="space-y-2">
                         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                             Profilkép (Kötelező):
@@ -150,9 +173,9 @@ export default function Upload(user: SelectFelhasznalo) {
                                     file:bg-rose-50 file:text-rose-700
                                     dark:file:bg-rose-950/30 dark:file:text-rose-400
                                     hover:file:bg-rose-100 dark:hover:file:bg-rose-950/50
-                                    cursor-pointer"
+                                    cursor-pointer group-data-[submitted=true]:invalid:text-rose-500"
                             />
-                            <p className="mt-2 text-xs text-rose-500 hidden peer-invalid:block">A cica profilképe kötelező!</p>
+                            <p className="mt-2 text-xs text-rose-500 hidden group-data-[submitted=true]:peer-invalid:block">A cica profilképe kötelező!</p>
                         </label>
                     </div>
 

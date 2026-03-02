@@ -1,19 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import avatarImg from "./assets/avatar.png"; // Make sure the path matches MainApp.jsx
+import avatarImg from "./assets/avatar.png";
 import { useToast } from "./Toast";
 import convertToWebP from "./helper/imageToWebP";
 import { usePostal } from "./hooks/usePostal";
 import { useCities } from "./hooks/useCities";
 
-// This component receives the logged-in user object as a prop
 export default function Beallitasok({ user, onUpdate }) {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false); // Added state
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  // --- CITY FETCHING STATES ---
   const [formData, setFormData] = useState({
     email: user?.email || '',
     nev: user?.nev || user?.name || '',
@@ -21,13 +20,12 @@ export default function Beallitasok({ user, onUpdate }) {
     irsz: user?.irsz || '',
     varos: user?.varos || '',
     utca: user?.utca || '',
-    pKep: null, // This will hold the File object if a new picture is selected
+    pKep: null,
   });
 
   const { cities, loadingCities, setCities } = usePostal(formData.irsz);
   const { postals, loadingPostal, setPostals } = useCities(formData.varos);
 
-  // Use effects to update formData if exactly 1 result is returned
   useEffect(() => {
     if (cities.length === 1 && formData.varos !== cities[0].nev) {
       setFormData(prev => ({ ...prev, varos: cities[0].nev }));
@@ -40,8 +38,6 @@ export default function Beallitasok({ user, onUpdate }) {
     }
   }, [postals]);
 
-
-  // Handle file input change
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       setFormData({ ...formData, pKep: e.target.files[0] });
@@ -56,6 +52,7 @@ export default function Beallitasok({ user, onUpdate }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitted(true); // Trigger submitted state
     setLoading(true);
 
     if (!formData.nev || !formData.irsz || !formData.varos || !formData.utca) {
@@ -64,7 +61,6 @@ export default function Beallitasok({ user, onUpdate }) {
       return;
     }
 
-    // Use FormData to handle file uploads
     const submissionData = new FormData();
     submissionData.append('nev', formData.nev);
     submissionData.append('rBemutat', formData.rBemutat);
@@ -84,7 +80,7 @@ export default function Beallitasok({ user, onUpdate }) {
     try {
       const response = await fetch(`/api/profile/${user.id}`, {
         method: 'PATCH',
-        body: submissionData, // No headers needed, browser sets it for FormData
+        body: submissionData,
       });
 
       const result = await response.json();
@@ -92,7 +88,7 @@ export default function Beallitasok({ user, onUpdate }) {
       if (response.ok && result.success) {
         showToast("Adataid sikeresen frissítve!", "success");
         if (onUpdate) {
-          onUpdate(); // Trigger state update in App.jsx
+          onUpdate();
         }
       } else {
         showToast(result.error || "Hiba történt a frissítés során.", "error");
@@ -120,9 +116,7 @@ export default function Beallitasok({ user, onUpdate }) {
           {user.nev} beállításai
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-
-          {/* --- New Profile Section (Display Only) --- */}
+        <form onSubmit={handleSubmit} data-submitted={submitted} className="space-y-3 group">
           <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-6 mb-4 border-b border-neutral-200 dark:border-neutral-700 pb-6">
             <div
               className="relative w-32 h-32 cursor-pointer group rounded-full overflow-hidden border-4 border-neutral-900 dark:border-neutral-700 shadow-lg flex-shrink-0"
@@ -142,7 +136,6 @@ export default function Beallitasok({ user, onUpdate }) {
                 <span className="text-white text-sm font-semibold">Módosítás</span>
               </div>
             </div>
-            {/* hidden file input */}
             <input
               type="file"
               accept="image/*"
@@ -158,7 +151,6 @@ export default function Beallitasok({ user, onUpdate }) {
 
           <h3 className="text-xl font-semibold pt-4">Adatok módosítása</h3>
 
-          {/* Email is read-only */}
           <input
             className="w-full px-3 py-2 border rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-500 border-neutral-300 dark:border-neutral-600 outline-none"
             placeholder="E-mail"
@@ -169,13 +161,13 @@ export default function Beallitasok({ user, onUpdate }) {
 
           <div>
             <input
-              className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:focus:border-rose-500 focus:border-rose-500 outline-none transition-colors invalid:border-rose-500 focus:invalid:border-rose-500"
+              className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:focus:border-rose-500 focus:border-rose-500 outline-none transition-colors invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
               placeholder="Felhasználónév"
               required
               value={formData.nev}
               onChange={(e) => setFormData({ ...formData, nev: e.target.value })}
             />
-            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">A felhasználónév megadása kötelező!</p>
+            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">A felhasználónév megadása kötelező!</p>
           </div>
           <textarea
             className="w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:focus:border-rose-500 focus:border-rose-500 outline-none transition-colors"
@@ -185,7 +177,6 @@ export default function Beallitasok({ user, onUpdate }) {
             onChange={(e) => setFormData({ ...formData, rBemutat: e.target.value })}
           />
 
-          {/* Address Section */}
           <div className="flex gap-2">
             <div className="w-1/3 relative">
               {loadingPostal ? (
@@ -195,7 +186,7 @@ export default function Beallitasok({ user, onUpdate }) {
               ) : postals.length > 1 ? (
                 <div>
                   <select
-                    className="peer w-full h-[42px] px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500"
+                    className="peer w-full h-[42px] px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors group-data-[submitted=true]:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                     value={formData.irsz}
                     required
                     onChange={(e) => setFormData({ ...formData, irsz: e.target.value })}
@@ -207,23 +198,23 @@ export default function Beallitasok({ user, onUpdate }) {
                       </option>
                     ))}
                   </select>
-                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező irányítószám!</p>
+                  <p className="mt-1 text-xs text-rose-500 hidden group-data-[submitted=true]:peer-invalid:block">Kötelező irányítószám!</p>
                 </div>
               ) : (
                 <div>
                   <input
                     type="number"
-                    className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500"
+                    className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                     placeholder="Irsz"
                     required
                     value={formData.irsz}
                     onChange={(e) => {
                       const val = e.target.value;
                       setFormData({ ...formData, irsz: val });
-                      if (val.length !== 4) setCities([]); // Clear cities if irsz is manual and not full
+                      if (val.length !== 4) setCities([]);
                     }}
                   />
-                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező!</p>
+                  <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">Kötelező!</p>
                 </div>
               )}
             </div>
@@ -235,7 +226,7 @@ export default function Beallitasok({ user, onUpdate }) {
               ) : cities.length > 1 ? (
                 <div>
                   <select
-                    className="peer w-full h-[42px] px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500"
+                    className="peer w-full h-[42px] px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors group-data-[submitted=true]:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                     value={formData.varos}
                     required
                     onChange={(e) => setFormData({ ...formData, varos: e.target.value })}
@@ -247,12 +238,12 @@ export default function Beallitasok({ user, onUpdate }) {
                       </option>
                     ))}
                   </select>
-                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező város!</p>
+                  <p className="mt-1 text-xs text-rose-500 hidden group-data-[submitted=true]:peer-invalid:block">Kötelező város!</p>
                 </div>
               ) : (
                 <div>
                   <input
-                    className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500"
+                    className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                     placeholder="Város"
                     required
                     value={formData.varos}
@@ -260,7 +251,7 @@ export default function Beallitasok({ user, onUpdate }) {
                       setFormData({ ...formData, varos: e.target.value });
                     }}
                   />
-                  <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Kötelező!</p>
+                  <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">Kötelező!</p>
                 </div>
               )}
             </div>
@@ -268,15 +259,14 @@ export default function Beallitasok({ user, onUpdate }) {
 
           <div>
             <input
-              className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:border-rose-500 focus:invalid:border-rose-500"
+              className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
               placeholder="Utca, házszám"
               required
               value={formData.utca}
               onChange={(e) => setFormData({ ...formData, utca: e.target.value })}
             />
-            <p className="mt-1 text-xs text-rose-500 hidden peer-invalid:block">Utca, házszám megadása kötelező!</p>
+            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">Utca, házszám megadása kötelező!</p>
           </div>
-
 
           <button
             type="submit"
