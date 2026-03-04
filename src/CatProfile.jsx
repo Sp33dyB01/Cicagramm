@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import avatarImg from './assets/default_profile_icon.webp';
 import { useNavigate } from 'react-router-dom';
 import "./CatProfile.css";
@@ -35,23 +36,52 @@ export default function CatProfile({ catId }) {
 
   if (loading || !catData) {
     return (
-      <div className="p-6 animate-pulse space-y-6">
+      <div className="p-5 animate-pulse space-y-8">
 
-        <div className="flex gap-6">
-          <div className="w-40 h-40 rounded-xl skeleton-box" />
+        {/* Top section: cat image + stats | owner box */}
+        <div className="flex justify-between flex-wrap gap-5">
+          {/* Left: cat image + stats */}
+          <div className="flex gap-5 items-start">
+            <div className="w-40 h-40 rounded-2xl bg-neutral-200 dark:bg-neutral-700 shrink-0" />
+            <div className="flex flex-col gap-2.5 pt-1">
+              <div className="h-7 w-32 rounded bg-neutral-200 dark:bg-neutral-700" />
+              <div className="h-4 w-24 rounded bg-neutral-200 dark:bg-neutral-700" />
+              <div className="h-4 w-28 rounded bg-neutral-200 dark:bg-neutral-700" />
+              <div className="h-4 w-20 rounded bg-neutral-200 dark:bg-neutral-700" />
+              <div className="h-4 w-24 rounded bg-neutral-200 dark:bg-neutral-700" />
+              <div className="h-4 w-20 rounded bg-neutral-200 dark:bg-neutral-700" />
+            </div>
+          </div>
 
-          <div className="flex-1 space-y-3">
-            <div className="h-6 w-1/3 rounded skeleton-box" />
-            <div className="h-4 w-1/4 rounded skeleton-box" />
-            <div className="h-4 w-1/5 rounded skeleton-box" />
-            <div className="h-4 w-1/6 rounded skeleton-box" />
+          {/* Right: owner box */}
+          <div className="flex-1 min-w-[250px] bg-neutral-100 dark:bg-neutral-800 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 flex flex-col gap-4">
+            <div className="h-5 w-1/3 rounded bg-neutral-200 dark:bg-neutral-700 border-b border-neutral-300 dark:border-neutral-600 pb-2" />
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-neutral-300 dark:bg-neutral-600 shrink-0" />
+              <div className="flex flex-col gap-2">
+                <div className="h-4 w-24 rounded bg-neutral-200 dark:bg-neutral-700" />
+                <div className="h-3 w-36 rounded bg-neutral-200 dark:bg-neutral-700" />
+              </div>
+            </div>
+            <div className="h-3 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />
           </div>
         </div>
 
-        <div className="space-y-3">
-          <div className="h-5 w-1/4 rounded skeleton-box" />
-          <div className="h-4 w-full rounded skeleton-box" />
-          <div className="h-4 w-5/6 rounded skeleton-box" />
+        {/* Description section */}
+        <div className="flex flex-col gap-2">
+          <div className="h-5 w-20 rounded bg-neutral-200 dark:bg-neutral-700" />
+          <div className="h-4 w-full rounded bg-neutral-200 dark:bg-neutral-700" />
+          <div className="h-4 w-4/5 rounded bg-neutral-200 dark:bg-neutral-700" />
+        </div>
+
+        {/* Gallery section */}
+        <div className="flex flex-col gap-3">
+          <div className="h-5 w-40 rounded bg-neutral-200 dark:bg-neutral-700" />
+          <div className="flex gap-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="w-[120px] h-[120px] rounded-xl bg-neutral-200 dark:bg-neutral-700 shrink-0" />
+            ))}
+          </div>
         </div>
 
       </div>
@@ -62,7 +92,7 @@ export default function CatProfile({ catId }) {
 
   return (
 
-    <div className={`p-3 flex flex-col gap-8
+    <div className={`p-5 flex flex-col gap-10
     transition-all duration-500 ease-out
     ${visible ? "opacity-100 blur-0 scale-100"
         : "opacity-0 blur-sm scale-95"}
@@ -151,24 +181,23 @@ export default function CatProfile({ catId }) {
         </div>
       )}
 
-      {/* DISCORD-SZERŰ IMAGE ZOOM OVERLAY */}
-      {zoomedImage && (
+      {zoomedImage && ReactDOM.createPortal(
         <div
-          className="fixed inset-0 bg-black/90 z-20000 flex justify-center items-center cursor-default animate-[fadeIn_0.2s_ease-out]"
+          className="fixed inset-0 bg-black/90 z-30000] flex justify-center items-center cursor-default animate-[fadeIn_0.2s_ease-out]"
           onClick={() => {
             setZoomedImage(null);
             setIsZoomedIn(false);
           }}
         >
           <button
-            className="absolute top-[25px] right-[30px] bg-transparent border-none text-white/70 text-[45px] leading-none cursor-pointer z-20001 p-0 transition-all duration-200 ease-in-out hover:text-white hover:scale-110"
+            className="absolute top-[25px] right-[30px] bg-transparent border-none text-white/70 text-[45px] leading-none cursor-pointer z-30001 p-0 transition-all duration-200 ease-in-out hover:text-white hover:scale-110"
             onClick={(e) => {
-              e.stopPropagation(); // Megállítjuk a propagációt
-              setZoomedImage(null); // Bezárjuk a zoomot
+              e.stopPropagation();
+              setZoomedImage(null);
               setIsZoomedIn(false);
             }}
           >
-            &times; {/* Ez a szép X karakter HTML kódja */}
+            &times;
           </button>
           <img fetchPriority="high"
             src={`/api/images/${zoomedImage}`}
@@ -183,7 +212,8 @@ export default function CatProfile({ catId }) {
               e.currentTarget.onerror = null;
             }}
           />
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

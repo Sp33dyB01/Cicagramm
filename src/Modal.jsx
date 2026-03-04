@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./Modal.css";
+import { X } from "lucide-react";
 
 // Fontos: Ennek az időnek egyeznie kell a CSS-ben beállított transition idővel!
 const ANIMATION_DURATION = 300; // ms
@@ -47,16 +48,16 @@ const Modal = ({ isOpen, onClose, children }) => {
       onClick={onClose}
     >
       <div
-        className={`bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 w-full max-w-[600px] max-h-[90vh] rounded-2xl relative overflow-y-auto shadow-2xl border border-neutral-300 dark:border-neutral-700 transition-all duration-300 ease-in-out ${animateIn ? "scale-100 translate-y-0 opacity-100" : "scale-90 translate-y-5 opacity-0"
+        className={`bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 w-full max-w-[900px] max-h-[92vh] rounded-2xl relative overflow-y-auto shadow-2xl border border-neutral-300 dark:border-neutral-700 transition-all duration-300 ease-in-out ${animateIn ? "scale-100 translate-y-0 opacity-100" : "scale-90 translate-y-5 opacity-0"
           }`}
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 text-white text-2xl border-none cursor-pointer z-10 hover:bg-rose-600 transition-colors p-0"
+          className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 text-white border-none cursor-pointer z-10 hover:bg-rose-600 transition-colors p-0"
           onClick={onClose}
           aria-label="Close"
         >
-          &times;
+          <X className="w-5 h-5" />
         </button>
         {children}
       </div>

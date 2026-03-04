@@ -25,13 +25,17 @@ export function useCats({ currentPage, sort, user, ipCoords, appliedFilters, sho
     useEffect(() => {
         setLoading(true);
         let apiSort = "1N";
-        if (sort === "name") apiSort = "1N";
-        if (sort === "age") apiSort = "3N";
-        if (sort === "distance") apiSort = "2N";
+        if (sort === "name_asc") apiSort = "1N";
+        if (sort === "name_desc") apiSort = "1I";
+        if (sort === "age_asc") apiSort = "3N";
+        if (sort === "age_desc") apiSort = "3I";
+        if (sort === "distance_asc") apiSort = "2N";
+        if (sort === "distance_desc") apiSort = "2I";
 
         const fetchUrl = new URL(window.location.origin + "/api/cica");
         fetchUrl.searchParams.set("page", String(currentPage));
         fetchUrl.searchParams.set("sort", apiSort);
+        fetchUrl.searchParams.set("display", window.innerWidth >= 768 ? "1" : "0");
 
         if (appliedFilters.fajId) fetchUrl.searchParams.set("fajId", appliedFilters.fajId);
         if (appliedFilters.minKor > 0) fetchUrl.searchParams.set("minKor", String(appliedFilters.minKor));

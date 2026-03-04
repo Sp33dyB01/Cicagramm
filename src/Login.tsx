@@ -12,7 +12,8 @@ interface LoginProps {
 export default function Login({ onLogin }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [submitted, setSubmitted] = useState(false); // Added state
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -26,6 +27,7 @@ export default function Login({ onLogin }: LoginProps) {
     }
 
     try {
+      setLoading(true);
       const { data, error } = await retryOperation(() =>
         authClient.signIn.email({
           email,
@@ -40,6 +42,8 @@ export default function Login({ onLogin }: LoginProps) {
       }
     } catch (err) {
       showToast("Váratlan hiba történt.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,9 +80,19 @@ export default function Login({ onLogin }: LoginProps) {
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold transition-all shadow-md active:scale-[0.98] hover:shadow-lg"
+              disabled={loading}
+              className={`w-full py-3 text-white rounded-xl font-bold transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 ${loading
+                  ? 'bg-rose-400 cursor-wait opacity-80'
+                  : 'bg-rose-600 hover:bg-rose-700 hover:shadow-lg cursor-pointer'
+                }`}
             >
-              Bejelentkezés
+              {loading && (
+                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                </svg>
+              )}
+              {loading ? "Bejelentkezés..." : "Bejelentkezés"}
             </button>
           </div>
         </form>

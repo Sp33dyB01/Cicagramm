@@ -1,4 +1,8 @@
 import avatarImg from "./assets/default_profile_icon.webp";
+import { PawPrint, Heart, MessageCircle } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ReactDOM from "react-dom";
 
 export default function CatsFeed({
     layout,
@@ -11,13 +15,28 @@ export default function CatsFeed({
     totalPages,
     handlePageChange
 }) {
+    const [doubleTapCat, setDoubleTapCat] = useState(null);
+    const [zoomedPfp, setZoomedPfp] = useState(null);
+    const navigate = useNavigate();
+
+    const handleDoubleTap = (e, cat) => {
+        e.stopPropagation();
+        if (!cat.isLiked && handleAction(cat.cId, cat.isLiked)) {
+            setCats(prev => prev.map(c =>
+                c.cId === cat.cId ? { ...c, isLiked: true } : c
+            ));
+        }
+        setDoubleTapCat(cat.cId);
+        setTimeout(() => setDoubleTapCat(null), 700);
+    };
+
     if (loading) {
         return (
             <main className="flex-1 w-full min-w-0 p-4 md:p-8 flex flex-col items-center justify-center min-h-[50vh] gap-5">
                 <div className="paw-print-loader">
-                    <div className="paw paw-1">🐾</div>
-                    <div className="paw paw-2">🐾</div>
-                    <div className="paw paw-3">🐾</div>
+                    <div className="paw paw-1"><PawPrint className="w-6 h-6" /></div>
+                    <div className="paw paw-2"><PawPrint className="w-6 h-6" /></div>
+                    <div className="paw paw-3"><PawPrint className="w-6 h-6" /></div>
                 </div>
                 <p className="text-lg font-bold text-neutral-600 dark:text-neutral-400">Cicák cserkészése...</p>
             </main>
@@ -41,6 +60,7 @@ export default function CatsFeed({
                             className="group relative flex flex-col items-center cursor-pointer rounded-xl overflow-hidden border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm hover:shadow-lg transition-all"
                             key={cat.cId}
                             onClick={() => setSelectedCat(cat)}
+                            onDoubleClick={(e) => handleDoubleTap(e, cat)}
                         >
                             <div className="relative w-full h-[320px] overflow-hidden">
                                 <img fetchPriority="high"
@@ -65,8 +85,15 @@ export default function CatsFeed({
                                     }}
                                     title={cat.isLiked ? "Eltávolítás a kedvencek közül" : "Kedvencekhez"}
                                 >
-                                    ❤
+                                    <Heart className="w-6 h-6" fill={cat.isLiked ? "currentColor" : "none"} />
                                 </button>
+
+                                {/* Double-tap heart burst */}
+                                {doubleTapCat === cat.cId && (
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                                        <Heart className="w-20 h-20 text-white drop-shadow-xl animate-[heartPop_0.7s_ease-out_forwards]" fill="currentColor" />
+                                    </div>
+                                )}
 
                                 <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/80 to-transparent pointer-events-none flex items-end justify-between p-3">
                                     <span className="text-white font-bold text-base drop-shadow-md">{cat.nev || "Ismeretlen"}</span>
@@ -90,11 +117,12 @@ export default function CatsFeed({
                                 <img fetchPriority="high"
                                     src={cat?.ownerPFP ? `/api/images/${cat.ownerPFP}` : avatarImg}
                                     alt="gazdi"
-                                    className="w-11 h-11 rounded-full object-cover border border-neutral-200 dark:border-neutral-700"
+                                    className="w-11 h-11 rounded-full object-cover border border-neutral-200 dark:border-neutral-700 cursor-pointer hover:opacity-90 transition-opacity"
                                     onError={(e) => { e.currentTarget.src = avatarImg; }}
+                                    onClick={() => cat?.ownerPFP && setZoomedPfp(cat.ownerPFP)}
                                 />
                                 <div className="flex flex-col">
-                                    <span className="font-bold text-[15px]">{cat.ownerNev || "Ismeretlen Gazdi"}</span>
+                                    <span className="font-bold text-[15px] hover:cursor-pointer" onClick={() => navigate(`users/${cat.felId}`)}>{cat.ownerNev || "Ismeretlen Gazdi"}</span>
                                     <span className="text-[13px] text-neutral-500 dark:text-neutral-400">
                                         {cat.kor || "? év"} • {cat.calculatedDistance !== null ? `${cat.calculatedDistance} km-re` : "Távolság ismeretlen"}
                                     </span>
@@ -102,8 +130,17 @@ export default function CatsFeed({
                             </div>
 
                             {/* Poszt Kép */}
-                            <div className="w-full bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-700">
+                            <div
+                                className="w-full bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-700 relative"
+                                onDoubleClick={(e) => handleDoubleTap(e, cat)}
+                            >
                                 <img fetchPriority="high" src={`/api/images/${cat.pKep}`} alt={cat.nev} className="w-full max-h-[650px] object-contain block bg-black/5 dark:bg-black/40" />
+                                {/* Double-tap heart burst */}
+                                {doubleTapCat === cat.cId && (
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                                        <Heart className="w-24 h-24 text-white drop-shadow-xl animate-[heartPop_0.7s_ease-out_forwards]" fill="currentColor" />
+                                    </div>
+                                )}
                             </div>
 
                             {/* Poszt Interakciók */}
@@ -123,13 +160,13 @@ export default function CatsFeed({
                                         }
                                     }}
                                 >
-                                    ❤ {cat.isLiked ? 'Mégsem' : 'Tetszik'}
+                                    <Heart className="w-4 h-4 shrink-0" fill={cat.isLiked ? "currentColor" : "none"} /> {cat.isLiked ? 'Mégsem' : 'Tetszik'}
                                 </button>
                                 <button
-                                    className="flex items-center gap-1 p-2 rounded-lg font-semibold text-[15px] text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                                    className="flex items-center gap-1.5 p-2 rounded-lg font-semibold text-[15px] text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                                     onClick={() => setSelectedCat(cat)}
                                 >
-                                    💬 Részletek
+                                    <MessageCircle className="w-4 h-4 shrink-0" /> Részletek
                                 </button>
                             </div>
 
@@ -180,6 +217,33 @@ export default function CatsFeed({
                     </button>
                 </div>
             )}
+            {
+                zoomedPfp && ReactDOM.createPortal(
+                    <div
+                        className="fixed inset-0 bg-black/90 z-30000 flex justify-center items-center cursor-default"
+                        onClick={() => setZoomedPfp(null)}
+                    >
+                        <div className="flex flex-col items-center gap-4 p-4">
+                            <img
+                                src={`/api/images/${zoomedPfp}`}
+                                alt="Profilkép"
+                                className="max-w-[70vw] max-h-[70vh] rounded-2xl object-contain shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                                onError={(e) => { e.currentTarget.src = avatarImg; e.currentTarget.onerror = null; }}
+                            />
+                            <button
+                                className="text-white/70 text-sm hover:text-white transition-colors"
+                                onClick={() => setZoomedPfp(null)}
+                            >
+                                Bezárás
+                            </button>
+                        </div>
+                    </div>,
+                    document.body
+                )
+            }
         </main>
+
+
     );
 }

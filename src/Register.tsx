@@ -237,8 +237,14 @@ export default function Register({ onSuccess }: RegisterProps) {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 text-white rounded-xl font-bold transition-all shadow-md active:scale-[0.98] ${loading ? 'bg-rose-400 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-700 hover:shadow-lg'}`}
+              className={`w-full py-3 text-white rounded-xl font-bold transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 ${loading ? 'bg-rose-400 cursor-wait opacity-80' : 'bg-rose-600 hover:bg-rose-700 hover:shadow-lg cursor-pointer'}`}
             >
+              {loading && (
+                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                </svg>
+              )}
               {loading ? "Regisztráció..." : "Regisztráció"}
             </button>
           </div>

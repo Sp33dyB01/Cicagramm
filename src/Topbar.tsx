@@ -3,6 +3,7 @@ import catIcon from "./assets/icon.webp";
 import { authClient } from "./auth-client";
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import './MainApp.css';
 import type { SelectFelhasznalo } from '../worker/schema'
 import { useToast } from './Toast';
@@ -98,7 +99,7 @@ export default function TopBar({ user, onLogout }: { user: SelectFelhasznalo, on
 
         {/* THE DARK MODE TOGGLE */}
         <button className="p-2 flex items-center justify-center text-xl border-2 border-neutral-200 dark:border-neutral-600 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors" onClick={toggleTheme} title="Téma váltása">
-          {isDark ? "🌙" : "☀️"}
+          {isDark ? <Moon className="w-5 h-5 text-neutral-100" /> : <Sun className="w-5 h-5 text-neutral-900" />}
         </button>
 
         {user ? (

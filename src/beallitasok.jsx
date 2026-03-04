@@ -62,6 +62,7 @@ export default function Beallitasok({ user, onUpdate }) {
     }
 
     const submissionData = new FormData();
+    submissionData.append('email', formData.email);
     submissionData.append('nev', formData.nev);
     submissionData.append('rBemutat', formData.rBemutat);
     submissionData.append('irsz', formData.irsz);
@@ -150,15 +151,16 @@ export default function Beallitasok({ user, onUpdate }) {
           </div>
 
           <h3 className="text-xl font-semibold pt-4">Adatok módosítása</h3>
-
-          <input
-            className="w-full px-3 py-2 border rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-500 border-neutral-300 dark:border-neutral-600 outline-none"
-            placeholder="E-mail"
-            type="email"
-            value={formData.email}
-            readOnly
-          />
-
+          <div>
+            <input
+              className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:focus:border-rose-500 focus:border-rose-500 outline-none transition-colors invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:not-placeholder-shown:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
+              placeholder="E-mail"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">Kérjük, adjon meg egy érvényes e-mail címet!</p>
+          </div>
           <div>
             <input
               className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:focus:border-rose-500 focus:border-rose-500 outline-none transition-colors invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:not-placeholder-shown:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
@@ -170,7 +172,7 @@ export default function Beallitasok({ user, onUpdate }) {
             <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">A felhasználónév megadása kötelező!</p>
           </div>
           <textarea
-            className="w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:focus:border-rose-500 focus:border-rose-500 outline-none transition-colors"
+            className="w-full max-h-120 px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:focus:border-rose-500 focus:border-rose-500 outline-none transition-colors"
             placeholder="Rövid bemutatkozás"
             rows="3"
             value={formData.rBemutat}
@@ -271,8 +273,14 @@ export default function Beallitasok({ user, onUpdate }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 mt-4 text-white rounded-lg font-bold transition-all bg-rose-600 hover:bg-rose-700 disabled:bg-rose-400 disabled:cursor-not-allowed shadow-sm hover:shadow-md active:scale-[0.98]"
+            className={`w-full py-2.5 mt-4 text-white rounded-lg font-bold transition-all shadow-sm hover:shadow-md active:scale-[0.98] flex items-center justify-center gap-2 ${loading ? 'bg-rose-400 cursor-wait opacity-80' : 'bg-rose-600 hover:bg-rose-700 cursor-pointer'}`}
           >
+            {loading && (
+              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              </svg>
+            )}
             {loading ? "Mentés..." : "Módosítások mentése"}
           </button>
         </form>

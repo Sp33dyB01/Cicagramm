@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import avatarImg from "./assets/default_profile_icon.webp";
 import { useToast } from "./Toast";
+import { Trash2 } from "lucide-react";
 import "./MainApp.css";
 import type { SelectFelhasznalo, SelectCica } from "../worker/schema";
 
@@ -224,7 +225,7 @@ export default function Admin() {
                 </div>
             </aside>
 
-            <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+            <main className="flex-1 p-4 md:p-8">
                 <div className="flex gap-2 mb-6 border-b-2 border-neutral-200 dark:border-neutral-700">
                     {selectedUserId !== "all" && (
                         <button
@@ -315,7 +316,7 @@ export default function Admin() {
                                                                         className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
                                                                         title="Kép törlése"
                                                                     >
-                                                                        🗑️
+                                                                        <Trash2 className="w-4 h-4" />
                                                                     </button>
                                                                 </div>
                                                             ))}

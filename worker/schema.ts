@@ -16,7 +16,7 @@ export const felhasznalo = sqliteTable('felhasznalo', {
   emailVerified: integer("emailVerified", { mode: "boolean" }).notNull(),
   admin: integer('admin').default(0), // 0 or 1
   nev: text('nev').notNull(),
-  rBemutat: text('r_bemutat'),
+  rBemutat: text('r_bemutat', { length: 300 }),
   irsz: integer('irsz').notNull(),
   varos: text('varos').notNull(),
   utca: text('utca', { length: 50 }).notNull(),

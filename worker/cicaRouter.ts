@@ -196,7 +196,7 @@ cicaRouter.get('/', async (c) => {
     query.orderBy(sql`${schema.cica.nev} ${direction}`);
   if (sort[0] == '3')
     query.orderBy(sql`${schema.cica.kor} ${direction}`);
-  const pageSize = display ? 40 : 10;
+  const pageSize = Number(display) ? 20 : 10;
   const offset = (Number(page) - 1) * pageSize;
 
   try {

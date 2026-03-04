@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useToast } from "./Toast";
 import { useFajtak } from "./hooks/useFajtak";
+import { X } from "lucide-react";
 
 export default function EditCatModal({ cat, onClose, onSave }) {
     const { showToast } = useToast();
@@ -40,9 +41,9 @@ export default function EditCatModal({ cat, onClose, onSave }) {
             >
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 text-xl font-bold"
+                    className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
                 >
-                    ✕
+                    <X className="w-6 h-6" />
                 </button>
                 <h2 className="text-2xl font-bold mb-6 text-neutral-900 dark:text-neutral-100">
                     Cica módosítása
