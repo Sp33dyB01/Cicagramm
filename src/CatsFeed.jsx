@@ -1,4 +1,4 @@
-import avatarImg from "./assets/avatar.png";
+import avatarImg from "./assets/default_profile_icon.webp";
 
 export default function CatsFeed({
     layout,
@@ -43,7 +43,7 @@ export default function CatsFeed({
                             onClick={() => setSelectedCat(cat)}
                         >
                             <div className="relative w-full h-[320px] overflow-hidden">
-                                <img
+                                <img fetchPriority="high"
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     src={`/api/images/${cat.pKep}`}
                                     alt={cat.nev || "Cica kép"}
@@ -68,7 +68,7 @@ export default function CatsFeed({
                                     ❤
                                 </button>
 
-                                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 to-transparent pointer-events-none flex items-end justify-between p-3">
+                                <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/80 to-transparent pointer-events-none flex items-end justify-between p-3">
                                     <span className="text-white font-bold text-base drop-shadow-md">{cat.nev || "Ismeretlen"}</span>
                                     <span className="text-white font-bold text-base drop-shadow-md">{cat.kor || cat.age || "? év"}</span>
                                 </div>
@@ -87,7 +87,7 @@ export default function CatsFeed({
 
                             {/* Poszt Fejléc */}
                             <div className="flex items-center p-3 gap-3 border-b border-neutral-100 dark:border-neutral-700">
-                                <img
+                                <img fetchPriority="high"
                                     src={cat?.ownerPFP ? `/api/images/${cat.ownerPFP}` : avatarImg}
                                     alt="gazdi"
                                     className="w-11 h-11 rounded-full object-cover border border-neutral-200 dark:border-neutral-700"
@@ -103,7 +103,7 @@ export default function CatsFeed({
 
                             {/* Poszt Kép */}
                             <div className="w-full bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-700">
-                                <img src={`/api/images/${cat.pKep}`} alt={cat.nev} className="w-full max-h-[650px] object-contain block bg-black/5 dark:bg-black/40" />
+                                <img fetchPriority="high" src={`/api/images/${cat.pKep}`} alt={cat.nev} className="w-full max-h-[650px] object-contain block bg-black/5 dark:bg-black/40" />
                             </div>
 
                             {/* Poszt Interakciók */}
@@ -146,14 +146,14 @@ export default function CatsFeed({
             {totalPages > 1 && (
                 <div className="flex flex-wrap justify-center items-center gap-4 my-8 w-full">
                     <button
-                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
+                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all cursor-pointer"
                         disabled={currentPage === 1}
                         onClick={() => handlePageChange(1)}
                     >
                         &laquo; Első
                     </button>
                     <button
-                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
+                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all cursor-pointer"
                         disabled={currentPage === 1}
                         onClick={() => handlePageChange(currentPage - 1)}
                     >
@@ -165,14 +165,14 @@ export default function CatsFeed({
                     </span>
 
                     <button
-                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
+                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all cursor-pointer"
                         disabled={currentPage === totalPages}
                         onClick={() => handlePageChange(currentPage + 1)}
                     >
                         Következő &rsaquo;
                     </button>
                     <button
-                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
+                        className="px-4 py-2 border-2 text-sm md:text-base border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold rounded hover:bg-rose-600 hover:text-white hover:border-rose-600 dark:hover:bg-rose-600 dark:hover:text-white dark:hover:border-rose-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-neutral-200 dark:disabled:hover:bg-neutral-800 disabled:hover:text-neutral-900 dark:disabled:hover:text-neutral-100 disabled:border-transparent transition-all cursor-pointer"
                         disabled={currentPage === totalPages}
                         onClick={() => handlePageChange(totalPages)}
                     >

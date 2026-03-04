@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import avatarImg from './assets/avatar.png';
+import avatarImg from './assets/default_profile_icon.webp';
 import { useNavigate } from 'react-router-dom';
 import "./CatProfile.css";
 import "./Topbar.jsx";
@@ -71,7 +71,7 @@ export default function CatProfile({ catId }) {
       <div className="flex justify-between flex-wrap gap-5">
         <div className="flex gap-5 items-start">
           {/* Fő profilkép (PFP) - Klikkelhető zoomoláshoz */}
-          <img
+          <img fetchPriority="high"
             src={`/api/images/${catData.pKep}`}
             alt="Cica PFP"
             className="w-40 h-40 rounded-2xl object-cover border-2 border-neutral-900 dark:border-neutral-700 shrink-0 cursor-pointer transition-all duration-200 ease-in-out hover:scale-[1.03] hover:shadow-lg"
@@ -97,7 +97,7 @@ export default function CatProfile({ catId }) {
 
             <div className="flex items-center gap-4">
               {/* Gazdi profilképe - Klikkelhető zoomoláshoz */}
-              <img
+              <img fetchPriority="high"
                 src={`/api/images/${owner.pKep}`}
                 alt="Gazdi PFP"
                 className="w-[60px] h-[60px] rounded-full object-cover border-2 border-neutral-900 dark:border-neutral-700 cursor-pointer transition-all duration-200 ease-in-out hover:scale-[1.03] hover:shadow-lg"
@@ -139,7 +139,7 @@ export default function CatProfile({ catId }) {
           <h3 className="mt-0 mb-2.5 font-bold text-xl">Többi kép a macskáról</h3>
           <div className="flex gap-4 overflow-x-auto pb-2.5">
             {catData.images.map((kep, index) => (
-              <img
+              <img fetchPriority="high"
                 key={index}
                 src={`/api/images/${kep.mkepId}`}
                 alt={`Kép ${index + 1}`}
@@ -154,14 +154,14 @@ export default function CatProfile({ catId }) {
       {/* DISCORD-SZERŰ IMAGE ZOOM OVERLAY */}
       {zoomedImage && (
         <div
-          className="fixed inset-0 bg-black/90 z-[20000] flex justify-center items-center cursor-default animate-[fadeIn_0.2s_ease-out]"
+          className="fixed inset-0 bg-black/90 z-20000 flex justify-center items-center cursor-default animate-[fadeIn_0.2s_ease-out]"
           onClick={() => {
             setZoomedImage(null);
             setIsZoomedIn(false);
           }}
         >
           <button
-            className="absolute top-[25px] right-[30px] bg-transparent border-none text-white/70 text-[45px] leading-none cursor-pointer z-[20001] p-0 transition-all duration-200 ease-in-out hover:text-white hover:scale-110"
+            className="absolute top-[25px] right-[30px] bg-transparent border-none text-white/70 text-[45px] leading-none cursor-pointer z-20001 p-0 transition-all duration-200 ease-in-out hover:text-white hover:scale-110"
             onClick={(e) => {
               e.stopPropagation(); // Megállítjuk a propagációt
               setZoomedImage(null); // Bezárjuk a zoomot
@@ -170,7 +170,7 @@ export default function CatProfile({ catId }) {
           >
             &times; {/* Ez a szép X karakter HTML kódja */}
           </button>
-          <img
+          <img fetchPriority="high"
             src={`/api/images/${zoomedImage}`}
             alt="Zoomed"
             className={`max-w-[70vw] max-h-[70vh] object-contain cursor-zoom-in rounded-lg shadow-2xl transition-transform duration-300 ease-in-out ${isZoomedIn ? "scale-150 cursor-zoom-out" : ""}`}

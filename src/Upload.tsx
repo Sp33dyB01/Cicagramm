@@ -239,7 +239,7 @@ export default function Upload() {
                             {/* Profile Image Preview */}
                             {pKepPreview && (
                                 <div className="mt-3 relative w-32 h-32 rounded-xl overflow-hidden border-2 border-neutral-200 dark:border-neutral-700 shadow-sm mx-auto">
-                                    <img src={pKepPreview} alt="Profilkép előnézet" className="w-full h-full object-cover" />
+                                    <img fetchPriority="high" src={pKepPreview} alt="Profilkép előnézet" className="w-full h-full object-cover" />
                                 </div>
                             )}
                         </div>
@@ -269,7 +269,7 @@ export default function Upload() {
                                 <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
                                     {mKepekPreviews.map((preview, idx) => (
                                         <div key={idx} className="shrink-0 relative w-20 h-20 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 shadow-sm">
-                                            <img src={preview} alt={`Galéria kép ${idx + 1}`} className="w-full h-full object-cover" />
+                                            <img fetchPriority="high" src={preview} alt={`Galéria kép ${idx + 1}`} className="w-full h-full object-cover" />
                                         </div>
                                     ))}
                                 </div>

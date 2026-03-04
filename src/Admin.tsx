@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import avatarImg from "./assets/avatar.png";
+import avatarImg from "./assets/default_profile_icon.webp";
 import { useToast } from "./Toast";
 import "./MainApp.css";
 import type { SelectFelhasznalo, SelectCica } from "../worker/schema";
-import convertToWebP from "./helper/imageToWebP";
 
 export default function Admin() {
     const { showToast } = useToast();
@@ -285,7 +284,7 @@ export default function Admin() {
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <img
+                                                    <img fetchPriority="high"
                                                         src={`/api/images/${cat.pKep}`}
                                                         alt={cat.nev}
                                                         className="w-full h-48 object-cover rounded-lg mb-4"
@@ -305,7 +304,7 @@ export default function Admin() {
                                                         <div className="flex flex-wrap gap-2 mb-4">
                                                             {cat.images.map((img: any) => (
                                                                 <div key={img.mkepId} className="relative w-16 h-16 sm:w-20 sm:h-20 group">
-                                                                    <img
+                                                                    <img fetchPriority="high"
                                                                         src={`/api/images/${img.mkepId}`}
                                                                         alt="cica kép"
                                                                         className="w-full h-full object-cover rounded-md"
@@ -340,7 +339,7 @@ export default function Admin() {
                             {selectedUser && (
                                 <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700 shadow-sm max-w-2xl">
                                     <div className="mb-6 flex justify-center">
-                                        <img
+                                        <img fetchPriority="high"
                                             src={`/api/images/${selectedUser.pKep}`}
                                             alt="Profilkép"
                                             className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-neutral-200 dark:border-neutral-700 shadow-sm"

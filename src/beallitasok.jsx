@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import avatarImg from "./assets/avatar.png";
+import avatarImg from "./assets/default_profile_icon.webp";
 import { useToast } from "./Toast";
 import convertToWebP from "./helper/imageToWebP";
 import { usePostal } from "./hooks/usePostal";
@@ -123,7 +123,7 @@ export default function Beallitasok({ user, onUpdate }) {
               onClick={handleImageClick}
               title="Kattints a profilkép módosításához"
             >
-              <img
+              <img fetchPriority="high"
                 src={formData.pKep ? URL.createObjectURL(formData.pKep) : (user?.pKep ? `/api/images/${user.pKep}` : avatarImg)}
                 alt="Profilkép"
                 className="w-full h-full object-cover transition-opacity group-hover:opacity-75"

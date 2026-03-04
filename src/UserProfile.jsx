@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { authClient } from "./auth-client";
-import avatarImg from "./assets/avatar.png";
-import "./MainApp.css";
+import avatarImg from "./assets/default_profile_icon.webp";
 import EditCatModal from "./EditCatModal";
 const UserProfile = () => {
   const { userId } = useParams();
@@ -59,7 +58,7 @@ const UserProfile = () => {
       {/* Profile Picture Section */}
       <div className="flex flex-col md:flex-row items-center gap-6 mb-8 p-6 bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700">
         <div className="relative shrink-0">
-          <img
+          <img fetchPriority="high"
             src={`/api/images/${user.pKep}` || avatarImg}
             alt="User Profile"
             className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-neutral-100 dark:border-neutral-700 shadow-md"
@@ -118,7 +117,7 @@ const UserProfile = () => {
                   }}
                   className={`relative rounded-2xl overflow-hidden shadow-lg bg-neutral-200 dark:bg-neutral-800 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl group h-[350px] sm:h-[400px] ${currentUser && currentUser.id === user.id ? 'cursor-pointer' : ''}`}
                 >
-                  <img
+                  <img fetchPriority="high"
                     src={`/api/images/${cat.pKep}`}
                     alt={cat.nev || "Cica kép"}
                     className="w-full h-full object-cover select-none"
@@ -153,7 +152,7 @@ const UserProfile = () => {
                     key={`fav-${cat.cId}`}
                     className="relative rounded-2xl overflow-hidden shadow-lg bg-neutral-200 dark:bg-neutral-800 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl group h-[350px] sm:h-[400px]"
                   >
-                    <img
+                    <img fetchPriority="high"
                       src={`/api/images/${cat.pKep}`}
                       alt={cat.nev || "Cica kép"}
                       className="w-full h-full object-cover select-none"

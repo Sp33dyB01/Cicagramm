@@ -1,5 +1,5 @@
-import avatarImg from "./assets/avatar.png";
-import catIcon from "./assets/icon-of-a-cat-face--transparent--simplified--insta.png";
+import avatarImg from "./assets/default_profile_icon.webp";
+import catIcon from "./assets/icon.webp";
 import { authClient } from "./auth-client";
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect } from 'react';
@@ -84,10 +84,10 @@ export default function TopBar({ user, onLogout }: { user: SelectFelhasznalo, on
 
   return (
     <header className={`fixed top-0 w-full h-[70px] bg-white dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 z-50 flex items-center px-5 gap-5 transition-transform duration-300 ${!showHeader ? "-translate-y-full shadow-none" : ""}`}>
-      <img
+      <img fetchPriority="high"
         src={catIcon}
         alt="logo"
-        className="w-12 h-12 rounded-lg object-cover border border-neutral-400 dark:border-neutral-600 flex-shrink-0 cursor-pointer"
+        className="w-12 h-12 rounded-lg object-cover border border-neutral-400 dark:border-neutral-600 shrink-0 cursor-pointer"
         onClick={handleLogoClick}
       />
 
@@ -103,7 +103,7 @@ export default function TopBar({ user, onLogout }: { user: SelectFelhasznalo, on
 
         {user ? (
           <div className="relative" ref={profileRef}>
-            <img
+            <img fetchPriority="high"
               src={`/api/images/${user.pKep}`}
               alt="profile"
               className="w-10 h-10 rounded-full border border-neutral-800 dark:border-neutral-200 cursor-pointer object-cover"
