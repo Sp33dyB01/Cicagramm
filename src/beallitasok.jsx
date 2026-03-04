@@ -119,7 +119,7 @@ export default function Beallitasok({ user, onUpdate }) {
         <form onSubmit={handleSubmit} data-submitted={submitted} className="space-y-3 group">
           <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-6 mb-4 border-b border-neutral-200 dark:border-neutral-700 pb-6">
             <div
-              className="relative w-32 h-32 cursor-pointer group rounded-full overflow-hidden border-4 border-neutral-900 dark:border-neutral-700 shadow-lg flex-shrink-0"
+              className="relative w-32 h-32 cursor-pointer group rounded-full overflow-hidden border-4 border-neutral-900 dark:border-neutral-700 shadow-lg shrink-0"
               onClick={handleImageClick}
               title="Kattints a profilkép módosításához"
             >
@@ -143,7 +143,7 @@ export default function Beallitasok({ user, onUpdate }) {
               ref={fileInputRef}
               className="hidden"
             />
-            <div className="flex-grow w-full space-y-2">
+            <div className="grow w-full space-y-2">
               <h2 className="text-3xl font-bold">{user?.nev || user?.name || "Ismeretlen"}</h2>
               <p className="text-neutral-600 dark:text-neutral-400 italic">{user?.rBemutat || "Nincs megadva bemutatkozás."}</p>
             </div>
@@ -161,7 +161,7 @@ export default function Beallitasok({ user, onUpdate }) {
 
           <div>
             <input
-              className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:focus:border-rose-500 focus:border-rose-500 outline-none transition-colors invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
+              className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:focus:border-rose-500 focus:border-rose-500 outline-none transition-colors invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:not-placeholder-shown:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
               placeholder="Felhasználónév"
               required
               value={formData.nev}
@@ -204,7 +204,7 @@ export default function Beallitasok({ user, onUpdate }) {
                 <div>
                   <input
                     type="number"
-                    className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
+                    className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:not-placeholder-shown:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                     placeholder="Irsz"
                     required
                     value={formData.irsz}
@@ -243,7 +243,7 @@ export default function Beallitasok({ user, onUpdate }) {
               ) : (
                 <div>
                   <input
-                    className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
+                    className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:not-placeholder-shown:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
                     placeholder="Város"
                     required
                     value={formData.varos}
@@ -259,7 +259,7 @@ export default function Beallitasok({ user, onUpdate }) {
 
           <div>
             <input
-              className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:[&:not(:placeholder-shown)]:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
+              className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:not-placeholder-shown:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
               placeholder="Utca, házszám"
               required
               value={formData.utca}

@@ -3,6 +3,7 @@ import avatarImg from "./assets/avatar.png";
 import { useToast } from "./Toast";
 import "./MainApp.css";
 import type { SelectFelhasznalo, SelectCica } from "../worker/schema";
+import convertToWebP from "./helper/imageToWebP";
 
 export default function Admin() {
     const { showToast } = useToast();
@@ -195,11 +196,13 @@ export default function Admin() {
         }
     };
 
+
+
     if (loading) return <div className="flex justify-center items-center min-h-[50vh] text-xl font-semibold">Betöltés...</div>;
 
     return (
         <div className="flex flex-col md:flex-row min-h-[calc(100vh-70px)] bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 transition-colors">
-            <aside className="w-full md:w-80 bg-white dark:bg-neutral-800 p-6 border-r border-neutral-200 dark:border-neutral-700 shadow-sm flex-shrink-0">
+            <aside className="w-full md:w-80 bg-white dark:bg-neutral-800 p-6 border-r border-neutral-200 dark:border-neutral-700 shadow-sm shrink-0">
                 <h2 className="text-2xl font-bold mb-6">Admin Vezérlőpult</h2>
                 <div className="mb-4">
                     <label htmlFor="userSelect" className="block mb-2 font-medium">Felhasználó választás:</label>
@@ -226,14 +229,14 @@ export default function Admin() {
                 <div className="flex gap-2 mb-6 border-b-2 border-neutral-200 dark:border-neutral-700">
                     {selectedUserId !== "all" && (
                         <button
-                            className={`px-4 py-2 text-base font-medium border-b-2 transition-colors focus:outline-none ${activeTab === "details" ? "text-rose-600 border-rose-600 dark:text-rose-500 dark:border-rose-500" : "text-neutral-500 border-transparent hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"}`}
+                            className={`px-4 py-2 text-base font-medium border-b-2 -mb-[2px] transition-colors focus:outline-none ${activeTab === "details" ? "text-rose-600 border-rose-600 dark:text-rose-500 dark:border-rose-500" : "text-neutral-500 border-transparent hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"}`}
                             onClick={() => setActiveTab("details")}
                         >
                             Felhasználó Részletei
                         </button>
                     )}
                     <button
-                        className={`px-4 py-2 text-base font-medium border-b-2 transition-colors focus:outline-none ${activeTab === "posts" || selectedUserId === "all" ? "text-rose-600 border-rose-600 dark:text-rose-500 dark:border-rose-500" : "text-neutral-500 border-transparent hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"}`}
+                        className={`px-4 py-2 text-base font-medium border-b-2 -mb-[2px] transition-colors focus:outline-none ${activeTab === "posts" || selectedUserId === "all" ? "text-rose-600 border-rose-600 dark:text-rose-500 dark:border-rose-500" : "text-neutral-500 border-transparent hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"}`}
                         onClick={() => setActiveTab("posts")}
                     >
                         Posztok (Cicák)

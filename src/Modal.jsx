@@ -40,9 +40,9 @@ const Modal = ({ isOpen, onClose, children }) => {
 
   return (
     <div
-      className={`fixed inset-0 w-full h-full flex justify-center items-center z-[10000] p-5 transition-all duration-300 ease-in-out ${animateIn
-          ? "bg-black/70 backdrop-blur-sm opacity-100 visible"
-          : "bg-transparent backdrop-blur-none opacity-0 invisible"
+      className={`fixed inset-0 w-full h-full flex justify-center items-center z-10000 p-5 transition-all duration-300 ease-in-out ${animateIn
+        ? "bg-black/70 backdrop-blur-sm opacity-100 visible"
+        : "bg-transparent backdrop-blur-none opacity-0 invisible"
         }`}
       onClick={onClose}
     >

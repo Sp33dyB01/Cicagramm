@@ -86,7 +86,7 @@ const UserProfile = () => {
         >
           {user.nev} feltöltései
           {activeTab === 'uploads' && (
-            <div className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-rose-600 dark:bg-rose-500 rounded-t-full"></div>
+            <div className="absolute -bottom-px left-0 right-0 h-0.5 bg-rose-600 dark:bg-rose-500 rounded-t-full"></div>
           )}
         </button>
         {currentUser && currentUser.id === user.id && (
@@ -99,7 +99,7 @@ const UserProfile = () => {
           >
             Kedvencek
             {activeTab === 'favorites' && (
-              <div className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-rose-600 dark:bg-rose-500 rounded-t-full"></div>
+              <div className="absolute -bottom-px left-0 right-0 h-0.5 bg-rose-600 dark:bg-rose-500 rounded-t-full"></div>
             )}
           </button>
         )}
@@ -127,7 +127,7 @@ const UserProfile = () => {
                       e.currentTarget.onerror = null;
                     }}
                   />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-black/80 to-transparent">
                     <span className="text-2xl font-bold text-white drop-shadow-md">{cat.nev || "Ismeretlen"}</span>
                   </div>
                 </div>
@@ -162,7 +162,7 @@ const UserProfile = () => {
                         e.currentTarget.onerror = null;
                       }}
                     />
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-black/80 to-transparent">
                       <span className="text-2xl font-bold text-white drop-shadow-md">{cat.nev || "Ismeretlen"}</span>
                     </div>
                   </div>
