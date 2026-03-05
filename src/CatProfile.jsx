@@ -183,7 +183,7 @@ export default function CatProfile({ catId }) {
 
       {zoomedImage && ReactDOM.createPortal(
         <div
-          className="fixed inset-0 bg-black/90 z-30000] flex justify-center items-center cursor-default animate-[fadeIn_0.2s_ease-out]"
+          className="fixed inset-0 bg-black/90 z-30000 flex justify-center items-center cursor-default animate-[fadeIn_0.2s_ease-out]"
           onClick={() => {
             setZoomedImage(null);
             setIsZoomedIn(false);
