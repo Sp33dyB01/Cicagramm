@@ -5,35 +5,32 @@ import { X } from "lucide-react";
 // Fontos: Ennek az időnek egyeznie kell a CSS-ben beállított transition idővel!
 const ANIMATION_DURATION = 300; // ms
 
-const Modal = ({ isOpen, onClose, children }) => {
+const Modal = ({ isOpen, onClose, children, maxWidth = '900px' }) => {
   // Belső state: ez dönti el, hogy a komponens a DOM-ban van-e.
   const [shouldRender, setShouldRender] = useState(isOpen);
 
   // Belső state: ez dönti el, hogy épp a "beúszó" vagy "kiúszó" CSS osztályt kapja.
   const [animateIn, setAnimateIn] = useState(false);
 
-  // Megakadályozzuk a háttér görgetését, ha nyitva van a modal
   useEffect(() => {
-    // Ha a külső prop (isOpen) megváltozik:
+    let timer;
     if (isOpen) {
-      // 1. NYITÁS: Azonnal rendereljük és indítjuk a beúszást
       setShouldRender(true);
-      // Egy pici késleltetés kell, hogy a böngésző érzékelje a változást a két állapot között
-      setTimeout(() => setAnimateIn(true), 10);
+      timer = setTimeout(() => setAnimateIn(true), 10);
       document.body.style.overflow = "hidden";
     } else {
-      // 2. ZÁRÁS: Elindítjuk a kiúszást
       setAnimateIn(false);
       document.body.style.overflow = "unset";
-
-      // Várunk, amíg az animáció lefut, és csak utána vesszük ki a DOM-ból
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         setShouldRender(false);
       }, ANIMATION_DURATION);
-
-      // Takarítás: ha közben gyorsan újra kinyitnák, ne fusson le a törlés
-      return () => clearTimeout(timer);
     }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      // Ensure we restore scrolling if the modal is unmounted while open
+      document.body.style.overflow = "unset";
+    };
   }, [isOpen]);
 
   // Ha nem kell renderelni, akkor tényleg null-t adunk vissza
@@ -48,8 +45,9 @@ const Modal = ({ isOpen, onClose, children }) => {
       onClick={onClose}
     >
       <div
-        className={`bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 w-full max-w-[900px] max-h-[92vh] rounded-2xl relative overflow-y-auto shadow-2xl border border-neutral-300 dark:border-neutral-700 transition-all duration-300 ease-in-out ${animateIn ? "scale-100 translate-y-0 opacity-100" : "scale-90 translate-y-5 opacity-0"
+        className={`bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 w-full max-h-[92vh] rounded-2xl relative overflow-y-auto shadow-2xl border border-neutral-300 dark:border-neutral-700 transition-all duration-300 ease-in-out ${animateIn ? "scale-100 translate-y-0 opacity-100" : "scale-90 translate-y-5 opacity-0"
           }`}
+        style={{ maxWidth }}
         onClick={(e) => e.stopPropagation()}
       >
         <button

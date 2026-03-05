@@ -120,20 +120,20 @@ export default function Beallitasok({ user, onUpdate }) {
         <form onSubmit={handleSubmit} data-submitted={submitted} className="space-y-3 group">
           <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-6 mb-4 border-b border-neutral-200 dark:border-neutral-700 pb-6">
             <div
-              className="relative w-32 h-32 cursor-pointer group rounded-full overflow-hidden border-4 border-neutral-900 dark:border-neutral-700 shadow-lg shrink-0"
+              className="relative w-32 h-32 cursor-pointer group/avatar rounded-full overflow-hidden border-4 border-neutral-900 dark:border-neutral-700 shadow-lg shrink-0"
               onClick={handleImageClick}
               title="Kattints a profilkép módosításához"
             >
               <img fetchPriority="high"
                 src={formData.pKep ? URL.createObjectURL(formData.pKep) : (user?.pKep ? `/api/images/${user.pKep}` : avatarImg)}
                 alt="Profilkép"
-                className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
+                className="w-full h-full object-cover transition-opacity group-hover/avatar:opacity-75"
                 onError={(e) => {
                   e.currentTarget.src = avatarImg;
                   e.currentTarget.onerror = null;
                 }}
               />
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-40">
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity bg-black bg-opacity-40">
                 <span className="text-white text-sm font-semibold">Módosítás</span>
               </div>
             </div>
