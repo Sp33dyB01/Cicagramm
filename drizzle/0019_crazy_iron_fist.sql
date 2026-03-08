@@ -1,0 +1,1 @@
+ALTER TABLE `felhasznalo` ADD COLUMN `telefon` text(15) NOT NULL DEFAULT 'Nincs megadva';

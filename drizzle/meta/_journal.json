@@ -127,6 +127,20 @@
       "when": 1771322542612,
       "tag": "0017_brainy_red_wolf",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1772974503154,
+      "tag": "0018_chubby_callisto",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1772976440816,
+      "tag": "0019_crazy_iron_fist",
+      "breakpoints": true
     }
   ]
 }

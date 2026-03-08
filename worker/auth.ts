@@ -4,6 +4,8 @@ import { localization } from 'better-auth-localization';
 import * as schema from './schema';
 import { drizzle } from 'drizzle-orm/d1';
 import type { Env } from './index';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { createAuthMiddleware } from "better-auth/api";
 
 export const getAuth = (env: Env) => {
   const db = drizzle(env.DB, { schema });
@@ -41,7 +43,23 @@ export const getAuth = (env: Env) => {
         session: schema.session,
         account: schema.account
       },
+
     }),
+    hooks: {
+      before: createAuthMiddleware(async (context) => {
+        if (context.path == '/sign-up') {
+          const telefon = context.body.telefon;
+          if (telefon) {
+            const phoneNumber = parsePhoneNumberFromString(telefon, 'HU')
+            if (!phoneNumber || !phoneNumber.isValid()) {
+              throw new Error("Helytelen telefonszám formátum!")
+            }
+            context.body.telefon = phoneNumber.formatInternational();
+          }
+        }
+        return { context }
+      })
+    },
     user: {
       additionalFields: {
         irsz: { type: "number" },
@@ -52,7 +70,8 @@ export const getAuth = (env: Env) => {
         lat: { type: "number", required: false },
         lon: { type: "number", required: false },
         varos: { type: "string" },
-        rBemutat: { type: "string", required: false }
+        rBemutat: { type: "string", required: false },
+        telefon: { type: "string", required: true }
       },
       fields: {
         name: "nev",

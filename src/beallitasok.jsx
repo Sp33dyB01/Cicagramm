@@ -5,6 +5,7 @@ import { useToast } from "./Toast";
 import convertToWebP from "./helper/imageToWebP";
 import { usePostal } from "./hooks/usePostal";
 import { useCities } from "./hooks/useCities";
+import { validateHungarianPhone } from "./hooks/usePhoneValidation";
 
 export default function Beallitasok({ user, onUpdate }) {
   const { showToast } = useToast();
@@ -21,6 +22,7 @@ export default function Beallitasok({ user, onUpdate }) {
     varos: user?.varos || '',
     utca: user?.utca || '',
     pKep: null,
+    telefon: user?.telefon || '',
   });
 
   const { cities, loadingCities, setCities } = usePostal(formData.irsz);
@@ -61,6 +63,16 @@ export default function Beallitasok({ user, onUpdate }) {
       return;
     }
 
+    let formattedPhone = null;
+    if (formData.telefon) {
+      formattedPhone = validateHungarianPhone(formData.telefon);
+      if (!formattedPhone) {
+        showToast("Érvényes magyar telefonszámot adj meg! (pl. 06 20 123 4567)", "error");
+        setLoading(false);
+        return;
+      }
+    }
+
     const submissionData = new FormData();
     submissionData.append('email', formData.email);
     submissionData.append('nev', formData.nev);
@@ -68,6 +80,7 @@ export default function Beallitasok({ user, onUpdate }) {
     submissionData.append('irsz', formData.irsz);
     submissionData.append('varos', formData.varos);
     submissionData.append('utca', formData.utca);
+    if (formattedPhone) submissionData.append('telefon', formattedPhone);
     if (formData.pKep) {
       try {
         const webpFile = await convertToWebP(formData.pKep);
@@ -268,6 +281,17 @@ export default function Beallitasok({ user, onUpdate }) {
               onChange={(e) => setFormData({ ...formData, utca: e.target.value })}
             />
             <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">Utca, házszám megadása kötelező!</p>
+          </div>
+
+          <div>
+            <input
+              type="tel"
+              className="peer w-full px-3 py-2 border rounded-lg bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 outline-none focus:border-rose-500 transition-colors invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:not-placeholder-shown:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
+              placeholder="Telefonszám"
+              value={formData.telefon}
+              onChange={(e) => setFormData({ ...formData, telefon: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block">Érvényes magyar telefonszámot adj meg! (pl. 06 20 123 4567)</p>
           </div>
 
           <button

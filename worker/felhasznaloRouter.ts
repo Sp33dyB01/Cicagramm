@@ -5,6 +5,7 @@ import type { Env } from "./index";
 import { getAuth } from './auth';
 import { eq } from 'drizzle-orm';
 import { getCoordinates } from './tavolsag';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 const felhasznaloRouter = new Hono<{ Bindings: Env }>();
 
 felhasznaloRouter.delete("/:felId", async (c) => {
@@ -109,6 +110,8 @@ felhasznaloRouter.patch("/:felId", async (c) => {
         if (formData['irsz']) updateData.irsz = Number(formData['irsz'])
         if (formData['utca']) updateData.utca = formData['utca'];
         if (formData['varos']) updateData.varos = formData['varos'];
+        const phone = parsePhoneNumberFromString(formData['telefon'] as string, 'HU')
+        if (phone?.isValid()) updateData.telefon = phone.formatInternational();
         const pKepFile = formData['pKep'] as File;
         if (pKepFile && pKepFile.size > 0) {
             await c.env.BUCKET.delete(result.pKep);

@@ -7,6 +7,7 @@ import retryOperation from "./assets/utils/Retry";
 import { useToast } from "./Toast";
 import { usePostal } from "./hooks/usePostal";
 import { useCities } from "./hooks/useCities";
+import { validateHungarianPhone } from './hooks/usePhoneValidation';
 
 interface FormData {
   email: string;
@@ -17,6 +18,7 @@ interface FormData {
   utca: string;
   pKep: string;
   varos: string;
+  tel: string;
 }
 
 interface RegisterProps {
@@ -37,6 +39,7 @@ export default function Register({ onSuccess }: RegisterProps) {
     utca: '',
     pKep: '',
     varos: '',
+    tel: '',
   });
 
   const { cities, loadingCities, setCities } = usePostal(formData.irsz);
@@ -65,6 +68,13 @@ export default function Register({ onSuccess }: RegisterProps) {
       return;
     }
 
+    const formattedPhone = validateHungarianPhone(formData.tel);
+    if (!formattedPhone) {
+      showToast("Érvényes magyar telefonszámot adj meg! (pl. 06 20 123 4567)", "error");
+      setLoading(false);
+      return;
+    }
+
     try {
       const coords = await getCoordinates(formData.irsz, formData.varos, formData.utca);
       if (coords?.displayName) {
@@ -78,7 +88,8 @@ export default function Register({ onSuccess }: RegisterProps) {
             varos: formData.varos,
             utca: formData.utca,
             lat: coords.lat,
-            lon: coords.lon
+            lon: coords.lon,
+            telefon: formattedPhone
           }));
 
         if (error) {
@@ -231,6 +242,18 @@ export default function Register({ onSuccess }: RegisterProps) {
               onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, utca: e.target.value })}
             />
             <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block group-data-[submitted=true]:peer-invalid:block">Utca, házszám megadása kötelező!</p>
+          </div>
+
+          <div>
+            <input
+              type="tel"
+              className="peer w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-shadow invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:invalid:border-rose-500 focus:invalid:not-placeholder-shown:border-rose-500 group-data-[submitted=true]:focus:invalid:border-rose-500 focus:invalid:not-placeholder-shown:ring-rose-500 group-data-[submitted=true]:focus:invalid:ring-rose-500"
+              placeholder="Telefonszám"
+              value={formData.tel}
+              required
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, tel: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-rose-500 hidden peer-[&:not(:placeholder-shown):invalid]:block">Érvényes magyar telefonszámot adj meg! (pl. 06 20 123 4567)</p>
           </div>
 
           <div className="pt-2">

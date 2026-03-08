@@ -20,6 +20,7 @@ export const felhasznalo = sqliteTable('felhasznalo', {
   irsz: integer('irsz').notNull(),
   varos: text('varos').notNull(),
   utca: text('utca', { length: 50 }).notNull(),
+  telefon: text('telefon', { length: 15 }).notNull().default('Nincs megadva'),
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
   lat: real("szk").notNull().default(1),
