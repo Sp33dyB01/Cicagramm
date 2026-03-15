@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from './Toast';
 import { useFajtak } from "./hooks/useFajtak";
 import convertToWebP from "./helper/imageToWebP"
@@ -62,7 +63,40 @@ export default function Upload() {
         }
     };
 
-    const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
+    const queryClient = useQueryClient();
+
+    const uploadMutation = useMutation({
+        mutationFn: async (optimizedFormData: FormData) => {
+            const res = await fetch('/api/cica', {
+                method: 'POST',
+                body: optimizedFormData,
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Hiba történt');
+            return data;
+        },
+        onSuccess: (context: any) => {
+            showToast(`Sikeres feltöltés!`, "success");
+            setSubmitted(false);
+            setPKepPreview(null);
+            setPKepOptimized(null);
+            setMKepekPreviews([]);
+            setMKepekOptimized([]);
+            if (context?.form) context.form.reset();
+            queryClient.invalidateQueries({ queryKey: ['cats'] });
+            queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+            queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+        },
+        onError: (err) => {
+            console.error(err);
+            showToast(err.message || 'Hálózati hiba', "error");
+        },
+        onSettled: () => {
+            setLoading(false);
+        }
+    });
+
+    const handleUpload = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setSubmitted(true); // Trigger submitted state
         setLoading(true);
@@ -85,30 +119,12 @@ export default function Upload() {
             optimizedFormData.append("mKepek[]", blob, `gallery_${index}.webp`);
         });
 
-        try {
-            const res = await fetch('/api/cica', {
-                method: 'POST',
-                body: optimizedFormData,
-            });
-            const data = await res.json();
-
-            if (res.ok) {
-                showToast(`Sikeres feltöltés!`, "success");
-                setSubmitted(false);
-                setPKepPreview(null);
-                setPKepOptimized(null);
-                setMKepekPreviews([]);
-                setMKepekOptimized([]);
-                form.reset();
-            } else {
-                showToast(data.error || 'Hiba történt', "error");
-            }
-        } catch (err) {
-            console.log(err)
-            showToast('Hálózati hiba', "error");
-        } finally {
-            setLoading(false);
-        }
+        // Pass the form to context via an undocumented feature or simply store it via state/ref if needed. 
+        // Here we just mutate, and we can't easily pass context to onSuccess cleanly without onMutate, 
+        // but we can just reset it directly here after await or inside handleUpload if we mutateAsync. 
+        uploadMutation.mutateAsync(optimizedFormData).then(() => {
+            form.reset();
+        }).catch(() => { });
     };
 
     return (

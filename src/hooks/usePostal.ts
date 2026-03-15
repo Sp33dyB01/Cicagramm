@@ -1,32 +1,17 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { SelectTelepules } from "../../worker/schema";
 
 export function usePostal(irsz: string) {
-    const [cities, setCities] = useState<SelectTelepules[]>([]);
-    const [loadingCities, setLoadingCities] = useState<boolean>(false);
+    const { data: cities = [], isLoading: loadingCities } = useQuery({
+        queryKey: ['postal', irsz],
+        queryFn: async () => {
+            if (!irsz || String(irsz).length !== 4) return [];
+            const res = await fetch(`/api/varos/irsz/${irsz}`);
+            if (!res.ok) throw new Error("Failed to fetch cities");
+            return res.json() as Promise<SelectTelepules[]>;
+        },
+        enabled: !!irsz && String(irsz).length === 4,
+    });
 
-    useEffect(() => {
-        if (irsz && String(irsz).length === 4) {
-            const fetchCities = async () => {
-                setLoadingCities(true);
-                try {
-                    const res = await fetch(`/api/varos/irsz/${irsz}`);
-                    if (res.ok) {
-                        const data: SelectTelepules[] = await res.json();
-                        setCities(data);
-                    }
-                } catch (err) {
-                    console.error("Failed to fetch cities", err);
-                } finally {
-                    setLoadingCities(false);
-                }
-            };
-
-            fetchCities();
-        } else {
-            setCities([]);
-        }
-    }, [irsz]);
-
-    return { cities, loadingCities, setCities };
+    return { cities, loadingCities };
 }

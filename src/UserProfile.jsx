@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "./auth-client";
 import avatarImg from "./assets/default_profile_icon.webp";
 import EditCatModal from "./EditCatModal";
@@ -10,123 +11,117 @@ import CatProfile from "./CatProfile";
 const UserProfile = () => {
   const { userId } = useParams();
   const location = useLocation();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('uploads'); // 'uploads' or 'favorites'
-  const [currentUser, setCurrentUser] = useState(null);
   const [editingCat, setEditingCat] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [favorites, setFavorites] = useState([]);
-  const [loadingFavorites, setLoadingFavorites] = useState(false);
   const [selectedCatId, setSelectedCatId] = useState(null);
   const [catToDelete, setCatToDelete] = useState(null);
 
-  useEffect(() => {
+  const queryClient = useQueryClient();
+
+  const [prevKey, setPrevKey] = useState(`${userId}-${location.key}`);
+  const currentKey = `${userId}-${location.key}`;
+  if (currentKey !== prevKey) {
+    setPrevKey(currentKey);
     setActiveTab('uploads');
     setSelectedCatId(null);
-  }, [userId, location.key]);
+  }
 
-  useEffect(() => {
-    async function checkSession() {
-      try {
-        const { data } = await authClient.getSession();
-        if (data?.session) {
-          setCurrentUser(data.user);
-        }
-      } catch (error) {
-        console.error("Hiba a session ellenőrzésekor:", error);
-      }
-    }
-    checkSession();
-  }, []);
+  const { data: currentUser } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data } = await authClient.getSession();
+      return data?.session ? data.user : null;
+    },
+    staleTime: Infinity,
+  });
 
-  useEffect(() => {
-    setLoading(true);
-    fetch(`/api/profile/${userId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          console.error(data.error);
-          setUser(null);
-        } else {
-          setUser(data);
-        }
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Hiba a felhasználó betöltésekor:", err);
-        setLoading(false);
-      });
-  }, [userId, refreshKey]);
+  const { data: user, isLoading: loading } = useQuery({
+    queryKey: ['userProfile', userId],
+    queryFn: async () => {
+      const res = await fetch(`/api/profile/${userId}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      return data;
+    },
+    enabled: !!userId,
+  });
 
-  useEffect(() => {
-    if (activeTab === 'favorites' && currentUser && currentUser.id === user?.id) {
-      setLoadingFavorites(true);
-      fetch(`/api/kedvencek/${userId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (!data.error) {
-            setFavorites(data);
-          } else {
-            console.error(data.error);
-            setFavorites([]);
-          }
-          setLoadingFavorites(false);
-        })
-        .catch(err => {
-          console.error("Hiba a kedvencek betöltésekor:", err);
-          setLoadingFavorites(false);
-        });
-    }
-  }, [activeTab, userId, currentUser, user?.id, refreshKey]);
+  const { data: favorites = [], isLoading: loadingFavorites } = useQuery({
+    queryKey: ['favorites', userId],
+    queryFn: async () => {
+      const res = await fetch(`/api/kedvencek/${userId}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      return data;
+    },
+    enabled: activeTab === 'favorites' && !!currentUser && currentUser.id === user?.id,
+  });
 
-  const handleUnlike = async (catId, e) => {
-    e.stopPropagation(); // Prevent opening the cat modal if we ever add one
-
-    // Optimistic UI update
-    setFavorites(prev => prev.filter(item => {
-      const id = item.cat ? item.cat.cId : item.cId || item.id;
-      return id !== catId;
-    }));
-
-    try {
+  const unlikeMutation = useMutation({
+    mutationFn: async (catId) => {
       const response = await fetch(`/api/kedvencek/${catId}`, { method: 'DELETE' });
-      if (!response.ok) {
-        console.error("Nem sikerült törölni a kedvencek közül:", response.statusText);
-        // Opcionális: visszaállítani a state-et hiba esetén
-      }
-    } catch (error) {
-      console.error("Hálózati hiba a törlés során:", error);
-    }
+      if (!response.ok) throw new Error(response.statusText);
+      return catId;
+    },
+    onMutate: async (catId) => {
+      await queryClient.cancelQueries({ queryKey: ['favorites', userId] });
+      const previousFavorites = queryClient.getQueryData(['favorites', userId]);
+      queryClient.setQueryData(['favorites', userId], (old) =>
+        old ? old.filter(item => {
+          const id = item.cat ? item.cat.cId : item.cId || item.id;
+          return id !== catId;
+        }) : []
+      );
+      return { previousFavorites };
+    },
+    onError: (err, newTodo, context) => {
+      queryClient.setQueryData(['favorites', userId], context.previousFavorites);
+      console.error("Nem sikerült törölni a kedvencek közül:", err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['favorites', userId] });
+      queryClient.invalidateQueries({ queryKey: ['cats'] });
+    },
+  });
+
+  const handleUnlike = (catId, e) => {
+    e.stopPropagation(); // Prevent opening the cat modal if we ever add one
+    unlikeMutation.mutate(catId);
   };
 
-  const confirmDelete = async () => {
+  const deleteCatMutation = useMutation({
+    mutationFn: async (catId) => {
+      const response = await fetch(`/api/cica/${catId}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error(response.statusText);
+      return catId;
+    },
+    onMutate: async (catId) => {
+      setCatToDelete(null); // Close modal immediately
+      await queryClient.cancelQueries({ queryKey: ['userProfile', userId] });
+      const previousUser = queryClient.getQueryData(['userProfile', userId]);
+      queryClient.setQueryData(['userProfile', userId], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          cats: old.cats.filter(cat => cat.cId !== catId)
+        };
+      });
+      return { previousUser };
+    },
+    onError: (err, newTodo, context) => {
+      queryClient.setQueryData(['userProfile', userId], context.previousUser);
+      console.error("Nem sikerült a törlés:", err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['userProfile', userId] });
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+    },
+  });
+
+  const confirmDelete = () => {
     if (!catToDelete) return;
     const catId = catToDelete.cId || catToDelete.id;
-
-    // A modal azonnali bezárása
-    setCatToDelete(null);
-
-    // Optimisan töröljük a listából
-    setUser(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        cats: prev.cats.filter(cat => cat.cId !== catId)
-      };
-    });
-
-    try {
-      const response = await fetch(`/api/cica/${catId}`, { method: 'DELETE' });
-      if (!response.ok) {
-        console.error("Nem sikerült a törlés:", response.statusText);
-        // Ha valamiért mégsem törlődött a backendről, akkor érdemes visszatölteni
-        setRefreshKey(prev => prev + 1);
-      }
-    } catch (error) {
-      console.error("Hálózati hiba a törlés során:", error);
-      setRefreshKey(prev => prev + 1);
-    }
+    deleteCatMutation.mutate(catId);
   };
 
   if (loading) {
@@ -143,7 +138,7 @@ const UserProfile = () => {
       <div className="flex flex-col md:flex-row items-center gap-6 mb-8 p-6 bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700 shrink-0">
         <div className="relative shrink-0">
           <img fetchPriority="high"
-            src={`/api/images/${user.pKep}` || avatarImg}
+            src={`/api/images/${user.pKep}`}
             alt="User Profile"
             className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-neutral-100 dark:border-neutral-700 shadow-md"
             onError={(e) => {
@@ -299,7 +294,7 @@ const UserProfile = () => {
           onClose={() => setEditingCat(null)}
           onSave={() => {
             setEditingCat(null);
-            setRefreshKey((prev) => prev + 1);
+            queryClient.invalidateQueries({ queryKey: ['userProfile', userId] });
           }}
         />
       )}

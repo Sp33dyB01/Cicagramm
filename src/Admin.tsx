@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import avatarImg from "./assets/default_profile_icon.webp";
 import { useToast } from "./Toast";
 import { Trash2 } from "lucide-react";
@@ -7,8 +8,6 @@ import type { SelectFelhasznalo, SelectCica } from "../worker/schema";
 
 export default function Admin() {
     const { showToast } = useToast();
-    const [users, setUsers] = useState<(SelectFelhasznalo & { cats: SelectCica[] })[]>([]);
-    const [loading, setLoading] = useState(true);
     const [selectedUserId, setSelectedUserId] = useState<string>("all");
     const [activeTab, setActiveTab] = useState<"details" | "posts">("details");
 
@@ -19,28 +18,16 @@ export default function Admin() {
     const [editingCatId, setEditingCatId] = useState<string | null>(null);
     const [editCatData, setEditCatData] = useState<any>({});
 
-    const fetchUsers = () => {
-        setLoading(true);
-        fetch("/api/profile")
-            .then((res) => {
-                if (!res.ok) throw new Error("Hálózati hiba a felhasználók betöltésekor");
-                return res.json();
-            })
-            .then((data) => {
-                console.log("Fetched users:", data);
-                setUsers(data);
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error(err);
-                showToast("Nem sikerült betölteni a felhasználókat.", "error");
-                setLoading(false);
-            });
-    };
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
+    const { data: users = [], isLoading: loading } = useQuery({
+        queryKey: ['adminUsers'],
+        queryFn: async () => {
+            const res = await fetch("/api/profile");
+            if (!res.ok) throw new Error("Hálózati hiba a felhasználók betöltésekor");
+            return res.json() as Promise<(SelectFelhasznalo & { cats: SelectCica[] })[]>;
+        }
+    });
 
     const selectedUser = users.find((u) => u.id === selectedUserId);
 
@@ -50,54 +37,59 @@ export default function Admin() {
             ? users.flatMap((u) => u.cats.map((c: any) => ({ ...c, owner: u })))
             : selectedUser?.cats || [];
 
-    const handleDeleteUser = async () => {
+    const deleteUserMutation = useMutation({
+        mutationFn: async (userId: string) => {
+            const res = await fetch(`/api/profile/${userId}`, { method: "DELETE" });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            return data;
+        },
+        onSuccess: () => {
+            showToast("Felhasználó sikeresen törölve.", "success");
+            setSelectedUserId("all");
+            queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+        },
+        onError: (err: any) => {
+            console.error(err);
+            showToast(err.message || "Hiba történt a törlés során.", "error");
+        }
+    });
+
+    const handleDeleteUser = () => {
         if (!selectedUser) return;
         if (!window.confirm(`Biztosan törölni szeretnéd a következő felhasználót és minden hozzá tartozó adatot: ${selectedUser.nev}?`)) return;
-
-        try {
-            const res = await fetch(`/api/profile/${selectedUser.id}`, { method: "DELETE" });
-            const data = await res.json();
-            if (data.error) {
-                showToast(data.error, "error");
-            } else {
-                showToast("Felhasználó sikeresen törölve.", "success");
-                setSelectedUserId("all");
-                fetchUsers();
-            }
-        } catch (err) {
-            console.error(err);
-            showToast("Hiba történt a törlés során.", "error");
-        }
+        deleteUserMutation.mutate(selectedUser.id);
     };
 
     const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
     };
 
-    const handleSaveUser = async () => {
-        if (!selectedUser) return;
-        try {
-            const formData = new FormData();
-            Object.entries(editFormData).forEach(([key, value]) => {
-                formData.append(key, value as string);
-            });
-
-            const res = await fetch(`/api/profile/${selectedUser.id}`, {
-                method: "PATCH",
-                body: formData
-            });
+    const updateUserMutation = useMutation({
+        mutationFn: async ({ userId, formData }: { userId: string, formData: FormData }) => {
+            const res = await fetch(`/api/profile/${userId}`, { method: "PATCH", body: formData });
             const data = await res.json();
-            if (data.error) {
-                showToast(data.error, "error");
-            } else {
-                showToast("Adatok sikeresen frissítve!", "success");
-                setEditMode(false);
-                fetchUsers();
-            }
-        } catch (err) {
+            if (data.error) throw new Error(data.error);
+            return data;
+        },
+        onSuccess: () => {
+            showToast("Adatok sikeresen frissítve!", "success");
+            setEditMode(false);
+            queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+        },
+        onError: (err: any) => {
             console.error(err);
-            showToast("Hiba az adatok mentésekor.", "error");
+            showToast(err.message || "Hiba az adatok mentésekor.", "error");
         }
+    });
+
+    const handleSaveUser = () => {
+        if (!selectedUser) return;
+        const formData = new FormData();
+        Object.entries(editFormData).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        updateUserMutation.mutate({ userId: selectedUser.id, formData });
     };
 
     const startEditMode = () => {
@@ -113,22 +105,26 @@ export default function Admin() {
         setEditMode(true);
     };
 
-    const handleDeleteCat = async (cId: string, catName: string) => {
-        if (!window.confirm(`Biztosan törölni szeretnéd a következő cicát: ${catName}?`)) return;
-
-        try {
+    const deleteCatMutation = useMutation({
+        mutationFn: async (cId: string) => {
             const res = await fetch(`/api/cica/${cId}`, { method: "DELETE" });
             const data = await res.json();
-            if (data.error) {
-                showToast(data.error, "error");
-            } else {
-                showToast("Cica sikeresen törölve.", "success");
-                fetchUsers(); // Refresh data
-            }
-        } catch (err) {
+            if (data.error) throw new Error(data.error);
+            return data;
+        },
+        onSuccess: () => {
+            showToast("Cica sikeresen törölve.", "success");
+            queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+        },
+        onError: (err: any) => {
             console.error(err);
-            showToast("Hiba történt a törlés során.", "error");
+            showToast(err.message || "Hiba történt a törlés során.", "error");
         }
+    });
+
+    const handleDeleteCat = (cId: string, catName: string) => {
+        if (!window.confirm(`Biztosan törölni szeretnéd a következő cicát: ${catName}?`)) return;
+        deleteCatMutation.mutate(cId);
     };
 
     const startEditCat = (cat: any) => {
@@ -147,53 +143,54 @@ export default function Admin() {
         setEditCatData({ ...editCatData, [e.target.name]: e.target.value });
     };
 
-    const handleSaveCat = async (cId: string) => {
-        try {
-            const formData = new FormData();
-            Object.entries(editCatData).forEach(([key, value]) => {
-                formData.append(key, value as string);
-            });
-
-            const res = await fetch(`/api/cica/${cId}`, {
-                method: "PATCH",
-                body: formData
-            });
+    const updateCatMutation = useMutation({
+        mutationFn: async ({ cId, formData }: { cId: string, formData: FormData }) => {
+            const res = await fetch(`/api/cica/${cId}`, { method: "PATCH", body: formData });
             const data = await res.json();
-            if (data.error) {
-                showToast(data.error, "error");
-            } else {
-                showToast("Cica adatai frissítve!", "success");
-                setEditingCatId(null);
-                fetchUsers();
-            }
-        } catch (err) {
+            if (data.error) throw new Error(data.error);
+            return data;
+        },
+        onSuccess: () => {
+            showToast("Cica adatai frissítve!", "success");
+            setEditingCatId(null);
+            queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+        },
+        onError: (err: any) => {
             console.error(err);
-            showToast("Hiba az adatok mentésekor.", "error");
+            showToast(err.message || "Hiba az adatok mentésekor.", "error");
         }
+    });
+
+    const handleSaveCat = (cId: string) => {
+        const formData = new FormData();
+        Object.entries(editCatData).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        updateCatMutation.mutate({ cId, formData });
     };
 
-    const handleDeleteImage = async (cId: string, imgId: string) => {
-        if (!window.confirm("Biztosan törölni szeretnéd ezt a képet?")) return;
-
-        try {
+    const deleteImageMutation = useMutation({
+        mutationFn: async ({ cId, imgId }: { cId: string, imgId: string }) => {
             const formData = new FormData();
             formData.append('deleteImages[]', imgId);
-
-            const res = await fetch(`/api/cica/${cId}`, {
-                method: "PATCH",
-                body: formData
-            });
+            const res = await fetch(`/api/cica/${cId}`, { method: "PATCH", body: formData });
             const data = await res.json();
-            if (data.error) {
-                showToast(data.error, "error");
-            } else {
-                showToast("Kép sikeresen törölve.", "success");
-                fetchUsers();
-            }
-        } catch (err) {
+            if (data.error) throw new Error(data.error);
+            return data;
+        },
+        onSuccess: () => {
+            showToast("Kép sikeresen törölve.", "success");
+            queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+        },
+        onError: (err: any) => {
             console.error(err);
-            showToast("Hiba a kép törlésekor.", "error");
+            showToast(err.message || "Hiba a kép törlésekor.", "error");
         }
+    });
+
+    const handleDeleteImage = (cId: string, imgId: string) => {
+        if (!window.confirm("Biztosan törölni szeretnéd ezt a képet?")) return;
+        deleteImageMutation.mutate({ cId, imgId });
     };
 
 

@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getDistance } from "../../worker/tavolsag";
 import type { SelectFelhasznalo, SelectCica } from "../../worker/schema";
 import type { filters } from "./useFilters";
 import type { ToastContextType } from "../Toast";
-import { useToast } from "../Toast"
 
 export type ExtendedCica = SelectCica & {
     ownerLat: number;
@@ -17,13 +17,8 @@ export type ExtendedCica = SelectCica & {
 };
 
 export function useCats({ currentPage, sort, user, ipCoords, appliedFilters, showToastContext }: { currentPage: number, sort: string, user: SelectFelhasznalo, ipCoords: { lat: number, lon: number, displayName: string } | null, appliedFilters: filters, showToastContext: ToastContextType }) {
-    const [cats, setCats] = useState<ExtendedCica[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [totalPages, setTotalPages] = useState(1);
-    const { showToast } = useToast();
 
-    useEffect(() => {
-        setLoading(true);
+    const fetchCats = async () => {
         let apiSort = "1N";
         if (sort === "name_asc") apiSort = "1N";
         if (sort === "name_desc") apiSort = "1I";
@@ -53,30 +48,28 @@ export function useCats({ currentPage, sort, user, ipCoords, appliedFilters, sho
             fetchUrl.searchParams.set("lon", String(ipCoords.lon));
         }
 
-        fetch(fetchUrl.toString(), {
+        const res = await fetch(fetchUrl.toString());
+        if (!res.ok) {
+            throw new Error("Hálózati hiba a macskák betöltésekor");
+        }
+        return res.json();
+    };
 
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                console.log("Fetched cats:", data);
-                if (data.data) {
-                    setCats(data.data);
-                    setTotalPages(data.totalPages || 1);
-                } else {
-                    setCats(Array.isArray(data) ? data : []);
-                    setTotalPages(1);
-                }
-                setLoading(false);
-            })
-            .catch((err) => {
-                if (showToastContext) showToast("Hiba a macskák betöltésekor", "error");
-                console.error("Hiba:", err);
-                setLoading(false);
-            });
-    }, [currentPage, sort, user, ipCoords, appliedFilters, showToast]);
+    const { data, isLoading, isError, error } = useQuery({
+        queryKey: ['cats', currentPage, sort, appliedFilters, user?.lat, user?.lon, ipCoords?.lat, ipCoords?.lon],
+        queryFn: fetchCats,
+    });
+
+    if (isError) {
+        if (showToastContext) showToastContext.showToast("Hiba a macskák betöltésekor", "error");
+        console.error("Hiba:", error);
+    }
+
+    const cats = data?.data || (Array.isArray(data) ? data : []);
+    const totalPages = data?.totalPages || 1;
 
     const catsWithDistance = useMemo(() => {
-        return (cats || []).map(cat => {
+        return (cats || []).map((cat: any) => {
             const catLat = parseFloat(String(cat.ownerLat));
             const catLon = parseFloat(String(cat.ownerLon));
 
@@ -95,5 +88,5 @@ export function useCats({ currentPage, sort, user, ipCoords, appliedFilters, sho
         });
     }, [cats, user, ipCoords]);
 
-    return { catsWithDistance, setCats, loading, totalPages };
+    return { catsWithDistance, loading: isLoading, totalPages };
 }

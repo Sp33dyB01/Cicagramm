@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import avatarImg from "./assets/default_profile_icon.webp";
 import { useToast } from "./Toast";
 import convertToWebP from "./helper/imageToWebP";
@@ -11,8 +11,39 @@ export default function Beallitasok({ user, onUpdate }) {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false); // Added state
-  const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const queryClient = useQueryClient();
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (submissionData) => {
+      const response = await fetch(`/api/profile/${user.id}`, {
+        method: 'PATCH',
+        body: submissionData,
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Hiba történt a frissítés során.");
+      }
+      return result;
+    },
+    onSuccess: () => {
+      showToast("Adataid sikeresen frissítve!", "success");
+      queryClient.invalidateQueries({ queryKey: ['session'] });
+      queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] });
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+      queryClient.invalidateQueries({ queryKey: ['cats'] });
+      if (onUpdate) {
+        onUpdate();
+      }
+    },
+    onError: (err) => {
+      showToast(err.message || "Hiba történt a frissítés során.", "error");
+      console.error(err);
+    },
+    onSettled: () => {
+      setLoading(false);
+    }
+  });
 
   const [formData, setFormData] = useState({
     email: user?.email || '',
@@ -26,19 +57,23 @@ export default function Beallitasok({ user, onUpdate }) {
   });
 
   const { cities, loadingCities, setCities } = usePostal(formData.irsz);
-  const { postals, loadingPostal, setPostals } = useCities(formData.varos);
+  const { postals, loadingPostal } = useCities(formData.varos);
 
-  useEffect(() => {
+  const [prevCities, setPrevCities] = useState(cities);
+  if (cities !== prevCities) {
+    setPrevCities(cities);
     if (cities.length === 1 && formData.varos !== cities[0].nev) {
       setFormData(prev => ({ ...prev, varos: cities[0].nev }));
     }
-  }, [cities]);
+  }
 
-  useEffect(() => {
+  const [prevPostals, setPrevPostals] = useState(postals);
+  if (postals !== prevPostals) {
+    setPrevPostals(postals);
     if (postals.length === 1 && String(formData.irsz) !== String(postals[0].irsz)) {
       setFormData(prev => ({ ...prev, irsz: String(postals[0].irsz) }));
     }
-  }, [postals]);
+  }
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -91,28 +126,7 @@ export default function Beallitasok({ user, onUpdate }) {
       }
     }
 
-    try {
-      const response = await fetch(`/api/profile/${user.id}`, {
-        method: 'PATCH',
-        body: submissionData,
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        showToast("Adataid sikeresen frissítve!", "success");
-        if (onUpdate) {
-          onUpdate();
-        }
-      } else {
-        showToast(result.error || "Hiba történt a frissítés során.", "error");
-      }
-    } catch (err) {
-      showToast("Hiba történt a frissítés során.", "error");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    updateProfileMutation.mutate(submissionData);
   };
 
   if (!user) {

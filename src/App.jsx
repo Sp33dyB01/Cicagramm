@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Login from "./Login";
 import Register from "./Register";
 import MainApp from "./MainApp";
@@ -16,12 +17,14 @@ import { authClient } from "./auth-client";
 export default function App() {
   const [isAuth, setIsAuth] = useState(false);
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [ipCoords, setIpCoords] = useState(null);
+  const queryClient = useQueryClient();
+
   const handleLogout = () => {
     setIsAuth(false);
     setUser(null);
+    queryClient.setQueryData(['session'], null);
   };
+
   const fetchUserProfile = async (userId, baseData) => {
     try {
       const profileRes = await fetch(`/api/profile/${userId}`);
@@ -36,49 +39,48 @@ export default function App() {
       setUser(baseData);
     }
   };
-  useEffect(() => {
-    async function checkSession() {
-      try {
-        const { data } = await authClient.getSession();
-        if (data?.session) {
-          await fetchUserProfile(data.user.id, data.user);
-          setIsAuth(true);
-        }
-      } catch (error) {
-        console.error("Hiba a session ellenőrzésekor:", error);
-      } finally {
-        setIsLoading(false);
+
+  const { isLoading } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data } = await authClient.getSession();
+      if (data?.session) {
+        await fetchUserProfile(data.user.id, data.user);
+        setIsAuth(true);
+        return data; // Return session data
       }
-    }
-    checkSession();
-  }, []);
+      return null;
+    },
+    staleTime: Infinity,
+  });
 
   const handleUpdateUser = () => {
     if (user?.id) {
-      fetchUserProfile(user.id, user);
+      fetchUserProfile(user.id, user); // Update local state directly instead of query to match exact previous behavior
+      queryClient.invalidateQueries(['userProfile', user.id]); // Just in case
     }
   };
 
   const handleLoginSuccess = (userData) => {
     setIsAuth(true);
     setUser(userData);
+    queryClient.invalidateQueries(['session']);
   };
-  useEffect(() => {
-    const getApproximateLocation = async () => {
-      try {
-        const response = await fetch('api/ipinfo')
-        const data = await response.json();
-        if (data && !data.error) {
-          setIpCoords({ lat: data.lat, lon: data.lon, displayName: data.city });
-        }
+
+  const { data: ipCoords = null } = useQuery({
+    queryKey: ['ipInfo'],
+    queryFn: async () => {
+      const response = await fetch('api/ipinfo')
+      const data = await response.json();
+      if (data && !data.error) {
         console.log(`Vendég elhelyezkedése: ${data.city}, ${data.lat}° ${data.lon}°`)
+        return { lat: data.lat, lon: data.lon, displayName: data.city };
       }
-      catch (e) {
-        console.error("Az IP-keresés nem sikerült", e)
-      }
-    }
-    getApproximateLocation();
-  }, [])
+      return null;
+    },
+    staleTime: Infinity,
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100">

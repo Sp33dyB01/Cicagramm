@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "./Toast";
 import { useFajtak } from "./hooks/useFajtak";
 import { X } from "lucide-react";
@@ -8,29 +9,41 @@ export default function EditCatModal({ cat, onClose, onSave }) {
     const [loading, setLoading] = useState(false);
     const fajtak = useFajtak();
 
-    const handleUpdate = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        const form = e.currentTarget;
-        const formData = new FormData(form);
+    const queryClient = useQueryClient();
 
-        try {
+    const updateCatMutation = useMutation({
+        mutationFn: async (formData) => {
             const res = await fetch(`/api/cica/${cat.cId}`, {
                 method: "PATCH",
                 body: formData,
             });
             const data = await res.json();
-            if (res.ok) {
-                showToast("Cica adatai sikeresen frissítve!", "success");
-                onSave();
-            } else {
-                showToast(data.error || "Hiba történt", "error");
-            }
-        } catch (err) {
-            showToast("Hálózati hiba", "error");
-        } finally {
+            if (!res.ok) throw new Error(data.error || "Hiba történt");
+            return data;
+        },
+        onSuccess: () => {
+            showToast("Cica adatai sikeresen frissítve!", "success");
+            queryClient.invalidateQueries({ queryKey: ['cat', cat.cId] });
+            queryClient.invalidateQueries({ queryKey: ['cats'] });
+            queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+            queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+            onSave();
+        },
+        onError: (err) => {
+            console.error(err);
+            showToast(err.message || "Hálózati hiba", "error");
+        },
+        onSettled: () => {
             setLoading(false);
         }
+    });
+
+    const handleUpdate = (e) => {
+        e.preventDefault();
+        setLoading(true);
+        const form = e.currentTarget;
+        const formData = new FormData(form);
+        updateCatMutation.mutate(formData);
     };
 
     return (

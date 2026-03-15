@@ -1,9 +1,8 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Modal from "./Modal";
 import "./MainApp.css";
 import { useToast } from "./Toast";
 import CatProfile from "./CatProfile";
-import avatarImg from "./assets/default_profile_icon.webp"; // ÚJ: Kell a fallback képhez
 import { useFajtak } from "./hooks/useFajtak";
 import { usePagination } from "./hooks/usePagination";
 import { useFilters } from "./hooks/useFilters";
@@ -15,10 +14,9 @@ import { Smartphone, Grid, Settings2, Search } from "lucide-react";
 export default function MainApp({ user, ipCoords }) {
   const [selectedCat, setSelectedCat] = useState(null);
   const { showToast } = useToast();
-  const profileRef = useRef(null);
   const fajtak = useFajtak();
   const { currentPage, setCurrentPage, handlePageChange } = usePagination();
-  const { isFilterOpen, setIsFilterOpen, filters, appliedFilters, handleApplyFilters, handleFilterChange, kivalasztottFajtak, fajtaValtozasKezelese, kivalasztottaSzinek, szinValtozasKezelese, kivalasztasTorlese } = useFilters(setCurrentPage);
+  const { isFilterOpen, setIsFilterOpen, filters, appliedFilters, handleApplyFilters, handleFilterChange } = useFilters(setCurrentPage);
 
   const [sort, setSort] = useState(() => {
     const params = new URLSearchParams(window.location.search);

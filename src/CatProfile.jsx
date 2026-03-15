@@ -1,38 +1,32 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
+import { useQuery } from "@tanstack/react-query";
 import avatarImg from './assets/default_profile_icon.webp';
 import { useNavigate } from 'react-router-dom';
 import "./CatProfile.css";
 import "./Topbar.jsx";
 
 export default function CatProfile({ catId, hideOwnerLink = false }) {
-  const [catData, setCatData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [zoomedImage, setZoomedImage] = useState(null);
   const [isZoomedIn, setIsZoomedIn] = useState(false);
   const [visible, setVisible] = useState(false);
   const navigate = useNavigate();
+
+  const { data: catData, isLoading: loading } = useQuery({
+    queryKey: ['cat', catId],
+    queryFn: async () => {
+      const res = await fetch(`/api/cica/${catId}`);
+      if (!res.ok) throw new Error("Hálózati hiba a macska adatainak betöltésekor");
+      return res.json();
+    },
+    enabled: !!catId,
+  });
+
   useEffect(() => {
     if (!loading) {
       setTimeout(() => setVisible(true), 50);
     }
   }, [loading]);
-
-  useEffect(() => {
-    if (!catId) return;
-
-    setLoading(true);
-    fetch(`/api/cica/${catId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setCatData(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Hiba a macska adatainak betöltésekor:", err);
-        setLoading(false);
-      });
-  }, [catId]);
 
   if (loading || !catData) {
     return (

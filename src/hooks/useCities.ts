@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { SelectTelepules } from "../../worker/schema";
 
 export function useCities(varos: string) {
-    const [postals, setPostals] = useState<SelectTelepules[]>([]);
-    const [loadingPostal, setLoadingPostal] = useState<boolean>(false);
     const [debouncedValue, setDebouncedValue] = useState<string>('');
 
     useEffect(() => {
@@ -13,27 +12,16 @@ export function useCities(varos: string) {
         return () => clearTimeout(handler);
     }, [varos]);
 
-    useEffect(() => {
-        if (debouncedValue) {
-            const fetchPostal = async () => {
-                setLoadingPostal(true);
-                try {
-                    const res = await fetch(`/api/varos/nev/${debouncedValue}`);
-                    if (res.ok) {
-                        const data: SelectTelepules[] = await res.json();
-                        setPostals(data);
-                    }
-                } catch (err) {
-                    console.error("Failed to fetch postal codes", err);
-                } finally {
-                    setLoadingPostal(false);
-                }
-            };
-            fetchPostal();
-        } else {
-            setPostals([]);
-        }
-    }, [debouncedValue]);
+    const { data: postals = [], isLoading: loadingPostal } = useQuery({
+        queryKey: ['cities', debouncedValue],
+        queryFn: async () => {
+            if (!debouncedValue) return [];
+            const res = await fetch(`/api/varos/nev/${debouncedValue}`);
+            if (!res.ok) throw new Error("Failed to fetch cities");
+            return res.json() as Promise<SelectTelepules[]>;
+        },
+        enabled: !!debouncedValue,
+    });
 
-    return { postals, loadingPostal, setPostals };
+    return { postals, loadingPostal };
 }

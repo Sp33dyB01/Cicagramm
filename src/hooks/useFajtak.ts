@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { SelectFajta } from "../../worker/schema"
 
 export function useFajtak() {
-    const [fajtak, setFajtak] = useState<SelectFajta[]>([]);
-
-    useEffect(() => {
-        fetch('/api/fajta')
-            .then(res => res.json())
-            .then(data => setFajtak(data))
-            .catch(err => console.error("Hiba a fajták lekérésekor:", err));
-    }, []);
+    const { data: fajtak = [] } = useQuery({
+        queryKey: ['fajtak'],
+        queryFn: async () => {
+            const res = await fetch('/api/fajta');
+            if (!res.ok) throw new Error("Hiba a fajták lekérésekor");
+            return res.json() as Promise<SelectFajta[]>;
+        },
+    });
 
     return fajtak;
 }
