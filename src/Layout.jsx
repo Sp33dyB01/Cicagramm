@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import TopBar from "./Topbar";
 export default function Layout({ user, onLogout }) {
   return (
@@ -11,8 +11,9 @@ export default function Layout({ user, onLogout }) {
         <div className="flex flex-col items-center gap-3 max-w-3xl text-center">
           <h3 className="m-0 text-2xl tracking-wide font-bold">Cicagramm</h3>
           <p className="m-0 text-neutral-400 text-sm">Találd meg a tökéletes doromboló társat!</p>
-          <p className="mt-5 text-xs text-neutral-500">
-            &copy; {new Date().getFullYear()} Cicagramm. Minden jog fenntartva.
+          <p className="mt-5 text-xs text-neutral-500 flex flex-col items-center gap-2">
+            <Link to="/aszf" className="text-rose-500 hover:text-rose-400 hover:underline transition-colors text-sm font-medium">Adatkezelési Tájékoztató</Link>
+            <span>&copy; {new Date().getFullYear()} Cicagramm. Minden jog fenntartva.</span>
           </p>
         </div>
       </footer>
